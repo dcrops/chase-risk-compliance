@@ -7,11 +7,6 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from reporting.executive.exec_pack_md import (
-    LEAVE_FINDINGS_CSV,
-    LEAKAGE_REPORT_CSV,
-)
-
 
 @dataclass
 class Finding:
@@ -32,6 +27,7 @@ class Finding:
         return cls(
             rule_code=row.get("rule_code") or row.get("rule_id") or "",
             severity=(row.get("severity", "") or "").upper(),
+            classification=(row.get("classification", "") or "UNSPECIFIED").upper(),
             employee_id=row.get("employee_id", ""),
             leave_type=row.get("leave_type", ""),
             as_of_date=row.get("as_of_date", ""),
@@ -85,13 +81,13 @@ def _load_csv(path: Path) -> List[Dict[str, str]]:
         return list(reader)
 
 
-def load_leave_findings() -> List[Finding]:
-    rows = _load_csv(LEAVE_FINDINGS_CSV)
+def load_leave_findings(base_output_dir: Path) -> List[Finding]:
+    rows = _load_csv(base_output_dir / "leave_leakage_findings.csv")
     return [Finding.from_row(r) for r in rows]
 
 
-def load_leave_exposure_rows() -> List[ExposureRow]:
-    rows = _load_csv(LEAKAGE_REPORT_CSV)
+def load_leave_exposure_rows(base_output_dir: Path) -> List[ExposureRow]:
+    rows = _load_csv(base_output_dir / "leakage_report.csv")
     exposure_rows: List[ExposureRow] = []
     for r in rows:
         er = ExposureRow.from_row(r)

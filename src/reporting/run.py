@@ -7,6 +7,7 @@ from reporting.modules.leave_report_md import generate_leave_report
 from reporting.modules.term_report_md import generate_term_report
 from reporting.modules.rkeg_report_md import generate_rkeg_report
 from reporting.modules.lsl_report_md import generate_lsl_exposure_report
+from reporting.modules.cross_module_report_md import generate_cross_module_report
 
 from reporting.executive.exec_pack_md import (
     generate_leave_leakage_report,
@@ -14,6 +15,7 @@ from reporting.executive.exec_pack_md import (
     MODULE_LSL,
     MODULE_TERM,
     MODULE_RKEG,
+    MODULE_CROSS,
     DEFAULT_MODULES,
     normalise_modules,
 )
@@ -53,8 +55,8 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         default=None,
         help=(
-            "Optional output directory for rendered HTML/PDF. "
-            "If omitted, HTML/PDF are written to repo_root/outputs."
+            "Optional output directory for markdown/HTML/PDF outputs. "
+            "If omitted, outputs are written to repo_root/outputs."
         ),
     )
     return p.parse_args()
@@ -63,30 +65,21 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
-    # Centralised repo + outputs paths
     repo_root = get_repo_root()
     repo_outputs = get_default_outputs_dir()
 
-    # Where to write rendered reports (may be a client-specific subfolder)
     if args.output_dir:
         output_dir = Path(args.output_dir)
         if not output_dir.is_absolute():
-            # Treat as relative to repo root
             output_dir = repo_root / output_dir
     else:
         output_dir = repo_outputs
 
-    repo_outputs.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Organisation name: CLI if provided, else neutral fallback
     org_name = args.organisation_name or "Organisation name not provided"
-
-    # Review period: CLI override flows through to modules/executive
     review_period_override = args.review_period
 
-    # Normalise module selection
-    # If no modules specified, fall back to DEFAULT_MODULES from exec_pack_md
     raw_modules = args.modules or DEFAULT_MODULES
     included_modules = normalise_modules(raw_modules)
 
@@ -95,6 +88,7 @@ def main() -> int:
         organisation_name=org_name,
         review_period=review_period_override,
         modules=included_modules,
+        output_dir=output_dir,
     )
 
     # 2) Main executive pack HTML/PDF (always)
@@ -106,13 +100,12 @@ def main() -> int:
     )
 
     if not args.only_main_report:
-        # 3) Generate extra markdown packs (module detailed reports, controlled by --modules)
-
         # a) Leave-only detailed module report
         if MODULE_LEAVE in included_modules:
             leave_md = generate_leave_report(
                 organisation_name=org_name,
                 review_period=review_period_override,
+                output_dir=output_dir,
             )
             build_html_and_pdf(
                 md_path=leave_md,
@@ -126,6 +119,7 @@ def main() -> int:
             lsl_md = generate_lsl_exposure_report(
                 organisation_name=org_name,
                 review_period=review_period_override,
+                output_dir=output_dir,
             )
             build_html_and_pdf(
                 md_path=lsl_md,
@@ -139,6 +133,7 @@ def main() -> int:
             term_md = generate_term_report(
                 organisation_name=org_name,
                 review_period=review_period_override,
+                output_dir=output_dir,
             )
             build_html_and_pdf(
                 md_path=term_md,
@@ -152,6 +147,7 @@ def main() -> int:
             rkeg_md = generate_rkeg_report(
                 organisation_name=org_name,
                 review_period=review_period_override,
+                output_dir=output_dir,
             )
             build_html_and_pdf(
                 md_path=rkeg_md,
@@ -160,7 +156,21 @@ def main() -> int:
                 page_title="Record-Keeping & Evidence Gaps – Detailed Report",
             )
 
-        # e) Pre-/Post-audit narrative overviews (engagement-level, not per-module)
+        # e) Cross-module report
+        if MODULE_CROSS in included_modules:
+            cross_md = generate_cross_module_report(
+                organisation_name=org_name,
+                review_period=review_period_override,
+                output_dir=output_dir,
+            )
+            build_html_and_pdf(
+                md_path=cross_md,
+                html_path=output_dir / "cross_module_report.html",
+                pdf_path=output_dir / "cross_module_report.pdf",
+                page_title="Cross Module – Detailed Report",
+            )
+
+        # f) Pre-/Post-audit narrative overviews
         pre_md = generate_pre_audit_overview(
             organisation_name=org_name,
             prepared_as_at=None,
@@ -170,7 +180,6 @@ def main() -> int:
             prepared_as_at=None,
         )
 
-        # Render Pre-/Post-audit HTML/PDF
         build_html_and_pdf(
             md_path=pre_md,
             html_path=output_dir / "pre_audit_overview.html",
@@ -184,8 +193,8 @@ def main() -> int:
             page_title="Post-Audit Payroll Compliance Review",
         )
 
-        # Public Holiday report (external tool output, optional)
-        ph_md = repo_outputs / "public_holiday_compliance_report.md"
+        # Optional public holiday report from the same target output_dir
+        ph_md = output_dir / "public_holiday_compliance_report.md"
         if ph_md.exists():
             build_html_and_pdf(
                 md_path=ph_md,
@@ -194,9 +203,8 @@ def main() -> int:
                 page_title="Public Holiday Compliance Review",
             )
         else:
-            print("Skipping Public Holiday HTML/PDF – markdown not found in this repo's outputs/")
+            print("Skipping Public Holiday HTML/PDF – markdown not found in target output directory.")
 
-        # Summary
         if MODULE_LEAVE in included_modules:
             print("Wrote leave_report.md and HTML/PDF")
         if MODULE_LSL in included_modules:
@@ -205,6 +213,8 @@ def main() -> int:
             print("Wrote term_report.md and HTML/PDF")
         if MODULE_RKEG in included_modules:
             print("Wrote rkeg_report.md and HTML/PDF")
+        if MODULE_CROSS in included_modules:
+            print("Wrote cross_module_report.md and HTML/PDF")
         print("Wrote pre_audit_overview.md and HTML/PDF")
         print("Wrote post_audit_overview.md and HTML/PDF")
     else:

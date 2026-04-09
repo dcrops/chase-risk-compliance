@@ -25,6 +25,23 @@ def build_insight(client: str, full_pilot: str) -> None:
 
     df = pd.read_csv(comparison_path)
 
+    module_order = ["LEAVE", "LSL", "TERM", "RKEG", "CROSS_MODULE"]
+
+    # Normalise module names hard
+    df["module"] = df["module"].astype(str).str.strip().str.upper()
+
+    # Rebuild rows in the exact order we want
+    ordered_rows = []
+    for module in module_order:
+        match = df[df["module"] == module]
+        if not match.empty:
+            ordered_rows.append(match)
+
+    if ordered_rows:
+        df = pd.concat(ordered_rows, ignore_index=True)
+
+    print("DEBUG module order:", df["module"].tolist())
+
     lines: list[str] = []
     lines.append("# CRC Coverage Insight")
     lines.append("")
@@ -38,7 +55,9 @@ def build_insight(client: str, full_pilot: str) -> None:
     lines.append("")
     lines.append(f"- Payroll-only findings: **{total_payroll}**")
     lines.append(f"- Full analysis findings: **{total_full}**")
-    lines.append(f"- Additional findings identified with broader data coverage: **{total_delta} ({total_delta_pct})**")
+    lines.append(
+        f"- Additional findings identified with broader data coverage: **{total_delta} ({total_delta_pct})**"
+    )
     lines.append("")
 
     max_row = df.sort_values("delta_total", ascending=False).iloc[0]

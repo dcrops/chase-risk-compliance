@@ -1,54 +1,60 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List
 
 from reporting.leave_common import (
     Finding,
     ExposureRow,
-    load_leave_findings,
-    load_leave_exposure_rows,
     derive_leave_review_period,
 )
 
 from reporting.core.structure import ReportStructure
 from reporting.executive.exec_pack_md import (
     MODULE_LEAVE,
-    LEAVE_FINDINGS_CSV,
-    LEAKAGE_REPORT_CSV,
     OUTPUTS_DIR,
+    MODULE_ORDER,
+    MODULE_LABELS,
     sort_findings,
     build_header,
     build_data_sources_section,
-    build_scope_and_methodology,
     build_key_findings_overview,
+)
+
+from reporting.sections.exec_pack_sections import (
+    build_scope_and_methodology,
     build_limitations,
     build_next_steps,
     build_appendices,
 )
 
-# Where this leave-only module report will be written
-LEAVE_REPORT_MD_PATH = OUTPUTS_DIR / "leave_report.md"
 
-# New: review-period data window written by the LEAVE engine
-LEAVE_DATA_WINDOW_CSV = LEAVE_FINDINGS_CSV.parent / "leave_data_window.csv"
+def _load_csv(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+    with path.open("r", newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        return list(reader)
 
 
-# ---------- Section builders specific to the LEAVE module report ----------
+def load_leave_findings(base_output_dir: Path) -> List[Finding]:
+    rows = _load_csv(base_output_dir / "leave_leakage_findings.csv")
+    return [Finding.from_row(r) for r in rows]
+
+
+def load_leave_exposure_rows(base_output_dir: Path) -> List[ExposureRow]:
+    rows = _load_csv(base_output_dir / "leakage_report.csv")
+    exposure_rows: List[ExposureRow] = []
+    for r in rows:
+        er = ExposureRow.from_row(r)
+        if er is not None:
+            exposure_rows.append(er)
+    return exposure_rows
+
 
 def _derive_review_period_from_window(path: Path) -> str | None:
-    """
-    Prefer review period from the engine's data-window CSV, if present.
-
-    Expects a CSV with columns:
-        first_date,last_date
-        2018-12-01,2024-03-01
-
-    Dates are stored as ISO (YYYY-MM-DD) from the engine.
-    """
     if not path.exists():
         return None
 
@@ -78,19 +84,13 @@ def _derive_review_period_from_window(path: Path) -> str | None:
         return start.strftime("%d %b %Y")
     return f"{start.strftime('%d %b %Y')} to {end.strftime('%d %b %Y')}"
 
+
 def build_leave_module_summary(
     findings: List[Finding],
     exposure_rows: List[ExposureRow],
 ) -> str:
-    """
-    Top-level Executive Summary for the leave-only module report.
-
-    Provides narrative plus a concise severity snapshot. The full severity
-    table is presented in the Findings Overview section.
-    """
     parts: List[str] = []
 
-    # High-level narrative
     parts.append(
         "This Leave & Entitlement Leakage report focuses solely on leave-related risk "
         "indicators identified from the supplied payroll and HR data. "
@@ -99,7 +99,6 @@ def build_leave_module_summary(
     )
     parts.append("")
 
-    # Headline severity counts (table lives in Findings Overview)
     high = sum(1 for f in findings if f.severity == "HIGH")
     med = sum(1 for f in findings if f.severity == "MEDIUM")
     low = sum(1 for f in findings if f.severity == "LOW")
@@ -115,44 +114,34 @@ def build_leave_module_summary(
         "**Findings Overview** section."
     )
     parts.append("")
-
-    # Exposure (indicative)
     parts.append(build_financial_exposure_section(exposure_rows))
 
     return "\n".join(parts).strip()
 
 
-def build_leave_appendices() -> str:
-    """
-    Thin wrapper so the leave module report can reuse the shared appendices logic,
-    scoped to LEAVE only.
-    """
-    return build_appendices({MODULE_LEAVE})
+def build_leave_appendices(base_output_dir: Path) -> str:
+    return build_appendices({MODULE_LEAVE}, base_output_dir)
 
-
-# ---------- Main generator ----------
 
 def generate_leave_report(
     organisation_name: str = "Organisation not specified",
     review_period: str | None = None,
+    output_dir: Path | None = None,
 ) -> Path:
-    """
-    Generate outputs/leave_report.md – a LEAVE-only, detailed module report.
-    """
-    included = {MODULE_LEAVE}  # this is a LEAVE-only report
+    target_dir = output_dir or OUTPUTS_DIR
+    report_path = target_dir / "leave_report.md"
+    leave_data_window_csv = target_dir / "leave_data_window.csv"
 
-    findings = load_leave_findings()
+    findings = load_leave_findings(target_dir)
     sorted_findings = sort_findings(findings) if findings else []
-    exposure_rows = load_leave_exposure_rows()
+    exposure_rows = load_leave_exposure_rows(target_dir)
 
     if review_period is None:
-        # 1) Prefer client data window written by the LEAVE engine
-        from_window = _derive_review_period_from_window(LEAVE_DATA_WINDOW_CSV)
+        from_window = _derive_review_period_from_window(leave_data_window_csv)
 
         if from_window is not None:
             review_period = from_window
         else:
-            # 2) Fallback to findings-based derivation for older runs
             review_period = (
                 derive_leave_review_period(sorted_findings)
                 if sorted_findings
@@ -169,25 +158,59 @@ def generate_leave_report(
     )
 
     structure = ReportStructure()
-    structure.add("Executive Summary", 1, lambda: build_leave_module_summary(sorted_findings, exposure_rows))
-    structure.add("Data Sources", 1, lambda: build_data_sources_section({MODULE_LEAVE}))
-    structure.add("Scope & Methodology", 1, lambda: build_scope_and_methodology({MODULE_LEAVE}))
-    structure.add("Findings Overview", 1, lambda: build_key_findings_overview(sorted_findings))
-    structure.add("Detailed Findings", 1, lambda: build_detailed_findings(sorted_findings))
-    structure.add("Financial Exposure (Indicative)", 1, lambda: build_financial_exposure_section(exposure_rows))
-    structure.add("Limitations & Assumptions", 1, lambda: build_limitations())
-    structure.add("Recommended Next Steps", 1, lambda: build_next_steps())
-    structure.add("Appendices", 1, lambda: build_leave_appendices())
+    structure.add(
+        "Executive Summary",
+        1,
+        build_leave_module_summary(sorted_findings, exposure_rows),
+    )
+    structure.add(
+        "Data Sources",
+        1,
+        build_data_sources_section({MODULE_LEAVE}, target_dir),
+    )
+    structure.add(
+        "Scope & Methodology",
+        1,
+        build_scope_and_methodology({MODULE_LEAVE}, MODULE_LABELS, MODULE_ORDER),
+    )
+    structure.add(
+        "Findings Overview",
+        1,
+        build_key_findings_overview(sorted_findings),
+    )
+    structure.add(
+        "Detailed Findings",
+        1,
+        build_detailed_findings(sorted_findings),
+    )
+    structure.add(
+        "Financial Exposure (Indicative)",
+        1,
+        build_financial_exposure_section(exposure_rows),
+    )
+    structure.add(
+        "Limitations & Assumptions",
+        1,
+        build_limitations(),
+    )
+    structure.add(
+        "Recommended Next Steps",
+        1,
+        build_next_steps(target_dir),
+    )
+    structure.add(
+        "Appendices",
+        1,
+        build_leave_appendices(target_dir),
+    )
 
     parts.append(structure.render_markdown())
     final_md = "\n".join(parts)
 
-    LEAVE_REPORT_MD_PATH.parent.mkdir(parents=True, exist_ok=True)
-    LEAVE_REPORT_MD_PATH.write_text(final_md, encoding="utf-8")
-    return LEAVE_REPORT_MD_PATH
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(final_md, encoding="utf-8")
+    return report_path
 
-
-# ---------- Detailed findings + exposure sections ----------
 
 def build_detailed_findings(findings: List[Finding]) -> str:
     if not findings:

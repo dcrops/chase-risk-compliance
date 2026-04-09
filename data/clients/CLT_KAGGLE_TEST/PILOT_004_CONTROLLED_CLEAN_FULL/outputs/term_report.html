@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Termination Exposure – Detailed Report</title>
+  <style>
+/* =========================
+   Page setup (for PDF)
+   ========================= */
+   @page {
+    size: A4;
+    margin: 24mm 18mm 22mm 18mm;
+    background: #ffffff;
+  
+    @top-left {
+      content: "Chase Risk & Compliance";
+      font-size: 9pt;
+      color: #64748b;
+      vertical-align: bottom;
+      border-bottom: 1px solid #d9dde3;
+      padding-bottom: 6px;
+    }
+  
+    @top-right {
+      content: "";
+      border-bottom: 1px solid #d9dde3;
+      padding-bottom: 6px;
+    }
+  
+    @bottom-left {
+      content: "Confidential – Chase Risk & Compliance";
+      font-size: 8.5pt;
+      color: #64748b;
+      vertical-align: top;
+      border-top: 1px solid #d9dde3;
+      padding-top: 6px;
+    }
+  
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8.5pt;
+      color: #64748b;
+      vertical-align: top;
+      border-top: 1px solid #d9dde3;
+      padding-top: 6px;
+    }
+  }
+  
+  
+  /* =========================
+     Colour tokens
+     ========================= */
+  :root {
+    --bg-page: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --card-bg: #ffffff;
+  
+    --heading-primary: #5b1b26;
+    --heading-secondary: #7a2431;
+    --heading-tertiary: #a63446;
+  
+    --accent-border: #d9dde3;
+    --accent-soft: #eef2f7;
+    --panel-bg: #fafbfc;
+  
+    --blockquote-bg: #fdf2f4;
+    --blockquote-border: #7a2431;
+    --blockquote-text: #1e293b;
+  
+    --callout-bg: #f8fafc;
+    --callout-border: #7a2431;
+    --callout-text: #1e293b;
+  
+    --table-header-bg: #111827;
+    --table-header-text: #f9fafb;
+    --table-row-stripe: #f8fafc;
+    --table-border: #d9dde3;
+  
+    --sev-high: #b3261e;
+    --sev-med: #d97706;
+    --sev-low: #2e7d32;
+    --sev-info: #475569;
+  
+    --sev-high-bg: #fdecea;
+    --sev-med-bg: #fff4e5;
+    --sev-low-bg: #e8f5e9;
+    --sev-info-bg: #e5e7eb;
+  
+    --sev-high-border: #e6b8b3;
+    --sev-med-border: #f0d3a2;
+    --sev-low-border: #b7d6b9;
+    --sev-info-border: #cbd5e1;
+  }
+  
+  
+  /* =========================
+     Base layout & typography
+     ========================= */
+  html,
+  body {
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: var(--text-main);
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .report-container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 12px 16px 24px 16px;
+    box-sizing: border-box;
+  }
+  
+  
+  /* =========================
+     Headings
+     ========================= */
+  h1 {
+    font-size: 21pt;
+    line-height: 1.25;
+    margin: 0 0 1em 0;
+    padding: 10px 12px;
+    color: #ffffff;
+    background: var(--heading-primary);
+    border-radius: 4px;
+  }
+  
+  h2 {
+    font-size: 16pt;
+    line-height: 1.3;
+    margin-top: 2.1em;
+    margin-bottom: 0.65em;
+    padding-bottom: 6px;
+    border-bottom: 3px solid var(--heading-secondary);
+    color: var(--heading-secondary);
+  }
+  
+  h3 {
+    font-size: 13pt;
+    line-height: 1.35;
+    margin-top: 1.5em;
+    margin-bottom: 0.4em;
+    color: var(--heading-tertiary);
+  }
+  
+  h4 {
+    font-size: 11.5pt;
+    line-height: 1.35;
+    margin-top: 1.1em;
+    margin-bottom: 0.35em;
+    color: var(--heading-tertiary);
+  }
+  
+  h1,
+  h2,
+  h3,
+  h4 {
+    page-break-after: avoid;
+  }
+  
+  h2,
+  h3,
+  h4 {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  
+  /* =========================
+     Paragraphs & inline text
+     ========================= */
+  p {
+    margin: 0.4em 0 0.8em 0;
+  }
+  
+  strong {
+    font-weight: 600;
+  }
+  
+  em {
+    color: var(--text-muted);
+  }
+  
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.5pt;
+    background: #f8fafc;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  
+  
+  /* =========================
+     Blockquotes / callouts
+     ========================= */
+  blockquote {
+    margin: 1em 0;
+    padding: 10px 14px;
+    background: var(--blockquote-bg);
+    border-left: 5px solid var(--blockquote-border);
+    color: var(--blockquote-text);
+    page-break-inside: avoid;
+  }
+  
+  .callout {
+    margin: 1em 0 1.2em 0;
+    padding: 12px 14px;
+    background: var(--callout-bg);
+    border-left: 4px solid var(--callout-border);
+    color: var(--callout-text);
+    border-radius: 4px;
+    page-break-inside: avoid;
+  }
+  
+  .callout p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .callout ul,
+  .callout ol {
+    margin: 0.2em 0 0.8em 1.2em;
+    padding-left: 0.4em;
+  }
+  
+  .callout li {
+    margin: 0.35em 0;
+  }
+  
+  
+  /* =========================
+     Lists
+     ========================= */
+  ul,
+  ol {
+    margin: 0.45em 0 0.9em 1.45em;
+    padding-left: 0.2em;
+  }
+  
+  li {
+    margin: 0.28em 0;
+  }
+  
+  li > ul,
+  li > ol {
+    margin-top: 0.3em;
+  }
+  
+  
+  /* =========================
+     Horizontal rules
+     ========================= */
+  hr {
+    border: none;
+    border-top: 1px solid var(--accent-border);
+    margin: 2em 0 1.6em 0;
+  }
+  
+  
+  /* =========================
+     Tables
+     ========================= */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0 1.4em 0;
+    font-size: 10.4pt;
+    border: 1px solid var(--table-border);
+    page-break-inside: avoid;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  th {
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    text-align: left;
+    padding: 7px 9px;
+    border-bottom: 2px solid #0f172a;
+    font-weight: 600;
+  }
+  
+  td {
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--table-border);
+    white-space: pre-wrap;
+    vertical-align: top;
+  }
+  
+  tr:nth-child(even) td {
+    background: var(--table-row-stripe);
+  }
+  
+  .summary-table {
+    margin-top: 0.8em;
+  }
+  
+  
+  /* =========================
+     Severity styling
+     ========================= */
+  .severity-high,
+  .badge-high {
+    color: var(--sev-high);
+    font-weight: 600;
+  }
+  
+  .severity-medium,
+  .badge-medium {
+    color: var(--sev-med);
+    font-weight: 600;
+  }
+  
+  .severity-low,
+  .badge-low {
+    color: var(--sev-low);
+    font-weight: 600;
+  }
+  
+  .severity-info,
+  .badge-info {
+    color: var(--sev-info);
+  }
+  
+  .badge-high,
+  .badge-medium,
+  .badge-low,
+  .badge-info {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9pt;
+    line-height: 1.25;
+    font-weight: 700;
+    border: 1px solid transparent;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  
+  .badge-high {
+    background-color: var(--sev-high-bg);
+    color: var(--sev-high);
+    border-color: var(--sev-high-border);
+  }
+  
+  .badge-medium {
+    background-color: var(--sev-med-bg);
+    color: var(--sev-med);
+    border-color: var(--sev-med-border);
+  }
+  
+  .badge-low {
+    background-color: var(--sev-low-bg);
+    color: var(--sev-low);
+    border-color: var(--sev-low-border);
+  }
+  
+  .badge-info {
+    background-color: var(--sev-info-bg);
+    color: var(--sev-info);
+    border-color: var(--sev-info-border);
+  }
+  
+  tr.sev-high td {
+    background-color: var(--sev-high-bg);
+  }
+  
+  tr.sev-medium td {
+    background-color: var(--sev-med-bg);
+  }
+  
+  tr.sev-low td {
+    background-color: var(--sev-low-bg);
+  }
+  
+  tr.sev-info td {
+    background-color: var(--sev-info-bg);
+  }
+  
+  
+  /* =========================
+     Finding blocks
+     ========================= */
+  .finding {
+    border: 1px solid var(--accent-border);
+    border-left: 5px solid var(--heading-tertiary);
+    padding: 12px 14px;
+    margin: 14px 0 16px 0;
+    border-radius: 5px;
+    background: var(--panel-bg);
+    page-break-inside: avoid;
+  }
+  
+  .finding.high {
+    border-left-color: var(--sev-high);
+  }
+  
+  .finding.medium {
+    border-left-color: var(--sev-med);
+  }
+  
+  .finding.low {
+    border-left-color: var(--sev-low);
+  }
+  
+  .finding.info {
+    border-left-color: var(--sev-info);
+  }
+  
+  .finding-header {
+    margin-bottom: 10px;
+    position: relative;
+    min-height: 44px;
+  }
+  
+  .finding-title-wrap {
+    padding-right: 90px;
+  }
+  
+  .finding-title {
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+  }
+  
+  .finding-meta {
+    font-size: 9.5pt;
+    color: var(--text-muted);
+    margin: 0;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  
+  .finding-badge-wrap {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  
+  .finding-section {
+    margin-top: 8px;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+  
+  .finding-section strong {
+    color: var(--text-main);
+    font-weight: 600;
+  }
+  
+  .finding-section p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .finding-evidence {
+    background: #f6f8fa;
+    padding: 8px 10px;
+    font-size: 9pt;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+  
+  
+  /* =========================
+     Optional contents block
+     ========================= */
+  .contents-list {
+    margin: 0.8em 0 1.2em 0;
+    padding-left: 1.2em;
+  }
+  
+  .contents-list li {
+    margin: 0.35em 0;
+  }
+  
+  
+  /* =========================
+     Empty / no findings states
+     ========================= */
+  .no-findings {
+    margin: 1em 0 1.2em 0;
+    padding: 12px 14px;
+    background: #fafbfc;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #475569;
+    border-radius: 6px;
+    color: #334155;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  
+  .no-findings p:last-child {
+    margin-bottom: 0;
+  }
+  
+  
+  /* =========================
+     Print / PDF behaviour
+     ========================= */
+  table,
+  blockquote,
+  .callout,
+  .finding,
+  .no-findings {
+    page-break-inside: avoid;
+  }
+  
+  h2 + p,
+  h3 + p,
+  h4 + p,
+  h2 + ul,
+  h3 + ul,
+  h4 + ul,
+  h2 + ol,
+  h3 + ol,
+  h4 + ol,
+  h2 + table,
+  h3 + table,
+  h4 + table,
+  h2 + blockquote,
+  h3 + blockquote,
+  h4 + blockquote,
+  h2 + .callout,
+  h3 + .callout,
+  h4 + .callout,
+  h2 + .finding,
+  h3 + .finding,
+  h4 + .finding,
+  h2 + .no-findings,
+  h3 + .no-findings,
+  h4 + .no-findings,
+  h2 + div,
+  h3 + div,
+  h4 + div {
+    page-break-before: avoid;
+  }
+  
+  h2.page-break-before {
+    page-break-before: always;
+  }
+  
+  .keep-together {
+    page-break-inside: avoid;
+  }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <h1>Termination Exposure – Detailed Report</h1>
+<p><strong>Organisation:</strong> Organisation name not provided<br>
+<strong>Review period:</strong> Review period not clearly identifiable from supplied data<br>
+<strong>Report prepared as at:</strong> 09 Apr 2026  </p>
+<p><strong>Important note</strong></p>
+<p>This report highlights potential risk signals and process issues based on the data provided.<br>
+It does not constitute legal, accounting, or industrial relations advice.</p>
+<hr>
+<h2 class="page-break-before">1. Executive Summary</h2>
+
+<p>This Termination Exposure report focuses solely on termination-related evidential risk indicators identified from the supplied payroll and HR data. The review assesses how complete, timely and traceable termination records appear for audit and dispute purposes. It does <strong>not</strong> determine whether termination payments are correct under applicable awards, agreements or contracts.</p>
+<p>Across the dataset provided, the automated checks identified:</p>
+<ul>
+<li><strong>High:</strong> 2</li>
+<li><strong>Medium:</strong> 8</li>
+<li><strong>Low:</strong> 0</li>
+</ul>
+<p>A detailed breakdown by severity is provided in the <strong>Findings Overview</strong> section.</p>
+<h2 class="page-break-before">2. Data Sources</h2>
+
+<p>This review was generated from the following analysis outputs within the project <code>outputs/</code> directory:</p>
+<ul>
+<li><code>term_summary_by_severity.csv</code>  </li>
+<li><code>term_findings.csv</code>  </li>
+<li><code>executive\executive_summary.md</code>  </li>
+<li><code>executive\executive_summary.json</code>  </li>
+<li><code>crc_coverage_insight.md</code>  </li>
+</ul>
+<p>These outputs were produced by rule-based checks over payroll and HR CSV extracts supplied by the organisation for the review period.</p>
+<hr>
+<h2 class="page-break-before">3. Scope & Methodology</h2>
+
+<p><strong>Modules included in this engagement:</strong></p>
+<ul>
+<li>Termination Exposure (TERM)</li>
+</ul>
+<hr>
+<h3><strong>Termination Exposure – Scope &amp; Methodology</strong></h3>
+<p><strong>Scope</strong></p>
+<p>The Termination Exposure review assesses whether termination events recorded in payroll and related employment data are sufficiently complete, timely, and traceable to support the organisation’s ability to evidence termination-related payroll decisions if reviewed by auditors or regulators.</p>
+<p>This review focuses on process and evidential integrity, not on the correctness of termination payments.</p>
+<p>Specifically, the review considers whether:</p>
+<ul>
+<li>termination events are recorded consistently across available data sources</li>
+<li>final pay processing occurs in a reasonable and defensible sequence relative to termination dates</li>
+<li>core termination attributes (such as termination date and termination type/reason) are present and internally consistent</li>
+<li>termination-related decisions are supported by basic evidentiary artefacts or references</li>
+</ul>
+<p><strong>Out of scope</strong></p>
+<p>This review does not:</p>
+<ul>
+<li>calculate final pay entitlements or assess payment correctness</li>
+<li>interpret awards, enterprise agreements, or employment contracts</li>
+<li>determine notice, redundancy, or severance obligations</li>
+<li>assert contraventions of legislation or confirm non-compliance.</li>
+<li>provide legal advice or assurance of compliance.</li>
+</ul>
+<p>Any potential exposure identified reflects defensibility risk, not confirmed error or liability.</p>
+<p><strong>Methodology</strong></p>
+<p>The review applies a series of rule-based checks to payroll and related employment data to identify termination events that exhibit characteristics commonly associated with audit, regulatory, or dispute risk.</p>
+<p>Each finding is assigned a severity based on evidential impact, reflecting how materially the issue could impair the organisation’s ability to explain and support termination-related payroll decisions if reviewed.</p>
+<p>Severity does not represent:</p>
+<ul>
+<li>likelihood of underpayment</li>
+<li>magnitude of financial exposure</li>
+<li>remediation priority</li>
+</ul>
+<hr>
+<h2>4. Findings Overview</h2>
+
+<p>Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect <strong>evidential risk only</strong> and do not represent confirmed non-compliance or quantified financial exposure, or remediation priority.</p>
+<table class="summary-table">
+  <thead>
+    <tr>
+      <th>Severity</th>
+      <th>Count</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge-high">High</span></td>
+      <td>2</td>
+      <td>Absence or weakness of core termination or final pay evidence that would materially impair the organisation’s ability to evidence termination decisions if reviewed by auditors or regulators.</td>
+    </tr>
+    <tr>
+      <td><span class="badge-medium">Medium</span></td>
+      <td>8</td>
+      <td>Termination evidence exists but is incomplete, delayed or ambiguous and may require additional explanation or manual reconstruction.</td>
+    </tr>
+    <tr>
+      <td><span class="badge-low">Low</span></td>
+      <td>0</td>
+      <td>Minor record-keeping or data quality weaknesses in termination records that should be improved over time to support efficient and reliable payroll operations.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+<h2>5. Detailed Findings</h2>
+
+<p>This section sets out detailed findings for <strong>Termination Exposure</strong> only. Findings highlight where termination records may be incomplete, inconsistent or difficult to substantiate if reviewed by auditors, regulators or in the context of a dispute. They do <strong>not</strong> confirm incorrect pay outcomes.</p>
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-010</div>
+        <div class="finding-meta">Employee: E002</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-high">HIGH</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Payroll activity was recorded after the employee termination date beyond the allowed tolerance window.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;pay_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;gross_amount&quot;: 2500.0, &quot;is_final_pay&quot;: &quot;False&quot;, &quot;days_after_termination&quot;: 50}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Payroll activity continued significantly after termination, indicating a likely inconsistency between lifecycle status and payroll activity.&quot;}</pre>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-015</div>
+        <div class="finding-meta">Employee: E002</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-high">HIGH</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Multiple payroll events were recorded after the termination date.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;post_term_pay_count&quot;: 2, &quot;first_post_term_pay_date&quot;: &quot;2024-03-05&quot;, &quot;last_post_term_pay_date&quot;: &quot;2024-04-20&quot;}, &quot;explanation&quot;: &quot;Multiple payroll events were recorded after the employee termination date.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-004</div>
+        <div class="finding-meta">Employee: E002</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Termination records were identified with missing or inconsistent termination type or reason information.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_type&quot;: NaN, &quot;termination_reason&quot;: &quot;RESIGNATION&quot;, &quot;employee_master_termination_type&quot;: null}, &quot;explanation&quot;: &quot;Termination type or reason is missing, or inconsistent with employee master data.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-004</div>
+        <div class="finding-meta">Employee: E005</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Termination records were identified with missing or inconsistent termination type or reason information.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_type&quot;: NaN, &quot;termination_reason&quot;: &quot;RESIGNATION&quot;, &quot;employee_master_termination_type&quot;: null}, &quot;explanation&quot;: &quot;Termination type or reason is missing, or inconsistent with employee master data.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-005</div>
+        <div class="finding-meta">Employee: E002</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Termination records do not include a supporting evidence reference.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;evidence_ref&quot;: null}, &quot;explanation&quot;: &quot;Termination record has no supporting evidence reference.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-005</div>
+        <div class="finding-meta">Employee: E005</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Termination records do not include a supporting evidence reference.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;evidence_ref&quot;: null}, &quot;explanation&quot;: &quot;Termination record has no supporting evidence reference.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-013</div>
+        <div class="finding-meta">Employee: E002</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> A final pay event was identified without a corresponding super contribution.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_events.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;pay_date&quot;: &quot;2024-03-05&quot;}, &quot;values&quot;: {&quot;super_amount&quot;: null, &quot;gross_amount&quot;: 2500.0, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;explanation&quot;: &quot;A final pay event was identified without a corresponding super contribution.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-013</div>
+        <div class="finding-meta">Employee: E005</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> A final pay event was identified without a corresponding super contribution.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_events.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;pay_date&quot;: &quot;2024-03-10&quot;}, &quot;values&quot;: {&quot;super_amount&quot;: null, &quot;gross_amount&quot;: 2600.0, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;explanation&quot;: &quot;A final pay event was identified without a corresponding super contribution.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-017</div>
+        <div class="finding-meta">Employee: E002</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Payroll activity indicates the employee may have worked after the recorded termination date.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;last_payroll_activity_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;days_after_termination&quot;: 50}, &quot;explanation&quot;: &quot;Payroll activity indicates the employee may have remained in payroll after the recorded termination date.&quot;}</pre>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+        <div class="finding-title">TERM-017</div>
+        <div class="finding-meta">Employee: E005</div>
+    </div>
+    <div class="finding-badge-wrap">
+        <span class="badge-medium">MEDIUM</span>
+    </div>
+    </div>
+
+  <div class="finding-section"><strong>Finding:</strong> Payroll activity indicates the employee may have worked after the recorded termination date.</div>
+  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
+  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;last_payroll_activity_date&quot;: &quot;2024-03-10&quot;}, &quot;values&quot;: {&quot;days_after_termination&quot;: 9}, &quot;explanation&quot;: &quot;Payroll activity indicates the employee may have remained in payroll after the recorded termination date.&quot;}</pre>
+</div>
+
+<h2>6. Limitations & Assumptions</h2>
+
+<p>This review is subject to the following limitations:</p>
+<ul>
+<li>Calculations assume the underlying pay rates, loadings and multipliers are correct in the source systems.</li>
+<li>Award and enterprise agreement interpretation is not performed by this tool.</li>
+<li>Holiday calendars, leave rules and accrual settings are assumed to reflect the organisation’s intended configuration.</li>
+<li>Data quality issues (missing records, duplicates, inconsistent identifiers) may affect the completeness and accuracy of the results.</li>
+</ul>
+<hr>
+<h2>7. Recommended Next Steps</h2>
+
+<ol>
+<li>Validate the highest-severity findings first.</li>
+<li>Review the most affected modules and confirm whether findings reflect genuine control issues or data limitations.</li>
+<li>Address structural data gaps that weaken evidentiary confidence.</li>
+<li>Confirm root causes before remediation.</li>
+<li>Re-run the review after corrective action to confirm that risk indicators have reduced.</li>
+</ol>
+<hr>
+<h2 class="page-break-before">8. Appendices</h2>
+
+<h3>Appendix A – Rule Definitions</h3>
+<p>This review used a set of automated rules to flag evidential and process risk indicators.</p>
+<h4>Termination Exposure (TERM)</h4>
+<ul>
+<li>Final pay sequencing checks vs termination date</li>
+<li>Missing / inconsistent termination dates</li>
+<li>Missing / inconsistent termination type / reason</li>
+<li>Missing evidence references / artefact identifiers</li>
+<li>Ambiguous identification of final pay events within a window</li>
+<li>Termination events inconsistent with ordinary pay activity patterns</li>
+</ul>
+<hr>
+<h3>Appendix B – Machine-readable outputs</h3>
+<p>Complete machine-readable outputs are available in the generated CSV and summary files for the modules included in this engagement.</p>
+<p>These files provide row-level detail suitable for operational review, sampling, remediation planning, or incorporation into a broader audit work program.</p>
+<hr>
+  </div>
+</body>
+</html>

@@ -170,7 +170,11 @@ def build_html_from_markdown(
         raise FileNotFoundError(f"Markdown report not found: {md_path}")
 
     md_text = md_path.read_text(encoding="utf-8")
-    content_html = markdown(md_text, extensions=["extra", "tables"])
+    content_html = markdown(
+      md_text,
+      extensions=["extra", "tables"],
+      output_format="html5"
+  )
 
     css_text = _load_css_text()
 

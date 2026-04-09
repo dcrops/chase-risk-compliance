@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Leave & Entitlement Leakage – Detailed Report</title>
+  <style>
 /* =========================
    Page setup (for PDF)
    ========================= */
@@ -549,3 +555,190 @@
   .keep-together {
     page-break-inside: avoid;
   }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <h1>Leave &amp; Entitlement Leakage – Detailed Report</h1>
+<p><strong>Organisation:</strong> Organisation name not provided<br>
+<strong>Review period:</strong> 15 Mar 2024 to 10 Apr 2024<br>
+<strong>Report prepared as at:</strong> 09 Apr 2026  </p>
+<p><strong>Important note</strong></p>
+<p>This report highlights potential risk signals and process issues based on the data provided.<br>
+It does not constitute legal, accounting, or industrial relations advice.</p>
+<hr>
+<h2 class="page-break-before">1. Executive Summary</h2>
+
+<p>This Leave &amp; Entitlement Leakage report focuses solely on leave-related risk indicators identified from the supplied payroll and HR data. Findings are risk indicators only and do not, on their own, confirm underpayment, non-compliance, or an entitlement error.</p>
+<p>Across the dataset provided, the automated checks identified:</p>
+<ul>
+<li><strong>High:</strong> 2</li>
+<li><strong>Medium:</strong> 0</li>
+<li><strong>Low:</strong> 0</li>
+</ul>
+<p>A detailed breakdown by severity is provided in the <strong>Findings Overview</strong> section.</p>
+<p>No exposure estimates were available from the current data extract. If required, leakage estimates can be added to this section in future runs.</p>
+<hr>
+<h2 class="page-break-before">2. Data Sources</h2>
+
+<p>This review was generated from the following analysis outputs within the project <code>outputs/</code> directory:</p>
+<ul>
+<li><code>leave_leakage_findings.csv</code>  </li>
+<li><code>leakage_report.csv</code>  </li>
+<li><code>executive\executive_summary.md</code>  </li>
+<li><code>executive\executive_summary.json</code>  </li>
+<li><code>crc_coverage_insight.md</code>  </li>
+</ul>
+<p>These outputs were produced by rule-based checks over payroll and HR CSV extracts supplied by the organisation for the review period.</p>
+<hr>
+<h2 class="page-break-before">3. Scope & Methodology</h2>
+
+<p><strong>Modules included in this engagement:</strong></p>
+<ul>
+<li>Leave &amp; Entitlement Leakage (LEAVE)</li>
+</ul>
+<hr>
+<h3><strong>Leave &amp; Entitlement Leakage – Scope &amp; Methodology</strong></h3>
+<p><strong>Scope</strong></p>
+<p>The Leave &amp; Entitlement Leakage review identifies potential anomalies and risk indicators in leave balances, accruals and leave usage based on the data provided.</p>
+<p>The purpose of this review is to highlight records that may warrant follow-up, such as negative balances, unexpected accrual patterns, mismatches between leave activity and employee status, or inconsistencies between leave movement data and balance snapshots.</p>
+<p>This review is designed to support payroll and HR teams in prioritising validation and remediation effort. Findings are risk signals only and do not, on their own, confirm non-compliance, underpayment, or an entitlement error.</p>
+<p><strong>Data reviewed</strong></p>
+<ul>
+<li>leave balances snapshot data (where supplied)</li>
+<li>leave ledger / leave movement records (where supplied)</li>
+<li>employee master data (where supplied)</li>
+<li>other supporting payroll extracts included in the engagement pack</li>
+</ul>
+<p><strong>Checks performed</strong></p>
+<ul>
+<li>rule-based detection of unusual leave balance and movement patterns</li>
+<li>identification of negative balances and unexpected accrual behaviour</li>
+<li>consistency checks between employee status and leave activity (for example, terminated employees with ongoing leave movements)</li>
+<li>cross-checks between leave movement data and balance snapshot fields where available</li>
+</ul>
+<p><strong>Out of scope</strong></p>
+<p>This review does not:</p>
+<ul>
+<li>interpret awards, enterprise agreements, or employment contracts</li>
+<li>calculate legal entitlement outcomes or confirm the correctness of leave accrual rules</li>
+<li>provide legal, accounting, or industrial relations advice</li>
+<li>assert contraventions of legislation or confirm non-compliance.</li>
+</ul>
+<p>Where exposure estimates are included, they are indicative only and must be validated before remediation or accounting decisions are made.</p>
+<hr>
+<h2>4. Findings Overview</h2>
+
+<p>The automated checks identified the following potential issues in the leave and entitlement data reviewed. Severity reflects the relative level of risk to payroll accuracy and audit defensibility, not a confirmed breach.</p>
+<table class="summary-table">
+  <thead>
+    <tr>
+      <th>Severity</th>
+      <th>Count</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge-high">High</span></td>
+      <td>2</td>
+      <td>Absence or weakness of core evidence or entitlement configuration that would materially impair the organisation’s ability to evidence payroll decisions if reviewed by auditors or regulators.</td>
+    </tr>
+    <tr>
+      <td><span class="badge-medium">Medium</span></td>
+      <td>0</td>
+      <td>Evidence is incomplete, inconsistent or fragile. Decisions may still be defensible but require greater reliance on manual reconstruction, judgement, or explanation.</td>
+    </tr>
+    <tr>
+      <td><span class="badge-low">Low</span></td>
+      <td>0</td>
+      <td>Record-keeping or data quality weaknesses that are unlikely to be challenged in isolation but should be improved over time to support efficient and reliable payroll operations.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+<h2>5. Detailed Findings</h2>
+
+<p>This section sets out detailed findings for <strong>leave and entitlement leakage</strong> only. Record-Keeping &amp; Evidence Gaps (RKEG) and Termination Exposure findings are available in machine-readable form (see Appendix C) and are intended to support operational review, sampling and remediation planning rather than narrative reporting.</p>
+<p>Each leave finding below follows a consistent <strong>Finding → Evidence → Impact → Recommended Action</strong> pattern.</p>
+<h3>Finding 1: LEAVE-007</h3>
+<p><strong>Severity:</strong> HIGH</p>
+<p><strong>Finding</strong>
+Leave transactions were recorded after the employee termination date.</p>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>Employee ID: <code>E002</code></li>
+<li>Leave type: <code>ANNUAL</code></li>
+<li>As at: <code>2024-04-10</code></li>
+</ul>
+<p><strong>Impact / Risk</strong>
+Potential leave or entitlement imbalance and/or record-keeping weakness. The actual impact will depend on the underlying award or agreement, actual pay outcomes, and the period over which the issue has occurred.</p>
+<p><strong>Recommended Action</strong></p>
+<ul>
+<li>Validate this finding against source payroll records and employee entitlements.</li>
+<li>Correct any confirmed configuration, data or process issues.</li>
+<li>Consider remediation where underpayments are confirmed.</li>
+</ul>
+<h3>Finding 2: LEAVE-007</h3>
+<p><strong>Severity:</strong> HIGH</p>
+<p><strong>Finding</strong>
+Leave transactions were recorded after the employee termination date.</p>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>Employee ID: <code>E005</code></li>
+<li>Leave type: <code>ANNUAL</code></li>
+<li>As at: <code>2024-03-15</code></li>
+</ul>
+<p><strong>Impact / Risk</strong>
+Potential leave or entitlement imbalance and/or record-keeping weakness. The actual impact will depend on the underlying award or agreement, actual pay outcomes, and the period over which the issue has occurred.</p>
+<p><strong>Recommended Action</strong></p>
+<ul>
+<li>Validate this finding against source payroll records and employee entitlements.</li>
+<li>Correct any confirmed configuration, data or process issues.</li>
+<li>Consider remediation where underpayments are confirmed.</li>
+</ul>
+<hr>
+<h2>6. Financial Exposure (Indicative)</h2>
+
+<p>No exposure estimates were available from the current data extract. If required, leakage estimates can be added to this section in future runs.</p>
+<hr>
+<h2>7. Limitations & Assumptions</h2>
+
+<p>This review is subject to the following limitations:</p>
+<ul>
+<li>Calculations assume the underlying pay rates, loadings and multipliers are correct in the source systems.</li>
+<li>Award and enterprise agreement interpretation is not performed by this tool.</li>
+<li>Holiday calendars, leave rules and accrual settings are assumed to reflect the organisation’s intended configuration.</li>
+<li>Data quality issues (missing records, duplicates, inconsistent identifiers) may affect the completeness and accuracy of the results.</li>
+</ul>
+<hr>
+<h2>8. Recommended Next Steps</h2>
+
+<ol>
+<li>Validate the highest-severity findings first.</li>
+<li>Review the most affected modules and confirm whether findings reflect genuine control issues or data limitations.</li>
+<li>Address structural data gaps that weaken evidentiary confidence.</li>
+<li>Confirm root causes before remediation.</li>
+<li>Re-run the review after corrective action to confirm that risk indicators have reduced.</li>
+</ol>
+<hr>
+<h2 class="page-break-before">9. Appendices</h2>
+
+<h3>Appendix A – Rule Definitions</h3>
+<p>This review used a set of automated rules to flag evidential and process risk indicators.</p>
+<h4>Leave &amp; Entitlement Leakage</h4>
+<ul>
+<li>Negative balance checks</li>
+<li>Casual employees accruing leave</li>
+<li>Inactive or terminated employees with leave movements</li>
+<li>Unusual accrual or usage patterns</li>
+</ul>
+<hr>
+<h3>Appendix B – Machine-readable outputs</h3>
+<p>Complete machine-readable outputs are available in the generated CSV and summary files for the modules included in this engagement.</p>
+<p>These files provide row-level detail suitable for operational review, sampling, remediation planning, or incorporation into a broader audit work program.</p>
+<hr>
+  </div>
+</body>
+</html>
