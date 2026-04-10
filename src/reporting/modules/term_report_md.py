@@ -13,7 +13,6 @@ from reporting.executive.exec_pack_md import (
     MODULE_ORDER,
     OUTPUTS_DIR,
     sort_findings,
-    build_header,
     build_data_sources_section,
     load_term_severity_counts,
 )
@@ -24,7 +23,10 @@ from reporting.sections.exec_pack_sections import (
     build_next_steps,
     build_appendices,
     build_term_severity_summary,
+    build_finding_meta
 )
+
+from reporting.core.cover_page import build_cover_page
 
 
 @dataclass
@@ -34,8 +36,12 @@ class TerminationFinding:
     employee_id: str
     termination_date: str
     final_pay_date: str
-    message: str
+    as_of_date: str
+    classification: str | None = None
+    message: str = ""
     evidence: str | None = None
+    finding_id: str | None = None
+    next_action: str | None = None
     days_gap: str | None = None
 
     @classmethod
@@ -44,10 +50,14 @@ class TerminationFinding:
             rule_code=row.get("rule_code") or row.get("rule_id") or "",
             severity=(row.get("severity", "") or "").upper(),
             employee_id=row.get("employee_id", "") or row.get("employee", "") or "",
-            termination_date=row.get("termination_date", "") or row.get("term_date", "") or "",
+            termination_date=row.get("termination_date", "") or "",
             final_pay_date=row.get("final_pay_date", "") or row.get("pay_date", "") or "",
+            as_of_date=row.get("as_of_date", "") or "",
+            classification=(row.get("classification") or "").upper() or None,
             message=row.get("message") or row.get("description") or "",
-            evidence=row.get("evidence") or row.get("evidence_ref") or row.get("artefact") or None,
+            evidence=row.get("evidence") or row.get("evidence_ref") or None,
+            finding_id=row.get("finding_id") or None,
+            next_action=row.get("next_action") or None,
             days_gap=row.get("days_gap") or row.get("gap_days") or None,
         )
 
@@ -112,69 +122,95 @@ def _safe(value: str | None, fallback: str = "Not specified") -> str:
     return escape(text) if text else fallback
 
 
+def _render_labeled_section(label: str, body: str, extra_class: str = "") -> str:
+    class_attr = f"finding-text {extra_class}".strip()
+    return f"""
+<div class="finding-section">
+  <div class="finding-label">{escape(label)}</div>
+  <div class="{class_attr}">{body}</div>
+</div>
+""".strip()
+
+
 def render_term_finding_card(finding: TerminationFinding) -> str:
     severity = (finding.severity or "").upper() or "INFO"
     severity_class = _term_severity_class(severity)
 
     rule_code = _safe(finding.rule_code, "TERM finding")
-    employee_id = _safe(finding.employee_id)
-    termination_date = _safe(finding.termination_date)
-    final_pay_date = _safe(finding.final_pay_date)
     message = _safe(finding.message, "No finding description provided.")
-    days_gap = _safe(finding.days_gap, "")
+    days_gap_raw = (finding.days_gap or "").strip()
     evidence = _safe(finding.evidence, "")
-
-    meta_parts = [f"Employee: {employee_id}"]
-
-    if termination_date != "Not specified":
-        meta_parts.append(f"Termination date: {termination_date}")
-
-    if final_pay_date != "Not specified":
-        meta_parts.append(f"Final pay date: {final_pay_date}")
-
-    meta_text = " | ".join(meta_parts)
-
-    impact = (
-        "This may weaken the organisation’s ability to clearly evidence termination processing "
-        "and final pay handling if reviewed."
-    )
-
-    recommendation = (
+    recommendation_text = finding.next_action or (
         "Review the underlying termination workflow, confirm the relevant records and timing, "
         "and validate whether additional supporting evidence or remediation is required."
     )
 
-    extra_sections: list[str] = []
+    date_part = None
 
-    if days_gap:
-        extra_sections.append(
-            f'<div class="finding-section"><strong>Timing detail:</strong> Days between termination and final pay: {days_gap}</div>'
+    if finding.termination_date and finding.final_pay_date:
+        date_part = f"Dates: {finding.termination_date} → {finding.final_pay_date}"
+    elif finding.termination_date:
+        date_part = f"Termination: {finding.termination_date}"
+    elif finding.final_pay_date:
+        date_part = f"Final pay: {finding.final_pay_date}"
+
+    extra_parts = [date_part] if date_part else None
+
+    meta_text = build_finding_meta(
+        employee_id=finding.employee_id or None,
+        date_label=None,
+        date_value=None,
+        classification=finding.classification or None,
+        extra_parts=extra_parts,
+    )
+
+    impact = (
+        "This may weaken the organisation's ability to clearly evidence termination processing "
+        "and final pay handling if reviewed."
+    )
+
+    sections: list[str] = [
+        _render_labeled_section("Finding", message, "finding-main"),
+        _render_labeled_section("Impact", escape(impact), "finding-impact"),
+        _render_labeled_section("Recommendation", escape(recommendation_text), "finding-action"),
+    ]
+
+    if days_gap_raw:
+        sections.append(
+            _render_labeled_section(
+                "Timing Detail",
+                f"Days between termination and final pay: {escape(days_gap_raw)}",
+            )
         )
 
     if evidence:
-        extra_sections.append(
-            f'<div class="finding-section"><strong>Evidence reference</strong></div>'
-            f'<pre class="finding-evidence">{evidence}</pre>'
+        sections.append(
+            """
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">"""
+            + evidence
+            + """</pre>
+</div>
+""".strip()
         )
 
-    extra_html = "\n  ".join(extra_sections)
+    section_html = "\n  ".join(sections)
 
     return f"""
 <div class="finding {severity_class}">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">{rule_code}</div>
-        <div class="finding-meta">{meta_text}</div>
+      <div class="finding-title">{rule_code}</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-{severity_class}">{severity}</span>
+      <span class="badge-{severity_class}">{severity}</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> {message}</div>
-  <div class="finding-section"><strong>Impact:</strong> {escape(impact)}</div>
-  <div class="finding-section"><strong>Recommendation:</strong> {escape(recommendation)}</div>
-  {extra_html}
+  <div class="finding-meta">{meta_text}</div>
+
+  {section_html}
 </div>
 """.strip()
 
@@ -244,12 +280,17 @@ def generate_term_report(
     if review_period is None:
         review_period = _derive_review_period(sorted_findings) if sorted_findings else "Period not specified"
 
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
+
     parts: List[str] = []
     parts.append(
-        build_header(
-            "Termination Exposure – Detailed Report",
-            organisation_name,
-            review_period,
+        build_cover_page(
+            report_title="Termination Exposure – Detailed Report",
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
         )
     )
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from datetime import date
+from html import escape
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -23,7 +24,10 @@ from reporting.sections.exec_pack_sections import (
     build_next_steps,
     build_appendices,
     build_lsl_severity_summary,
+    build_finding_meta,
 )
+
+from reporting.core.cover_page import build_cover_page
 
 
 @dataclass
@@ -32,14 +36,36 @@ class LSLFinding:
     severity: str
     employee_id: str
     message: str
+    classification: str | None = None
+    leave_type: str | None = None
+    as_of_date: str | None = None
+    evidence: str | None = None
+    finding_id: str | None = None
+    next_action: str | None = None
+    diff_units: float | None = None
 
     @classmethod
     def from_row(cls, row: Dict[str, str]) -> "LSLFinding":
+        diff_units_raw = row.get("diff_units")
+        diff_units: float | None = None
+        if diff_units_raw not in (None, ""):
+            try:
+                diff_units = float(diff_units_raw)
+            except ValueError:
+                diff_units = None
+
         return cls(
             rule_code=row.get("rule_code") or row.get("rule_id") or "",
             severity=(row.get("severity") or "").upper(),
             employee_id=row.get("employee_id", ""),
             message=row.get("message") or row.get("description") or "",
+            classification=(row.get("classification") or "").upper() or None,
+            leave_type=row.get("leave_type") or None,
+            as_of_date=row.get("as_of_date") or row.get("snapshot_date") or None,
+            evidence=row.get("evidence") or row.get("evidence_ref") or None,
+            finding_id=row.get("finding_id") or None,
+            next_action=row.get("next_action") or None,
+            diff_units=diff_units,
         )
 
 
@@ -136,6 +162,100 @@ def sort_lsl_findings(findings: List[LSLFinding]) -> List[LSLFinding]:
     )
 
 
+def _severity_class(severity: str) -> str:
+    s = (severity or "").upper()
+    if s == "HIGH":
+        return "high"
+    if s == "MEDIUM":
+        return "medium"
+    if s == "LOW":
+        return "low"
+    return "info"
+
+
+def _render_labeled_section(label: str, body: str, extra_class: str = "") -> str:
+    class_attr = f"finding-text {extra_class}".strip()
+    return f"""
+<div class="finding-section">
+  <div class="finding-label">{escape(label)}</div>
+  <div class="{class_attr}">{body}</div>
+</div>
+""".strip()
+
+
+def render_lsl_finding_card(f: LSLFinding) -> str:
+    severity = (f.severity or "").upper() or "INFO"
+    severity_class = _severity_class(severity)
+
+    rule_code = escape(f.rule_code or "UNSPECIFIED RULE")
+    message = escape(f.message or "No description provided.")
+    recommendation_text = f.next_action or (
+        "Review the underlying LSL balance, service history and entitlement settings for the affected employee, "
+        "confirm whether the balance aligns with applicable rules, and correct any confirmed configuration or data issues."
+    )
+
+    extra_parts: list[str] = []
+    if f.diff_units is not None:
+        if float(f.diff_units).is_integer():
+            diff_display = str(int(f.diff_units))
+        else:
+            diff_display = f"{f.diff_units:.2f}"
+        extra_parts.append(f"Variance: {diff_display} units")
+
+    meta_text = build_finding_meta(
+        employee_id=f.employee_id or None,
+        context_label="Leave type",
+        context_value=f.leave_type or None,
+        date_label="As at",
+        date_value=f.as_of_date or None,
+        classification=f.classification or None,
+        extra_parts=extra_parts or None,
+    )
+
+    impact = (
+        "This may indicate a potential misstatement of Long Service Leave entitlements or provisions. "
+        "Depending on the nature of the issue, this could affect employee balances and the reliability "
+        "of reported LSL exposure."
+    )
+
+    sections: list[str] = [
+        _render_labeled_section("Finding", message, "finding-main"),
+        _render_labeled_section("Impact", escape(impact), "finding-impact"),
+        _render_labeled_section("Recommendation", escape(recommendation_text), "finding-action"),
+    ]
+
+    if f.evidence:
+        sections.append(
+            """
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">"""
+            + escape(f.evidence)
+            + """</pre>
+</div>
+""".strip()
+        )
+
+    section_html = "\n  ".join(sections)
+
+    return f"""
+<div class="finding {severity_class}">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">{rule_code}</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-{severity_class}">{escape(severity)}</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">{meta_text}</div>
+
+  {section_html}
+</div>
+""".strip()
+
+
 def build_lsl_module_summary(findings: List[LSLFinding]) -> str:
     total_findings = len(findings)
     high = sum(1 for f in findings if f.severity == "HIGH")
@@ -170,58 +290,20 @@ def build_lsl_module_summary(findings: List[LSLFinding]) -> str:
 
 def build_lsl_detailed_findings(findings: List[LSLFinding]) -> str:
     if not findings:
-        return """No LSL-related findings were identified for the supplied data.
+        return """
+<div class="no-findings">
+No LSL-related findings were identified for the supplied data.
+</div>
+""".strip()
 
----
+    intro = """
+This section sets out detailed findings for <strong>Long Service Leave (LSL)</strong> only.
+Findings highlight potential inconsistencies, configuration issues, or balance risks that may
+affect the reliability of reported LSL entitlements and provisions.
+""".strip()
 
-"""
-
-    lines: List[str] = []
-    lines.append(
-        "Each finding below follows a consistent **Finding → Evidence → Impact / Risk → Recommended Action** pattern."
-    )
-    lines.append("")
-
-    for idx, f in enumerate(findings, start=1):
-        lines.append(f"### Finding {idx}: {f.rule_code or 'UNSPECIFIED RULE'}")
-        lines.append(f"**Severity:** {f.severity or 'UNSPECIFIED'}")
-        lines.append("")
-        lines.append("**Finding**")
-        lines.append(f"{f.message or 'No description provided.'}")
-        lines.append("")
-        lines.append("**Evidence**")
-        lines.append("")
-
-        if f.employee_id:
-            lines.append(f"- Employee ID: `{f.employee_id}`")
-        else:
-            lines.append("- Not specified in the source data.")
-
-        lines.append("")
-        lines.append("**Impact / Risk**")
-        lines.append(
-            "Potential misstatement of Long Service Leave entitlements or provisions. "
-            "Depending on the nature of the issue, this may result in incorrect LSL balances "
-            "for individual employees and potentially an understatement or overstatement of "
-            "overall LSL exposure."
-        )
-        lines.append("")
-        lines.append("**Recommended Action**")
-        lines.append("")
-        lines.append(
-            "- Review the underlying LSL balance, service history and entitlement settings for the affected employee(s)."
-        )
-        lines.append(
-            "- Confirm whether the balance aligns with applicable legislation, awards or agreements."
-        )
-        lines.append(
-            "- Correct any confirmed configuration or data issues and assess whether broader remediation is required."
-        )
-        lines.append("")
-
-    lines.append("---")
-    lines.append("")
-    return "\n".join(lines)
+    cards = [render_lsl_finding_card(f) for f in findings]
+    return intro + "\n\n" + "\n\n".join(cards)
 
 
 def build_lsl_exposure_section(exposure_rows: List[LSLExposureRow]) -> str:
@@ -267,11 +349,16 @@ def generate_lsl_exposure_report(
     if review_period is None:
         review_period = _derive_review_period_from_window(lsl_data_window_csv)
 
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
+
     parts = [
-        build_header(
-            "Long Service Leave (LSL) Exposure Review",
-            organisation_name,
-            review_period,
+        build_cover_page(
+            report_title="Long Service Leave (LSL) Exposure Review",
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
         )
     ]
 

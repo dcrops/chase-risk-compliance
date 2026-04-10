@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, List, Optional
+from html import escape
 
 from reporting.core.review_period import derive_review_period_from_windows
 from reporting.core.structure import ReportStructure
@@ -24,8 +25,10 @@ from reporting.sections.exec_pack_sections import (
     build_next_steps,
     build_appendices,
     build_rkeg_summary,
+    build_finding_meta,
 )
 
+from reporting.core.cover_page import build_cover_page
 
 @dataclass
 class RKEGFinding:
@@ -35,6 +38,7 @@ class RKEGFinding:
     leave_type: str
     as_of_date: str
     message: str
+    classification: str | None = None
     evidence: Optional[str] = None
     finding_id: Optional[str] = None
     next_action: Optional[str] = None
@@ -48,10 +52,102 @@ class RKEGFinding:
             leave_type=row.get("leave_type", "") or row.get("record_type", "") or "",
             as_of_date=row.get("as_of_date", "") or row.get("snapshot_date", "") or "",
             message=row.get("message") or row.get("description") or "",
+            classification=(row.get("classification") or "").upper() or None,
             evidence=row.get("evidence") or row.get("evidence_ref") or None,
             finding_id=row.get("finding_id") or None,
             next_action=row.get("next_action") or None,
         )
+
+
+def _severity_class(severity: str) -> str:
+    s = (severity or "").upper()
+    if s == "HIGH":
+        return "high"
+    if s == "MEDIUM":
+        return "medium"
+    if s == "LOW":
+        return "low"
+    return "info"
+
+
+def _safe(value: str | None, fallback: str = "Not specified") -> str:
+    text = (value or "").strip()
+    return escape(text) if text else fallback
+
+
+def _render_labeled_section(label: str, body: str, extra_class: str = "") -> str:
+    class_attr = f"finding-text {extra_class}".strip()
+    return f"""
+<div class="finding-section">
+  <div class="finding-label">{escape(label)}</div>
+  <div class="{class_attr}">{body}</div>
+</div>
+""".strip()
+
+
+def render_rkeg_finding_card(f: RKEGFinding) -> str:
+    severity_class = _severity_class(f.severity)
+    severity = (f.severity or "").upper() or "INFO"
+
+    rule_code = _safe(f.rule_code, "UNSPECIFIED RULE")
+    message = _safe(f.message, "No description provided.")
+    evidence = _safe(f.evidence, "")
+    recommendation_text = f.next_action or (
+        "Validate the underlying records, ensure key identifiers and dates are consistently captured, "
+        "and strengthen documentation and data capture processes where patterns are identified."
+    )
+
+    meta_text = build_finding_meta(
+        employee_id=f.employee_id or None,
+        context_label="Record type",
+        context_value=f.leave_type or None,
+        date_label="As at",
+        date_value=f.as_of_date or None,
+        classification=f.classification or None,
+    )
+
+    impact = (
+        "This may increase evidential and audit risk in relation to payroll records. "
+        "Weak, incomplete or inconsistent records can reduce the organisation's ability "
+        "to respond confidently if challenged."
+    )
+
+    sections: list[str] = [
+        _render_labeled_section("Finding", message, "finding-main"),
+        _render_labeled_section("Impact", escape(impact), "finding-impact"),
+        _render_labeled_section("Recommendation", escape(recommendation_text), "finding-action"),
+    ]
+
+    if evidence:
+        sections.append(
+            """
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">"""
+            + evidence
+            + """</pre>
+</div>
+""".strip()
+        )
+
+    section_html = "\n  ".join(sections)
+
+    return f"""
+<div class="finding {severity_class}">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">{rule_code}</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-{severity_class}">{severity}</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">{meta_text}</div>
+
+  {section_html}
+</div>
+""".strip()
 
 
 def _load_csv(path: Path) -> List[Dict[str, str]]:
@@ -158,80 +254,22 @@ def build_rkeg_findings_overview(base_output_dir: Path) -> str:
 
 def build_detailed_findings(findings: List[RKEGFinding]) -> str:
     if not findings:
-        return """No record-keeping or evidence gaps were identified for the supplied data.
+        return """
+<div class="no-findings">
+No record-keeping or evidence gaps were identified for the supplied data.
+</div>
+""".strip()
 
----
+    intro = """
+This section sets out detailed findings for <strong>Record-Keeping &amp; Evidence Gaps (RKEG)</strong> only.
+Findings highlight where payroll-related records may be incomplete, inconsistent or difficult
+to substantiate if reviewed by auditors, regulators or in the context of a dispute.
+They do <strong>not</strong> confirm incorrect pay outcomes.
+""".strip()
 
-"""
+    cards = [render_rkeg_finding_card(f) for f in findings]
 
-    lines: List[str] = []
-
-    lines.append(
-        "This section sets out detailed findings for **Record-Keeping & Evidence Gaps (RKEG)** only. "
-        "Findings highlight where payroll-related records may be incomplete, inconsistent or difficult "
-        "to substantiate if reviewed by auditors, regulators or in the context of a dispute. "
-        "They do **not** confirm incorrect pay outcomes."
-    )
-    lines.append("")
-    lines.append(
-        "Each finding below follows a consistent **Finding → Evidence → Impact / Risk → Recommended Action** pattern."
-    )
-    lines.append("")
-
-    for idx, f in enumerate(findings, start=1):
-        lines.append(f"### Finding {idx}: {f.rule_code or 'UNSPECIFIED RULE'}")
-        lines.append(f"**Severity:** {f.severity or 'UNSPECIFIED'}")
-        lines.append("")
-        lines.append("**Finding**")
-        lines.append(f"{f.message or 'No description provided.'}")
-        lines.append("")
-        lines.append("**Evidence**")
-        lines.append("")
-
-        evidence_bits: List[str] = []
-        if f.employee_id:
-            evidence_bits.append(f"Employee ID: `{f.employee_id}`")
-        if f.leave_type:
-            evidence_bits.append(f"Record type: `{f.leave_type}`")
-        if f.as_of_date:
-            evidence_bits.append(f"As at: `{f.as_of_date}`")
-        if f.evidence:
-            evidence_bits.append(f"Evidence reference: `{f.evidence}`")
-        if f.finding_id:
-            evidence_bits.append(f"Finding ID: `{f.finding_id}`")
-        if f.next_action:
-            evidence_bits.append(f"Suggested next action (from data): `{f.next_action}`")
-
-        if evidence_bits:
-            lines.append("- " + "\n- ".join(evidence_bits))
-        else:
-            lines.append("- Not specified in the source data.")
-        lines.append("")
-
-        lines.append("**Impact / Risk**")
-        lines.append(
-            "Increased evidential and audit risk in relation to payroll records. "
-            "Weak or incomplete records can increase the effort required to explain pay decisions "
-            "and may reduce the organisation’s ability to respond confidently if challenged."
-        )
-        lines.append("")
-
-        lines.append("**Recommended Action**")
-        lines.append("")
-        lines.append("- Validate this finding against underlying payroll, HR and source system records.")
-        lines.append(
-            "- Strengthen documentation and evidence capture for the affected record types "
-            "(for example, by ensuring key identifiers and dates are consistently populated)."
-        )
-        lines.append(
-            "- Where systemic patterns are identified, update data capture processes, templates "
-            "and training to reduce recurrence."
-        )
-        lines.append("")
-
-    lines.append("---")
-    lines.append("")
-    return "\n".join(lines)
+    return intro + "\n\n" + "\n\n".join(cards)
 
 
 def build_rkeg_appendices(base_output_dir: Path) -> str:
@@ -257,12 +295,17 @@ def generate_rkeg_report(
             else "Period not specified"
         )
 
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
+
     parts: List[str] = []
     parts.append(
-        build_header(
-            "Record-Keeping & Evidence Gaps (RKEG) – Detailed Report",
-            organisation_name,
-            review_period,
+        build_cover_page(
+            report_title="Record-Keeping & Evidence Gaps (RKEG)",
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
         )
     )
 

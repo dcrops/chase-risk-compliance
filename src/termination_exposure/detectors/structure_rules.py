@@ -6,6 +6,7 @@ import pandas as pd
 from termination_exposure.models import Finding, _build_finding
 from common.nulls import is_missing
 
+
 def _truthy_flag(value) -> bool:
     if value is None:
         return False
@@ -13,6 +14,7 @@ def _truthy_flag(value) -> bool:
     v = str(value).strip().lower()
 
     return v in {"y", "yes", "true", "t", "1"}
+
 
 def detect_missing_or_inconsistent_termination_type_or_reason(
     rule: dict,
@@ -87,6 +89,7 @@ def detect_missing_or_inconsistent_termination_type_or_reason(
                 employee_id=emp_id,
                 leave_type=None,
                 as_of_date=str(term_date.date()) if pd.notna(term_date) else None,
+                termination_date=str(term_date.date()) if pd.notna(term_date) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -153,11 +156,13 @@ def detect_missing_supporting_termination_evidence_reference(
                 employee_id=emp_id,
                 leave_type=None,
                 as_of_date=str(term_date.date()) if pd.notna(term_date) else None,
+                termination_date=str(term_date.date()) if pd.notna(term_date) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_terminated_employee_retains_material_lsl_balance(
     rule: dict,
@@ -240,6 +245,7 @@ def detect_terminated_employee_retains_material_lsl_balance(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()),
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -311,6 +317,7 @@ def detect_post_termination_lsl_movement_recorded(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["event_date"].date()),
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -434,11 +441,13 @@ def detect_terminated_employee_with_lsl_balance_and_no_closure_trail(
                 employee_id=employee_id,
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(snapshot_date.date()),
+                termination_date=str(termination_date.date()) if pd.notna(termination_date) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_multiple_termination_records_for_employee(
     rule: dict,
@@ -490,6 +499,7 @@ def detect_multiple_termination_records_for_employee(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["latest_termination_date"].date()) if pd.notna(row["latest_termination_date"]) else None,
+                termination_date=str(row["latest_termination_date"].date()) if pd.notna(row["latest_termination_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -545,6 +555,7 @@ def detect_termination_without_employee_master_record(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -621,6 +632,8 @@ def detect_final_pay_missing_super_contribution(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None,
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                final_pay_date=str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -689,6 +702,7 @@ def detect_involuntary_termination_without_reason(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
                 evidence_str=evidence_str,
             )
         )

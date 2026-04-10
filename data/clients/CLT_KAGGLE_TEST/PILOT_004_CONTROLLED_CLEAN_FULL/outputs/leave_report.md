@@ -1,16 +1,28 @@
-# Leave & Entitlement Leakage – Detailed Report
+<div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
 
-**Organisation:** Organisation name not provided  
-**Review period:** 15 Mar 2024 to 10 Apr 2024  
-**Report prepared as at:** 09 Apr 2026  
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Leave &amp; Entitlement Leakage</div>
 
-**Important note**
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">15 Mar 2024 to 10 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
 
-This report highlights potential risk signals and process issues based on the data provided.  
-It does not constitute legal, accounting, or industrial relations advice.
-
----
-
+  <div class="cover-confidentiality">Confidential</div>
+</div>
 <h2 class="page-break-before">1. Executive Summary</h2>
 
 This Leave & Entitlement Leakage report focuses solely on leave-related risk indicators identified from the supplied payroll and HR data. Findings are risk indicators only and do not, on their own, confirm underpayment, non-compliance, or an entitlement error.
@@ -121,53 +133,61 @@ The automated checks identified the following potential issues in the leave and 
 
 <h2>5. Detailed Findings</h2>
 
-This section sets out detailed findings for **leave and entitlement leakage** only. Record-Keeping & Evidence Gaps (RKEG) and Termination Exposure findings are available in machine-readable form (see Appendix C) and are intended to support operational review, sampling and remediation planning rather than narrative reporting.
+This section sets out detailed findings for <strong>Leave &amp; Entitlement Leakage</strong> only.
+Findings highlight potential leave balance inconsistencies, accrual issues, or record weaknesses.
+They are risk indicators only and do <strong>not</strong> confirm underpayment, non-compliance, or an entitlement error.
 
-Each leave finding below follows a consistent **Finding → Evidence → Impact → Recommended Action** pattern.
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">LEAVE-007</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
 
-### Finding 1: LEAVE-007
-**Severity:** HIGH
+  <div class="finding-meta">Employee: E002 | Leave type: ANNUAL | As at: 2024-04-10 | Classification: LOGICAL</div>
 
-**Finding**
-Leave transactions were recorded after the employee termination date.
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave transactions were recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate leave balance inaccuracies, accrual miscalculations, or record-keeping gaps. The actual impact depends on the underlying configuration, employee history, and duration of the issue.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Validate the finding against source payroll records and employee entitlements, correct any confirmed configuration, data or process issues, and consider remediation where underpayments are confirmed.</div>
+</div>
+</div>
 
-**Evidence**
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">LEAVE-007</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
 
-- Employee ID: `E002`
-- Leave type: `ANNUAL`
-- As at: `2024-04-10`
+  <div class="finding-meta">Employee: E005 | Leave type: ANNUAL | As at: 2024-03-15 | Classification: LOGICAL</div>
 
-**Impact / Risk**
-Potential leave or entitlement imbalance and/or record-keeping weakness. The actual impact will depend on the underlying award or agreement, actual pay outcomes, and the period over which the issue has occurred.
-
-**Recommended Action**
-
-- Validate this finding against source payroll records and employee entitlements.
-- Correct any confirmed configuration, data or process issues.
-- Consider remediation where underpayments are confirmed.
-
-### Finding 2: LEAVE-007
-**Severity:** HIGH
-
-**Finding**
-Leave transactions were recorded after the employee termination date.
-
-**Evidence**
-
-- Employee ID: `E005`
-- Leave type: `ANNUAL`
-- As at: `2024-03-15`
-
-**Impact / Risk**
-Potential leave or entitlement imbalance and/or record-keeping weakness. The actual impact will depend on the underlying award or agreement, actual pay outcomes, and the period over which the issue has occurred.
-
-**Recommended Action**
-
-- Validate this finding against source payroll records and employee entitlements.
-- Correct any confirmed configuration, data or process issues.
-- Consider remediation where underpayments are confirmed.
-
----
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave transactions were recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate leave balance inaccuracies, accrual miscalculations, or record-keeping gaps. The actual impact depends on the underlying configuration, employee history, and duration of the issue.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Validate the finding against source payroll records and employee entitlements, correct any confirmed configuration, data or process issues, and consider remediation where underpayments are confirmed.</div>
+</div>
+</div>
 
 <h2>6. Financial Exposure (Indicative)</h2>
 

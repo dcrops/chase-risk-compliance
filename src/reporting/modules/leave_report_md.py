@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 from datetime import date
+from html import escape
 from pathlib import Path
 from typing import List
 
@@ -28,7 +29,10 @@ from reporting.sections.exec_pack_sections import (
     build_limitations,
     build_next_steps,
     build_appendices,
+    build_finding_meta,
 )
+
+from reporting.core.cover_page import build_cover_page
 
 
 def _load_csv(path: Path) -> list[dict[str, str]]:
@@ -83,6 +87,108 @@ def _derive_review_period_from_window(path: Path) -> str | None:
     if start == end:
         return start.strftime("%d %b %Y")
     return f"{start.strftime('%d %b %Y')} to {end.strftime('%d %b %Y')}"
+
+
+def _severity_class(severity: str) -> str:
+    s = (severity or "").upper()
+    if s == "HIGH":
+        return "high"
+    if s == "MEDIUM":
+        return "medium"
+    if s == "LOW":
+        return "low"
+    return "info"
+
+
+def _render_labeled_section(label: str, body: str, extra_class: str = "") -> str:
+    class_attr = f"finding-text {extra_class}".strip()
+    return f"""
+<div class="finding-section">
+  <div class="finding-label">{escape(label)}</div>
+  <div class="{class_attr}">{body}</div>
+</div>
+""".strip()
+
+
+def render_leave_finding_card(f: Finding) -> str:
+    severity = (getattr(f, "severity", "") or "").upper() or "INFO"
+    severity_class = _severity_class(severity)
+
+    rule_code = escape(getattr(f, "rule_code", "") or "UNSPECIFIED RULE")
+    message = escape(getattr(f, "message", "") or "No description provided.")
+
+    evidence = getattr(f, "evidence", None)
+    recommendation_text = getattr(f, "next_action", None) or (
+        "Validate the finding against source payroll records and employee entitlements, "
+        "correct any confirmed configuration, data or process issues, and consider remediation "
+        "where underpayments are confirmed."
+    )
+
+    diff_units = getattr(f, "diff_units", None)
+    extra_parts: list[str] = []
+    if diff_units is not None and str(diff_units).strip() != "":
+        try:
+            diff_value = float(diff_units)
+            if diff_value.is_integer():
+                diff_display = str(int(diff_value))
+            else:
+                diff_display = f"{diff_value:.2f}"
+        except (TypeError, ValueError):
+            diff_display = str(diff_units)
+
+        extra_parts.append(f"Variance: {diff_display} units")
+
+    meta_text = build_finding_meta(
+        employee_id=getattr(f, "employee_id", "") or None,
+        context_label="Leave type",
+        context_value=getattr(f, "leave_type", "") or None,
+        date_label="As at",
+        date_value=getattr(f, "as_of_date", "") or None,
+        classification=getattr(f, "classification", None),
+        extra_parts=extra_parts or None,
+    )
+
+    impact = (
+        "This may indicate leave balance inaccuracies, accrual miscalculations, or record-keeping gaps. "
+        "The actual impact depends on the underlying configuration, employee history, and duration of the issue."
+    )
+
+    sections: list[str] = [
+        _render_labeled_section("Finding", message, "finding-main"),
+        _render_labeled_section("Impact", escape(impact), "finding-impact"),
+        _render_labeled_section("Recommendation", escape(recommendation_text), "finding-action"),
+    ]
+
+    if evidence:
+        sections.append(
+            """
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">"""
+            + escape(evidence)
+            + """</pre>
+</div>
+""".strip()
+        )
+
+    section_html = "\n  ".join(sections)
+
+    return f"""
+<div class="finding {severity_class}">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">{rule_code}</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-{severity_class}">{severity}</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">{meta_text}</div>
+
+  {section_html}
+</div>
+""".strip()
 
 
 def build_leave_module_summary(
@@ -148,12 +254,17 @@ def generate_leave_report(
                 else "Review period not clearly identifiable from supplied data"
             )
 
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
+
     parts: List[str] = []
     parts.append(
-        build_header(
-            "Leave & Entitlement Leakage – Detailed Report",
-            organisation_name,
-            review_period,
+        build_cover_page(
+            report_title="Leave & Entitlement Leakage",
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
         )
     )
 
@@ -214,66 +325,20 @@ def generate_leave_report(
 
 def build_detailed_findings(findings: List[Finding]) -> str:
     if not findings:
-        return """No findings were identified for the supplied data.
+        return """
+<div class="no-findings">
+No findings were identified for the supplied data.
+</div>
+""".strip()
 
----
+    intro = """
+This section sets out detailed findings for <strong>Leave &amp; Entitlement Leakage</strong> only.
+Findings highlight potential leave balance inconsistencies, accrual issues, or record weaknesses.
+They are risk indicators only and do <strong>not</strong> confirm underpayment, non-compliance, or an entitlement error.
+""".strip()
 
-"""
-
-    lines: List[str] = []
-
-    lines.append(
-        "This section sets out detailed findings for **leave and entitlement leakage** only. "
-        "Record-Keeping & Evidence Gaps (RKEG) and Termination Exposure findings are available "
-        "in machine-readable form (see Appendix C) and are intended to support operational review, "
-        "sampling and remediation planning rather than narrative reporting."
-    )
-    lines.append("")
-    lines.append(
-        "Each leave finding below follows a consistent **Finding → Evidence → Impact → Recommended Action** pattern."
-    )
-    lines.append("")
-
-    for idx, f in enumerate(findings, start=1):
-        lines.append(f"### Finding {idx}: {f.rule_code or 'UNSPECIFIED RULE'}")
-        lines.append(f"**Severity:** {f.severity or 'UNSPECIFIED'}")
-        lines.append("")
-        lines.append("**Finding**")
-        lines.append(f"{f.message or 'No description provided.'}")
-        lines.append("")
-        lines.append("**Evidence**")
-        lines.append("")
-
-        evidence_bits = []
-        if f.employee_id:
-            evidence_bits.append(f"Employee ID: `{f.employee_id}`")
-        if f.leave_type:
-            evidence_bits.append(f"Leave type: `{f.leave_type}`")
-        if f.as_of_date:
-            evidence_bits.append(f"As at: `{f.as_of_date}`")
-
-        if evidence_bits:
-            lines.append("- " + "\n- ".join(evidence_bits))
-        else:
-            lines.append("- Not specified in the source data.")
-        lines.append("")
-        lines.append("**Impact / Risk**")
-        lines.append(
-            "Potential leave or entitlement imbalance and/or record-keeping weakness. "
-            "The actual impact will depend on the underlying award or agreement, "
-            "actual pay outcomes, and the period over which the issue has occurred."
-        )
-        lines.append("")
-        lines.append("**Recommended Action**")
-        lines.append("")
-        lines.append("- Validate this finding against source payroll records and employee entitlements.")
-        lines.append("- Correct any confirmed configuration, data or process issues.")
-        lines.append("- Consider remediation where underpayments are confirmed.")
-        lines.append("")
-
-    lines.append("---")
-    lines.append("")
-    return "\n".join(lines)
+    cards = [render_leave_finding_card(f) for f in findings]
+    return intro + "\n\n" + "\n\n".join(cards)
 
 
 def build_financial_exposure_section(exposure_rows: List[ExposureRow]) -> str:

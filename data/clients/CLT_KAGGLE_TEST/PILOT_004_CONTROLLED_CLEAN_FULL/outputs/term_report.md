@@ -1,16 +1,28 @@
-# Termination Exposure – Detailed Report
+<div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
 
-**Organisation:** Organisation name not provided  
-**Review period:** Review period not clearly identifiable from supplied data  
-**Report prepared as at:** 09 Apr 2026  
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Termination Exposure – Detailed Report</div>
 
-**Important note**
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">01 Mar 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
 
-This report highlights potential risk signals and process issues based on the data provided.  
-It does not constitute legal, accounting, or industrial relations advice.
-
----
-
+  <div class="cover-confidentiality">Confidential</div>
+</div>
 <h2 class="page-break-before">1. Executive Summary</h2>
 
 This Termination Exposure report focuses solely on termination-related evidential risk indicators identified from the supplied payroll and HR data. The review assesses how complete, timely and traceable termination records appear for audit and dispute purposes. It does **not** determine whether termination payments are correct under applicable awards, agreements or contracts.
@@ -126,171 +138,311 @@ This section sets out detailed findings for **Termination Exposure** only. Findi
 <div class="finding high">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-010</div>
-        <div class="finding-meta">Employee: E002</div>
+      <div class="finding-title">TERM-010</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-high">HIGH</span>
+      <span class="badge-high">HIGH</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Payroll activity was recorded after the employee termination date beyond the allowed tolerance window.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;pay_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;gross_amount&quot;: 2500.0, &quot;is_final_pay&quot;: &quot;False&quot;, &quot;days_after_termination&quot;: 50}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Payroll activity continued significantly after termination, indicating a likely inconsistency between lifecycle status and payroll activity.&quot;}</pre>
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-20</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Payroll activity was recorded after the employee termination date beyond the allowed tolerance window.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review the termination date and subsequent payroll activity to confirm whether the employee was correctly finalised.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;pay_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;gross_amount&quot;: 2500.0, &quot;is_final_pay&quot;: &quot;False&quot;, &quot;days_after_termination&quot;: 50}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Payroll activity continued significantly after termination, indicating a likely inconsistency between lifecycle status and payroll activity.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding high">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-015</div>
-        <div class="finding-meta">Employee: E002</div>
+      <div class="finding-title">TERM-015</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-high">HIGH</span>
+      <span class="badge-high">HIGH</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Multiple payroll events were recorded after the termination date.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;post_term_pay_count&quot;: 2, &quot;first_post_term_pay_date&quot;: &quot;2024-03-05&quot;, &quot;last_post_term_pay_date&quot;: &quot;2024-04-20&quot;}, &quot;explanation&quot;: &quot;Multiple payroll events were recorded after the employee termination date.&quot;}</pre>
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-20</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Multiple payroll events were recorded after the termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Confirm whether the employee continued employment or whether payroll processing was incorrect.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;post_term_pay_count&quot;: 2, &quot;first_post_term_pay_date&quot;: &quot;2024-03-05&quot;, &quot;last_post_term_pay_date&quot;: &quot;2024-04-20&quot;}, &quot;explanation&quot;: &quot;Multiple payroll events were recorded after the employee termination date.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-004</div>
-        <div class="finding-meta">Employee: E002</div>
+      <div class="finding-title">TERM-004</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Termination records were identified with missing or inconsistent termination type or reason information.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_type&quot;: NaN, &quot;termination_reason&quot;: &quot;RESIGNATION&quot;, &quot;employee_master_termination_type&quot;: null}, &quot;explanation&quot;: &quot;Termination type or reason is missing, or inconsistent with employee master data.&quot;}</pre>
+  <div class="finding-meta">Employee: E002 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Termination records were identified with missing or inconsistent termination type or reason information.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Ensure termination type and reason are captured consistently across HR and payroll data and reconcile conflicting values.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_type&quot;: NaN, &quot;termination_reason&quot;: &quot;RESIGNATION&quot;, &quot;employee_master_termination_type&quot;: null}, &quot;explanation&quot;: &quot;Termination type or reason is missing, or inconsistent with employee master data.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-004</div>
-        <div class="finding-meta">Employee: E005</div>
+      <div class="finding-title">TERM-004</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Termination records were identified with missing or inconsistent termination type or reason information.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_type&quot;: NaN, &quot;termination_reason&quot;: &quot;RESIGNATION&quot;, &quot;employee_master_termination_type&quot;: null}, &quot;explanation&quot;: &quot;Termination type or reason is missing, or inconsistent with employee master data.&quot;}</pre>
+  <div class="finding-meta">Employee: E005 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Termination records were identified with missing or inconsistent termination type or reason information.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Ensure termination type and reason are captured consistently across HR and payroll data and reconcile conflicting values.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_type&quot;: NaN, &quot;termination_reason&quot;: &quot;RESIGNATION&quot;, &quot;employee_master_termination_type&quot;: null}, &quot;explanation&quot;: &quot;Termination type or reason is missing, or inconsistent with employee master data.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-005</div>
-        <div class="finding-meta">Employee: E002</div>
+      <div class="finding-title">TERM-005</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Termination records do not include a supporting evidence reference.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;evidence_ref&quot;: null}, &quot;explanation&quot;: &quot;Termination record has no supporting evidence reference.&quot;}</pre>
+  <div class="finding-meta">Employee: E002 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Termination records do not include a supporting evidence reference.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Where available, include a reference to supporting termination documentation, or confirm whether such evidence is maintained outside the payroll system.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;evidence_ref&quot;: null}, &quot;explanation&quot;: &quot;Termination record has no supporting evidence reference.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-005</div>
-        <div class="finding-meta">Employee: E005</div>
+      <div class="finding-title">TERM-005</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Termination records do not include a supporting evidence reference.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;evidence_ref&quot;: null}, &quot;explanation&quot;: &quot;Termination record has no supporting evidence reference.&quot;}</pre>
+  <div class="finding-meta">Employee: E005 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Termination records do not include a supporting evidence reference.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Where available, include a reference to supporting termination documentation, or confirm whether such evidence is maintained outside the payroll system.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;evidence_ref&quot;: null}, &quot;explanation&quot;: &quot;Termination record has no supporting evidence reference.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-013</div>
-        <div class="finding-meta">Employee: E002</div>
+      <div class="finding-title">TERM-013</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> A final pay event was identified without a corresponding super contribution.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_events.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;pay_date&quot;: &quot;2024-03-05&quot;}, &quot;values&quot;: {&quot;super_amount&quot;: null, &quot;gross_amount&quot;: 2500.0, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;explanation&quot;: &quot;A final pay event was identified without a corresponding super contribution.&quot;}</pre>
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-03-05</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A final pay event was identified without a corresponding super contribution.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review super treatment for the final pay event.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_events.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;pay_date&quot;: &quot;2024-03-05&quot;}, &quot;values&quot;: {&quot;super_amount&quot;: null, &quot;gross_amount&quot;: 2500.0, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;explanation&quot;: &quot;A final pay event was identified without a corresponding super contribution.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-013</div>
-        <div class="finding-meta">Employee: E005</div>
+      <div class="finding-title">TERM-013</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> A final pay event was identified without a corresponding super contribution.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_events.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;pay_date&quot;: &quot;2024-03-10&quot;}, &quot;values&quot;: {&quot;super_amount&quot;: null, &quot;gross_amount&quot;: 2600.0, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;explanation&quot;: &quot;A final pay event was identified without a corresponding super contribution.&quot;}</pre>
+  <div class="finding-meta">Employee: E005 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-03-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A final pay event was identified without a corresponding super contribution.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review super treatment for the final pay event.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_events.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;pay_date&quot;: &quot;2024-03-10&quot;}, &quot;values&quot;: {&quot;super_amount&quot;: null, &quot;gross_amount&quot;: 2600.0, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;explanation&quot;: &quot;A final pay event was identified without a corresponding super contribution.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-017</div>
-        <div class="finding-meta">Employee: E002</div>
+      <div class="finding-title">TERM-017</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Payroll activity indicates the employee may have worked after the recorded termination date.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;last_payroll_activity_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;days_after_termination&quot;: 50}, &quot;explanation&quot;: &quot;Payroll activity indicates the employee may have remained in payroll after the recorded termination date.&quot;}</pre>
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-20</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Payroll activity indicates the employee may have worked after the recorded termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination timing and payroll activity.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;last_payroll_activity_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;days_after_termination&quot;: 50}, &quot;explanation&quot;: &quot;Payroll activity indicates the employee may have remained in payroll after the recorded termination date.&quot;}</pre>
+</div>
 </div>
 
 <div class="finding medium">
   <div class="finding-header">
     <div class="finding-title-wrap">
-        <div class="finding-title">TERM-017</div>
-        <div class="finding-meta">Employee: E005</div>
+      <div class="finding-title">TERM-017</div>
     </div>
     <div class="finding-badge-wrap">
-        <span class="badge-medium">MEDIUM</span>
+      <span class="badge-medium">MEDIUM</span>
     </div>
-    </div>
+  </div>
 
-  <div class="finding-section"><strong>Finding:</strong> Payroll activity indicates the employee may have worked after the recorded termination date.</div>
-  <div class="finding-section"><strong>Impact:</strong> This may weaken the organisation’s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
-  <div class="finding-section"><strong>Recommendation:</strong> Review the underlying termination workflow, confirm the relevant records and timing, and validate whether additional supporting evidence or remediation is required.</div>
-  <div class="finding-section"><strong>Evidence reference</strong></div><pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;last_payroll_activity_date&quot;: &quot;2024-03-10&quot;}, &quot;values&quot;: {&quot;days_after_termination&quot;: 9}, &quot;explanation&quot;: &quot;Payroll activity indicates the employee may have remained in payroll after the recorded termination date.&quot;}</pre>
+  <div class="finding-meta">Employee: E005 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-03-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Payroll activity indicates the employee may have worked after the recorded termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may weaken the organisation&#x27;s ability to clearly evidence termination processing and final pay handling if reviewed.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination timing and payroll activity.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;last_payroll_activity_date&quot;: &quot;2024-03-10&quot;}, &quot;values&quot;: {&quot;days_after_termination&quot;: 9}, &quot;explanation&quot;: &quot;Payroll activity indicates the employee may have remained in payroll after the recorded termination date.&quot;}</pre>
+</div>
 </div>
 
 <h2>6. Limitations & Assumptions</h2>

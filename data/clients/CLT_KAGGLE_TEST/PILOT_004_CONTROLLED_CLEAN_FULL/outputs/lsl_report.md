@@ -1,16 +1,28 @@
-# Long Service Leave (LSL) Exposure Review
+<div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
 
-**Organisation:** Organisation name not provided  
-**Review period:** 15 Feb 2010 to 10 Apr 2024  
-**Report prepared as at:** 09 Apr 2026  
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Long Service Leave (LSL) Exposure Review</div>
 
-**Important note**
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">15 Feb 2010 to 10 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
 
-This report highlights potential risk signals and process issues based on the data provided.  
-It does not constitute legal, accounting, or industrial relations advice.
-
----
-
+  <div class="cover-confidentiality">Confidential</div>
+</div>
 <h2 class="page-break-before">1. Executive Summary</h2>
 
 This Long Service Leave (LSL) report focuses solely on LSL-related risk indicators identified from the supplied payroll and HR data. A total of 0 potential issues were identified across approximately 0 employees. These findings range from likely LSL under- or over-provisioning risk through to data and configuration issues that may affect the reliability of reported LSL liabilities.
@@ -83,9 +95,9 @@ Where any exposure estimates or balance concerns are inferred, they are indicati
 
 <h2>5. Detailed Findings</h2>
 
+<div class="no-findings">
 No LSL-related findings were identified for the supplied data.
-
----
+</div>
 
 <h2>6. Financial Exposure (Indicative)</h2>
 

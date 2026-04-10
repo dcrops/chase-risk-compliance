@@ -1,24 +1,35 @@
-# Payroll Risk & Evidence Review
+<div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
 
-**Organisation:** CLT Kaggle Test  
-**Review period:** 15 Feb 2010 to 20 Apr 2024  
-**Report prepared as at:** 07 Apr 2026  
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Payroll Risk &amp; Evidence Review</div>
 
-**Important note**
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Organisation name not provided</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">15 Feb 2010 to 20 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
 
-This report highlights potential risk signals and process issues based on the data provided. 
-It does not constitute legal, accounting, or industrial relations advice.
+  <div class="cover-confidentiality">Confidential</div>
+</div>
+<h2 class="page-break-before">1. Executive Summary</h2>
 
-
----
-
-## 1. Executive Summary
-
-- CRC identified 28 findings across the reviewed modules.
+- CRC identified 21 findings across the reviewed modules.
 - The overall profile is primarily driven by logical integrity failures rather than structural data limitations.
 - High-severity findings are concentrated in cross-module lifecycle consistency and record-keeping controls, indicating the strongest exposure sits in those areas.
 - Structural findings are present, but they are not the primary driver of risk in this review.
-- Findings are split between high (43%) and medium (57%) severity, indicating a mix of immediate control concerns and broader process weaknesses.
+- Findings are split between high (57%) and medium (43%) severity, indicating a mix of immediate control concerns and broader process weaknesses.
 
 ### What this means
 
@@ -28,18 +39,17 @@ The results suggest the main concern is substantive payroll processing and contr
 
 Prioritise detailed review of cross-module lifecycle consistency and record-keeping controls first, then address structural data gaps that may weaken evidentiary confidence.
 
-## 2. Highlight Insights
+<h2>2. Highlight Insights</h2>
 
 The following points summarise the most important observations from the analysis:
 
 - The strongest concentration of risk sits in **cross-module lifecycle consistency and record-keeping controls**.
 - The overall profile is dominated by **logical** findings rather than primarily structural data issues.
-- Findings are split between **high (43%)** and **medium (57%) severity**, indicating a mix of immediate control concerns and broader process weaknesses.
+- Findings are split between **high (57%)** and **medium (43%) severity**, indicating a mix of immediate control concerns and broader process weaknesses.
 
 ---
 
-
-## 3. Risk Profile Overview
+<h2>3. Risk Profile Overview</h2>
 
 This section summarises the overall risk profile across all included modules using the consolidated CRC summary outputs.
 
@@ -48,14 +58,14 @@ This section summarises the overall risk profile across all included modules usi
     <tr><th>Metric</th><th>Value</th></tr>
   </thead>
   <tbody>
-    <tr><td>Total findings</td><td>28</td></tr>
+    <tr><td>Total findings</td><td>21</td></tr>
     <tr><td>Dominant classification</td><td>LOGICAL</td></tr>
-    <tr><td>Dominant severity</td><td>MEDIUM</td></tr>
-    <tr><td>Logical findings</td><td>15 (54%)</td></tr>
-    <tr><td>Structural findings</td><td>7 (25%)</td></tr>
-    <tr><td>Contextual findings</td><td>6 (21%)</td></tr>
-    <tr><td>High severity findings</td><td>12 (43%)</td></tr>
-    <tr><td>Medium severity findings</td><td>16 (57%)</td></tr>
+    <tr><td>Dominant severity</td><td>HIGH</td></tr>
+    <tr><td>Logical findings</td><td>13 (62%)</td></tr>
+    <tr><td>Structural findings</td><td>2 (10%)</td></tr>
+    <tr><td>Contextual findings</td><td>6 (29%)</td></tr>
+    <tr><td>High severity findings</td><td>12 (57%)</td></tr>
+    <tr><td>Medium severity findings</td><td>9 (43%)</td></tr>
     <tr><td>Low severity findings</td><td>0 (0%)</td></tr>
   </tbody>
 </table>
@@ -66,8 +76,11 @@ Classification is used to distinguish between substantive integrity issues, stru
 
 ---
 
+<h2 class="page-break-before">4. Coverage & Data Dependency Insight</h2>
 
-## 4. Data Sources
+_Coverage and data dependency insight not available for this run._
+
+<h2 class="page-break-before">5. Data Sources</h2>
 
 This review was generated from the following analysis outputs within the project `outputs/` directory:
 
@@ -88,8 +101,7 @@ These outputs were produced by rule-based checks over payroll and HR CSV extract
 
 ---
 
-
-## 5. Scope & Methodology
+<h2 class="page-break-before">6. Scope & Methodology</h2>
 
 **Modules included in this engagement:**
 
@@ -101,7 +113,7 @@ These outputs were produced by rule-based checks over payroll and HR CSV extract
 
 ---
 
-### 5.1 **Leave & Entitlement Leakage – Scope & Methodology**
+<h3>6.1. Leave & Entitlement Leakage – Scope & Methodology</h3>
 
 **Scope**
 
@@ -138,7 +150,7 @@ Where exposure estimates are included, they are indicative only and must be vali
 
 ---
 
-### 5.2 **Long Service Leave (LSL) Exposure – Scope & Methodology**
+<h3>6.2. Long Service Leave (LSL) Exposure – Scope & Methodology</h3>
 
 **Scope**
 
@@ -172,7 +184,7 @@ Where any exposure estimates or balance concerns are inferred, they are indicati
 
 ---
 
-### 5.3 **Termination Exposure – Scope & Methodology**
+<h3>6.3. Termination Exposure – Scope & Methodology</h3>
 
 **Scope**
 
@@ -213,7 +225,7 @@ Severity does not represent:
 
 ---
 
-### 5.4 **Record-Keeping & Evidence Gaps (RKEG) – Scope & Methodology**
+<h3>6.4. Record-Keeping & Evidence Gaps (RKEG) – Scope & Methodology</h3>
 
 **Scope**
 
@@ -249,7 +261,7 @@ RKEG findings should be interpreted as evidential risk indicators. Addressing th
 
 ---
 
-### 5.5 **Cross-Module Integrity – Scope & Methodology**
+<h3>6.5. Cross-Module Integrity – Scope & Methodology</h3>
 
 **Scope**
 
@@ -286,12 +298,9 @@ Cross-module findings should be interpreted as data integrity and linkage risk i
 
 ---
 
+<h2 class="page-break-before">7. Module Summary Overview</h2>
 
-## 6. Module Summary Overview
-
-
-
-### 6.1 Leave & Entitlement Leakage (LEAVE) – Summary Overview
+<h3>7.1. Leave & Entitlement Leakage (LEAVE) – Summary Overview</h3>
 
 The automated checks identified the following potential issues in the leave and entitlement data reviewed. Severity reflects the relative level of risk to payroll accuracy and audit defensibility, not a confirmed breach.
 
@@ -324,17 +333,20 @@ The automated checks identified the following potential issues in the leave and 
 
 ---
 
-### 6.2 Long Service Leave (LSL) – Coverage Note
+<h3>7.2. Long Service Leave (LSL) – Coverage Note</h3>
 
+<div class="no-findings">
+<strong>Coverage note:</strong><br>
 No Long Service Leave (LSL) activity was identified in the dataset provided for this review.
 
 Accordingly, LSL-related diagnostics were not performed.
 
 This reflects a data coverage limitation rather than a confirmed absence of LSL risk. Assessment of LSL exposure typically requires service history, eligibility thresholds, and accrual data that may not be present in payroll-only extracts.
+</div>
 
 ---
 
-### 6.3 Termination Exposure – Severity Overview
+<h3>7.3. Termination Exposure – Severity Overview</h3>
 
 Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect **evidential risk only** and do not represent confirmed non-compliance or quantified financial exposure, or remediation priority.
 
@@ -367,7 +379,7 @@ Where a Termination Exposure review was performed, the table below summarises th
 
 ---
 
-### 6.4 Record-Keeping & Evidence Gaps (RKEG) – Severity Overview
+<h3>7.4. Record-Keeping & Evidence Gaps (RKEG) – Severity Overview</h3>
 
 As part of this review, a Record-Keeping & Evidence Gaps (RKEG) assessment was performed to evaluate whether payroll-related records are sufficiently complete, consistent and traceable to support payroll decisions if subject to audit or regulatory review.
 
@@ -404,7 +416,7 @@ The table below summarises the number of record-keeping and evidence gaps identi
 
 ---
 
-### 6.5 Cross-Module Integrity – Summary Overview
+<h3>7.5. Cross-Module Integrity – Summary Overview</h3>
 
 Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect **integrity risk indicators only** and do not represent confirmed non-compliance or quantified financial exposure.
 
@@ -437,20 +449,23 @@ Where a Cross-Module Integrity review was performed, the table below summarises 
 
 ---
 
-### 6.6 How to interpret findings
+<h3>7.6. How to interpret findings</h3>
 
 **How to interpret findings across modules**
 
-- **Leave & LSL findings** highlight potential anomalies in leave balances, accruals and usage. These indicators relate to *payroll outcomes and configuration* and may require remediation if confirmed.
-- **Termination Exposure findings** relate to the completeness, sequencing and documentation of termination events and final pay. They indicate how readily the organisation could evidence termination processing if challenged.
-- **Record-Keeping & Evidence Gaps (RKEG) findings** assess the strength of the evidentiary trail supporting payroll decisions. They do **not** indicate incorrect pay outcomes; they highlight where records may be incomplete or difficult to substantiate.
-- **Cross-Module Integrity findings** highlight inconsistencies between related datasets, such as employee lifecycle status, leave activity, and payroll events. They indicate where linked records may not align cleanly across the broader payroll data environment.
+<div class="callout keep-together">
+  <ul>
+<li><strong>Leave &amp; LSL findings</strong> highlight potential anomalies in leave balances, accruals and usage. These indicators relate to <em>payroll outcomes and configuration</em> and may require remediation if confirmed.</li>
+<li><strong>Termination Exposure findings</strong> relate to the completeness, sequencing and documentation of termination events and final pay. They indicate how readily the organisation could evidence termination processing if challenged.</li>
+<li><strong>Record-Keeping &amp; Evidence Gaps (RKEG) findings</strong> assess the strength of the evidentiary trail supporting payroll decisions. They do <strong>not</strong> indicate incorrect pay outcomes; they highlight where records may be incomplete or difficult to substantiate.</li>
+<li><strong>Cross-Module Integrity findings</strong> highlight inconsistencies between related datasets, such as employee lifecycle status, leave activity, and payroll events. They indicate where linked records may not align cleanly across the broader payroll data environment.</li>
+</ul>
 
-Findings are risk indicators requiring validation and do not, on their own, confirm non-compliance, legislative contravention, or underpayment.
+  <p>Findings are risk indicators requiring validation and do not, on their own, confirm non-compliance, legislative contravention, or underpayment.</p>
+  <p><em>Severity levels reflect evidential risk and control strength, and do not represent confirmed contraventions or quantified financial exposure.</em></p>
+</div>
 
-*Severity levels reflect evidential risk and control strength, and do not represent confirmed contraventions or quantified financial exposure.*
-
-## 7. Limitations & Assumptions
+<h2>8. Limitations & Assumptions</h2>
 
 This review is subject to the following limitations:
 
@@ -461,17 +476,17 @@ This review is subject to the following limitations:
 
 ---
 
-## 8. Recommended Next Steps
+<h2>9. Recommended Next Steps</h2>
 
-1. Prioritise detailed review of cross-module lifecycle consistency and record-keeping controls first, as these areas show the strongest concentration of high-severity findings.
-2. Confirm whether the identified findings reflect configuration weaknesses, process breakdowns, incomplete records, or isolated data anomalies.
-3. Address any structural data gaps identified, particularly where they reduce confidence in validation or audit defensibility.
-4. Validate substantive logical integrity findings before remediation decisions are made.
-5. Re-run the review after corrective action to confirm that risk indicators have reduced and no new integrity issues have emerged.
+1. Validate the highest-severity findings first.
+2. Review the most affected modules and confirm whether findings reflect genuine control issues or data limitations.
+3. Address structural data gaps that weaken evidentiary confidence.
+4. Confirm root causes before remediation.
+5. Re-run the review after corrective action to confirm that risk indicators have reduced.
 
 ---
 
-## 9. Appendices
+<h2 class="page-break-before">10. Appendices</h2>
 
 ### Appendix A – Rule Definitions
 
@@ -515,99 +530,10 @@ This review used a set of automated rules to flag evidential and process risk in
 
 ---
 
-### Appendix B – Data Fields Used
+### Appendix B – Machine-readable outputs
 
-Key data fields referenced in this engagement include:
-
-**Leave & Entitlement Leakage**
-
-- `employee_id`
-- `leave_type`
-- `as_of_date`
-- `rule_code`
-- `severity`
-- `classification`
-- `message`
-- `diff_units`
-- `finding_id`
-- `next_action`
-
-**LSL Exposure**
-
-- `employee_id`
-- `leave_type`
-- `as_of_date`
-- `rule_code`
-- `severity`
-- `classification`
-- `message`
-- `diff_units`
-- `finding_id`
-- `next_action`
-
-**Termination Exposure (TERM)**
-
-- `employee_id`
-- `termination_date`
-- `final_pay_date`
-- `rule_code`
-- `severity`
-- `classification`
-- `message`
-- `days_gap`
-- `evidence`
-- `finding_id`
-- `next_action`
-
-**Record-Keeping & Evidence Gaps (RKEG)**
-
-- `employee_id`
-- `leave_type`
-- `as_of_date`
-- `rule_code`
-- `severity`
-- `classification`
-- `message`
-- `diff_units`
-- `evidence`
-- `finding_id`
-- `next_action`
-
-**Cross Module Integrity (CROSS_MODULE)**
-
-- `employee_id`
-- `leave_type`
-- `as_of_date`
-- `rule_code`
-- `severity`
-- `classification`
-- `message`
-- `diff_units`
-- `evidence`
-- `finding_id`
-- `next_action`
-
----
-
-### Appendix C – Machine-readable outputs
-
-Complete machine-readable outputs are available in the following files:
-
-- `leave_leakage_findings.csv`
-- `leakage_report.csv`
-- `lsl_findings.csv`
-- `lsl_summary_by_severity.csv`
-- `term_findings.csv`
-- `term_summary_by_severity.csv`
-- `term_summary.csv`
-- `rkeg_findings.csv`
-- `rkeg_summary_by_severity.csv`
-- `cross_module_findings.csv`
-- `cross_module_summary_by_severity.csv`
-- `executive\executive_summary.md`
-- `executive\executive_summary.json`
+Complete machine-readable outputs are available in the generated CSV and summary files for the modules included in this engagement.
 
 These files provide row-level detail suitable for operational review, sampling, remediation planning, or incorporation into a broader audit work program.
 
 ---
-

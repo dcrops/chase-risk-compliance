@@ -1,16 +1,28 @@
-# Cross-Module Integrity – Detailed Report
+<div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
 
-**Organisation:** Organisation name not provided  
-**Review period:** 01 Mar 2024 to 20 Apr 2024  
-**Report prepared as at:** 09 Apr 2026  
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Cross-Module Integrity</div>
 
-**Important note**
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">01 Mar 2024 to 20 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
 
-This report highlights potential risk signals and process issues based on the data provided.  
-It does not constitute legal, accounting, or industrial relations advice.
-
----
-
+  <div class="cover-confidentiality">Confidential</div>
+</div>
 <h2 class="page-break-before">1. Executive Summary</h2>
 
 This Cross-Module Integrity report focuses solely on inconsistencies identified between related payroll datasets, including employee lifecycle, leave activity, payroll events, and termination-related records.
@@ -119,311 +131,429 @@ Where a Cross-Module Integrity review was performed, the table below summarises 
 
 <h2>5. Detailed Findings</h2>
 
-Each finding below follows a consistent **Finding → Evidence → Impact / Risk → Recommended Action** pattern.
-
-### Finding 1: CM-003
-**Severity:** HIGH
-
-**Finding**
-A termination record has no supporting evidence reference and payroll activity continues after the termination date.
-
-**Evidence**
-
-- Employee ID: `E002`
-- As at: `2024-04-20`
-- Classification: `LOGICAL`
-- Evidence reference: `{"sources": ["terminations.csv", "pay_events.csv"], "primary_keys": {"employee_id": "E002", "termination_date": "2024-03-01", "pay_date": "2024-04-20"}, "values": {"evidence_reference": null, "days_after_termination": 50, "gross_amount": 2500.0}, "thresholds": {"allowed_days_after_term": 14, "high_severity_cutoff_days": 30}, "explanation": "Termination evidence reference is missing and payroll activity continues significantly after termination, indicating a likely lifecycle control breakdown."}`
-- Finding ID: `51bf850dc85e`
-- Suggested next action (from data): `Review termination evidence records and confirm whether payroll activity after termination was valid or requires correction.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 2: CM-006
-**Severity:** HIGH
-
-**Finding**
-Payroll activity and leave ledger movement both continue after the employee termination date.
-
-**Evidence**
-
-- Employee ID: `E002`
-- As at: `2024-04-10`
-- Classification: `LOGICAL`
-- Evidence reference: `{"sources": ["terminations.csv", "pay_events.csv", "leave_ledger.csv"], "primary_keys": {"employee_id": "E002", "termination_date": "2024-03-01"}, "values": {"has_post_term_payroll_activity": true, "has_post_term_leave_activity": true, "latest_post_term_leave_date": "2024-04-10", "max_days_after_termination_pay": 50}, "thresholds": {"allowed_days_after_term": 14, "high_severity_cutoff_days": 30}, "explanation": "Payroll activity and leave ledger movement both continue significantly after termination, indicating a likely breakdown in off-boarding control integrity."}`
-- Finding ID: `1ba6ace90e24`
-- Suggested next action (from data): `Review the employee termination timeline, payroll activity, and leave transactions to confirm whether the employee was correctly finalised.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 3: CM-017
-**Severity:** HIGH
-
-**Finding**
-A final pay event was flagged but no termination evidence reference exists.
-
-**Evidence**
-
-- Employee ID: `E002`
-- As at: `2024-03-05`
-- Classification: `LOGICAL`
-- Evidence reference: `{"issue": "final pay without evidence", "evidence_reference": null}`
-- Finding ID: `061dc6f73892`
-- Suggested next action (from data): `Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 4: CM-017
-**Severity:** HIGH
-
-**Finding**
-A final pay event was flagged but no termination evidence reference exists.
-
-**Evidence**
-
-- Employee ID: `E005`
-- As at: `2024-03-10`
-- Classification: `LOGICAL`
-- Evidence reference: `{"issue": "final pay without evidence", "evidence_reference": null}`
-- Finding ID: `061dc6f73892`
-- Suggested next action (from data): `Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 5: CM-020
-**Severity:** HIGH
-
-**Finding**
-An employee triggered multiple cross-module integrity failures.
-
-**Evidence**
-
-- Employee ID: `E002`
-- Classification: `CONTEXTUAL`
-- Evidence reference: `{"total_findings": 6, "high_findings": 3, "thresholds": {"min_findings": 3, "min_high_severity": 2}, "explanation": "The employee triggered multiple cross-module integrity failures, including multiple high-severity signals, indicating a likely systemic lifecycle control breakdown."}`
-- Finding ID: `050e64ad6d2a`
-- Suggested next action (from data): `Review the full lifecycle of the employee including payroll, leave, termination and evidence records.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 6: CM-002
-**Severity:** MEDIUM
-
-**Finding**
-Leave ledger movement was recorded after the employee termination date.
-
-**Evidence**
-
-- Employee ID: `E002`
-- Related record / leave type: `ANNUAL`
-- As at: `2024-04-10`
-- Classification: `CONTEXTUAL`
-- Evidence reference: `{"sources": ["terminations.csv", "leave_ledger.csv"], "primary_keys": {"employee_id": "E002", "termination_date": "2024-03-01", "event_date": "2024-04-10", "leave_type": "ANNUAL"}, "values": {"event_type": null, "units": 8.0}, "explanation": "Leave ledger movement was recorded after the employee termination date."}`
-- Finding ID: `0b7e46d4abc1`
-- Suggested next action (from data): `Review termination timing and leave processing history to confirm whether the movement is valid and properly evidenced.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 7: CM-002
-**Severity:** MEDIUM
-
-**Finding**
-Leave ledger movement was recorded after the employee termination date.
-
-**Evidence**
-
-- Employee ID: `E005`
-- Related record / leave type: `ANNUAL`
-- As at: `2024-03-15`
-- Classification: `CONTEXTUAL`
-- Evidence reference: `{"sources": ["terminations.csv", "leave_ledger.csv"], "primary_keys": {"employee_id": "E005", "termination_date": "2024-03-01", "event_date": "2024-03-15", "leave_type": "ANNUAL"}, "values": {"event_type": null, "units": 4.0}, "explanation": "Leave ledger movement was recorded after the employee termination date."}`
-- Finding ID: `3f3de4c61b56`
-- Suggested next action (from data): `Review termination timing and leave processing history to confirm whether the movement is valid and properly evidenced.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 8: CM-012
-**Severity:** MEDIUM
-
-**Finding**
-Leave ledger activity was recorded after the employee termination date.
-
-**Evidence**
-
-- Employee ID: `E002`
-- Related record / leave type: `ANNUAL`
-- As at: `2024-04-10`
-- Classification: `CONTEXTUAL`
-- Evidence reference: `{"sources": ["leave_ledger.csv", "terminations.csv"], "primary_keys": {"employee_id": "E002", "termination_date": "2024-03-01", "event_date": "2024-04-10", "leave_type": "ANNUAL"}, "values": {"event_type": "nan", "units": 8.0, "days_after_termination": 40}, "thresholds": {"allowed_event_types": ["ADJUSTMENT", "PAYOUT"]}, "explanation": "Leave ledger activity was recorded after the employee termination date."}`
-- Finding ID: `ca37a32075d0`
-- Suggested next action (from data): `Confirm whether the employee was reinstated or whether the ledger events were posted incorrectly.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 9: CM-012
-**Severity:** MEDIUM
-
-**Finding**
-Leave ledger activity was recorded after the employee termination date.
-
-**Evidence**
-
-- Employee ID: `E005`
-- Related record / leave type: `ANNUAL`
-- As at: `2024-03-15`
-- Classification: `CONTEXTUAL`
-- Evidence reference: `{"sources": ["leave_ledger.csv", "terminations.csv"], "primary_keys": {"employee_id": "E005", "termination_date": "2024-03-01", "event_date": "2024-03-15", "leave_type": "ANNUAL"}, "values": {"event_type": "nan", "units": 4.0, "days_after_termination": 14}, "thresholds": {"allowed_event_types": ["ADJUSTMENT", "PAYOUT"]}, "explanation": "Leave ledger activity was recorded after the employee termination date."}`
-- Finding ID: `d73511e58fab`
-- Suggested next action (from data): `Confirm whether the employee was reinstated or whether the ledger events were posted incorrectly.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 10: CM-016
-**Severity:** MEDIUM
-
-**Finding**
-A termination record exists but no supporting leave snapshot record was identified for the employee.
-
-**Evidence**
-
-- Employee ID: `E002`
-- As at: `2024-03-01`
-- Classification: `STRUCTURAL`
-- Evidence reference: `{"sources": ["terminations.csv", "balances_snapshot.csv"], "primary_keys": {"employee_id": "E002", "termination_date": "2024-03-01"}, "values": {"leave_snapshot_record_found": false}, "thresholds": {"leave_types_checked": ["ANNUAL", "LSL"]}, "explanation": "A termination record exists but no supporting leave snapshot record was identified for the employee."}`
-- Finding ID: `ca93e3ef4ed9`
-- Suggested next action (from data): `Review snapshot extract completeness and confirm whether terminated employees were intentionally excluded or whether leave balances were missing from the extract.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 11: CM-016
-**Severity:** MEDIUM
-
-**Finding**
-A termination record exists but no supporting leave snapshot record was identified for the employee.
-
-**Evidence**
-
-- Employee ID: `E005`
-- As at: `2024-03-01`
-- Classification: `STRUCTURAL`
-- Evidence reference: `{"sources": ["terminations.csv", "balances_snapshot.csv"], "primary_keys": {"employee_id": "E005", "termination_date": "2024-03-01"}, "values": {"leave_snapshot_record_found": false}, "thresholds": {"leave_types_checked": ["ANNUAL", "LSL"]}, "explanation": "A termination record exists but no supporting leave snapshot record was identified for the employee."}`
-- Finding ID: `81c9d3c56fec`
-- Suggested next action (from data): `Review snapshot extract completeness and confirm whether terminated employees were intentionally excluded or whether leave balances were missing from the extract.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
-### Finding 12: CM-020
-**Severity:** MEDIUM
-
-**Finding**
-An employee triggered multiple cross-module integrity failures.
-
-**Evidence**
-
-- Employee ID: `E005`
-- Classification: `CONTEXTUAL`
-- Evidence reference: `{"total_findings": 4, "high_findings": 1, "thresholds": {"min_findings": 3, "min_high_severity": 2}, "explanation": "The employee triggered multiple cross-module integrity failures, indicating a clustered lifecycle control issue that should be reviewed in context."}`
-- Finding ID: `050e64ad6d2a`
-- Suggested next action (from data): `Review the full lifecycle of the employee including payroll, leave, termination and evidence records.`
-
-**Impact / Risk**
-Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. These issues may reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.
-
-**Recommended Action**
-
-- Validate this finding across the linked payroll, employee, leave, and termination records.
-- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.
-- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.
-- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.
-
----
+This section sets out detailed findings for <strong>Cross-Module Integrity</strong> only.
+Findings highlight potential sequencing, lifecycle, and dataset-alignment issues across related payroll records.
+They are integrity indicators and do <strong>not</strong> on their own confirm non-compliance or incorrect pay outcomes.
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-003</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-20</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A termination record has no supporting evidence reference and payroll activity continues after the termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination evidence records and confirm whether payroll activity after termination was valid or requires correction.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">51bf850dc85e</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;pay_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;evidence_reference&quot;: null, &quot;days_after_termination&quot;: 50, &quot;gross_amount&quot;: 2500.0}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Termination evidence reference is missing and payroll activity continues significantly after termination, indicating a likely lifecycle control breakdown.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-006</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Payroll activity and leave ledger movement both continue after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review the employee termination timeline, payroll activity, and leave transactions to confirm whether the employee was correctly finalised.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">1ba6ace90e24</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;, &quot;leave_ledger.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;has_post_term_payroll_activity&quot;: true, &quot;has_post_term_leave_activity&quot;: true, &quot;latest_post_term_leave_date&quot;: &quot;2024-04-10&quot;, &quot;max_days_after_termination_pay&quot;: 50}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Payroll activity and leave ledger movement both continue significantly after termination, indicating a likely breakdown in off-boarding control integrity.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-017</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Event: 2024-03-05</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A final pay event was flagged but no termination evidence reference exists.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">061dc6f73892</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;issue&quot;: &quot;final pay without evidence&quot;, &quot;evidence_reference&quot;: null}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-017</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Classification: LOGICAL | Event: 2024-03-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A final pay event was flagged but no termination evidence reference exists.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">061dc6f73892</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;issue&quot;: &quot;final pay without evidence&quot;, &quot;evidence_reference&quot;: null}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-020</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: CONTEXTUAL</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">An employee triggered multiple cross-module integrity failures.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review the full lifecycle of the employee including payroll, leave, termination and evidence records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">050e64ad6d2a</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;total_findings&quot;: 6, &quot;high_findings&quot;: 3, &quot;thresholds&quot;: {&quot;min_findings&quot;: 3, &quot;min_high_severity&quot;: 2}, &quot;explanation&quot;: &quot;The employee triggered multiple cross-module integrity failures, including multiple high-severity signals, indicating a likely systemic lifecycle control breakdown.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-002</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-04-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger movement was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination timing and leave processing history to confirm whether the movement is valid and properly evidenced.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">0b7e46d4abc1</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;leave_ledger.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-04-10&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: null, &quot;units&quot;: 8.0}, &quot;explanation&quot;: &quot;Leave ledger movement was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-002</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-03-15</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger movement was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination timing and leave processing history to confirm whether the movement is valid and properly evidenced.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">3f3de4c61b56</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;leave_ledger.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-03-15&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: null, &quot;units&quot;: 4.0}, &quot;explanation&quot;: &quot;Leave ledger movement was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-012</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-04-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger activity was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Confirm whether the employee was reinstated or whether the ledger events were posted incorrectly.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">ca37a32075d0</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;leave_ledger.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-04-10&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: &quot;nan&quot;, &quot;units&quot;: 8.0, &quot;days_after_termination&quot;: 40}, &quot;thresholds&quot;: {&quot;allowed_event_types&quot;: [&quot;ADJUSTMENT&quot;, &quot;PAYOUT&quot;]}, &quot;explanation&quot;: &quot;Leave ledger activity was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-012</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-03-15</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger activity was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Confirm whether the employee was reinstated or whether the ledger events were posted incorrectly.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">d73511e58fab</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;leave_ledger.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-03-15&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: &quot;nan&quot;, &quot;units&quot;: 4.0, &quot;days_after_termination&quot;: 14}, &quot;thresholds&quot;: {&quot;allowed_event_types&quot;: [&quot;ADJUSTMENT&quot;, &quot;PAYOUT&quot;]}, &quot;explanation&quot;: &quot;Leave ledger activity was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-016</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A termination record exists but no supporting leave snapshot record was identified for the employee.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review snapshot extract completeness and confirm whether terminated employees were intentionally excluded or whether leave balances were missing from the extract.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">ca93e3ef4ed9</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;balances_snapshot.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;leave_snapshot_record_found&quot;: false}, &quot;thresholds&quot;: {&quot;leave_types_checked&quot;: [&quot;ANNUAL&quot;, &quot;LSL&quot;]}, &quot;explanation&quot;: &quot;A termination record exists but no supporting leave snapshot record was identified for the employee.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-016</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A termination record exists but no supporting leave snapshot record was identified for the employee.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review snapshot extract completeness and confirm whether terminated employees were intentionally excluded or whether leave balances were missing from the extract.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">81c9d3c56fec</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;balances_snapshot.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;leave_snapshot_record_found&quot;: false}, &quot;thresholds&quot;: {&quot;leave_types_checked&quot;: [&quot;ANNUAL&quot;, &quot;LSL&quot;]}, &quot;explanation&quot;: &quot;A termination record exists but no supporting leave snapshot record was identified for the employee.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-020</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Classification: CONTEXTUAL</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">An employee triggered multiple cross-module integrity failures.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review the full lifecycle of the employee including payroll, leave, termination and evidence records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">050e64ad6d2a</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;total_findings&quot;: 4, &quot;high_findings&quot;: 1, &quot;thresholds&quot;: {&quot;min_findings&quot;: 3, &quot;min_high_severity&quot;: 2}, &quot;explanation&quot;: &quot;The employee triggered multiple cross-module integrity failures, indicating a clustered lifecycle control issue that should be reviewed in context.&quot;}</pre>
+</div>
+</div>
 
 <h2>6. Limitations & Assumptions</h2>
 

@@ -19,6 +19,8 @@ class Finding:
     evidence: Optional[str] = None
     finding_id: Optional[str] = None
     next_action: Optional[str] = None
+    termination_date: Optional[str] = None
+    event_date: Optional[str] = None
 
 
 def compute_finding_id(rule_code: str, evidence_json: Optional[str]) -> str:
@@ -45,6 +47,8 @@ def _build_finding(
     as_of_date: str | None,
     evidence_str: str,
     diff_units: float | None = None,
+    termination_date: str | None = None,
+    event_date: str | None = None,
 ) -> Finding:
     return Finding(
         employee_id=employee_id,
@@ -58,4 +62,6 @@ def _build_finding(
         evidence=evidence_str,
         finding_id=compute_finding_id(rule["id"], evidence_str),
         next_action=rule["text"]["remediation"],
+        termination_date=termination_date,
+        event_date=event_date,
     )

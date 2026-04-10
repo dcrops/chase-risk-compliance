@@ -37,6 +37,8 @@ from reporting.sections.exec_pack_sections import (
     build_appendices,
 )
 
+from reporting.core.cover_page import build_cover_page
+
 
 MELBOURNE_TZ = ZoneInfo("Australia/Melbourne")
 report_date = datetime.now(MELBOURNE_TZ).strftime("%d %b %Y")
@@ -979,7 +981,18 @@ def generate_exec_pack(
     if review_period is None:
         review_period = derive_exec_review_period_from_data(included, target_dir)
 
-    parts: List[str] = [build_header(report_title, organisation_name, review_period)]
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
+
+    parts: List[str] = [
+        build_cover_page(
+            report_title=report_title,
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
+        )
+    ]
 
     structure = ReportStructure()
 

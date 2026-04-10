@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 from datetime import date, datetime
+from html import escape
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass
@@ -24,7 +25,10 @@ from reporting.sections.exec_pack_sections import (
     build_next_steps,
     build_appendices,
     build_cross_module_summary,
+    build_finding_meta,
 )
+
+from reporting.core.cover_page import build_cover_page
 
 
 @dataclass
@@ -36,6 +40,8 @@ class CrossModuleFinding:
     as_of_date: str
     message: str
     classification: str | None = None
+    termination_date: str | None = None
+    event_date: str | None = None
     evidence: str | None = None
     finding_id: str | None = None
     next_action: str | None = None
@@ -50,6 +56,8 @@ class CrossModuleFinding:
             as_of_date=row.get("as_of_date", "") or row.get("snapshot_date", "") or "",
             message=row.get("message") or row.get("description") or "",
             classification=(row.get("classification") or "").upper() or None,
+            termination_date=row.get("termination_date") or None,
+            event_date=row.get("event_date") or None,
             evidence=row.get("evidence") or row.get("evidence_ref") or None,
             finding_id=row.get("finding_id") or None,
             next_action=row.get("next_action") or None,
@@ -132,6 +140,111 @@ def sort_cross_findings(findings: List[CrossModuleFinding]) -> List[CrossModuleF
     )
 
 
+def _severity_class(severity: str) -> str:
+    s = (severity or "").upper()
+    if s == "HIGH":
+        return "high"
+    if s == "MEDIUM":
+        return "medium"
+    if s == "LOW":
+        return "low"
+    return "info"
+
+
+def _render_labeled_section(label: str, body: str, extra_class: str = "") -> str:
+    class_attr = f"finding-text {extra_class}".strip()
+    return f"""
+<div class="finding-section">
+  <div class="finding-label">{escape(label)}</div>
+  <div class="{class_attr}">{body}</div>
+</div>
+""".strip()
+
+
+def render_cross_finding_card(f: CrossModuleFinding) -> str:
+    severity = (f.severity or "").upper() or "INFO"
+    severity_class = _severity_class(severity)
+
+    rule_code = escape(f.rule_code or "UNSPECIFIED RULE")
+    message = escape(f.message or "No description provided.")
+    recommendation_text = f.next_action or (
+        "Validate the finding across linked payroll, employee, leave, and termination records, "
+        "confirm whether the inconsistency reflects a true process issue, timing difference, or "
+        "source-system mismatch, and correct any confirmed alignment or lifecycle sequencing issues."
+    )
+
+    date_part = None
+
+    if f.termination_date and f.event_date:
+        date_part = f"Dates: {f.termination_date} → {f.event_date}"
+    elif f.termination_date:
+        date_part = f"Termination: {f.termination_date}"
+    elif f.event_date:
+        date_part = f"Event: {f.event_date}"
+    elif f.as_of_date:
+        date_part = f"As at: {f.as_of_date}"
+
+    extra_parts = [date_part] if date_part else None
+
+    meta_text = build_finding_meta(
+        employee_id=f.employee_id or None,
+        context_label="Related record / leave type",
+        context_value=f.leave_type or None,
+        date_label=None,
+        date_value=None,
+        classification=f.classification or None,
+        extra_parts=extra_parts,
+    )
+
+    impact = (
+        "This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll "
+        "datasets. These issues can reduce confidence in linked records and make payroll outcomes or "
+        "employee status changes harder to explain, validate, or reconcile."
+    )
+
+    sections: list[str] = [
+        _render_labeled_section("Finding", message, "finding-main"),
+        _render_labeled_section("Impact", escape(impact), "finding-impact"),
+        _render_labeled_section("Recommendation", escape(recommendation_text), "finding-action"),
+    ]
+
+    if f.finding_id:
+        sections.append(
+            _render_labeled_section("Finding ID", escape(f.finding_id))
+        )
+
+    if f.evidence:
+        sections.append(
+            """
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">"""
+            + escape(f.evidence)
+            + """</pre>
+</div>
+""".strip()
+        )
+
+    section_html = "\n  ".join(sections)
+
+    return f"""
+<div class="finding {severity_class}">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">{rule_code}</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-{severity_class}">{escape(severity)}</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">{meta_text}</div>
+
+  {section_html}
+</div>
+""".strip()
+
+
 def build_cross_module_summary_section(findings: List[CrossModuleFinding]) -> str:
     total_findings = len(findings)
     high = sum(1 for f in findings if f.severity == "HIGH")
@@ -169,71 +282,20 @@ def build_cross_module_summary_section(findings: List[CrossModuleFinding]) -> st
 
 def build_cross_detailed_findings(findings: List[CrossModuleFinding]) -> str:
     if not findings:
-        return """No cross-module integrity findings were identified for the supplied data.
+        return """
+<div class="no-findings">
+No cross-module integrity findings were identified for the supplied data.
+</div>
+""".strip()
 
----
+    intro = """
+This section sets out detailed findings for <strong>Cross-Module Integrity</strong> only.
+Findings highlight potential sequencing, lifecycle, and dataset-alignment issues across related payroll records.
+They are integrity indicators and do <strong>not</strong> on their own confirm non-compliance or incorrect pay outcomes.
+""".strip()
 
-"""
-
-    lines: List[str] = []
-    lines.append(
-        "Each finding below follows a consistent **Finding → Evidence → Impact / Risk → Recommended Action** pattern."
-    )
-    lines.append("")
-
-    for idx, f in enumerate(findings, start=1):
-        lines.append(f"### Finding {idx}: {f.rule_code or 'UNSPECIFIED RULE'}")
-        lines.append(f"**Severity:** {f.severity or 'UNSPECIFIED'}")
-        lines.append("")
-
-        lines.append("**Finding**")
-        lines.append(f"{f.message or 'No description provided.'}")
-        lines.append("")
-
-        lines.append("**Evidence**")
-        lines.append("")
-
-        evidence_bits: List[str] = []
-        if f.employee_id:
-            evidence_bits.append(f"Employee ID: `{f.employee_id}`")
-        if f.leave_type:
-            evidence_bits.append(f"Related record / leave type: `{f.leave_type}`")
-        if f.as_of_date:
-            evidence_bits.append(f"As at: `{f.as_of_date}`")
-        if f.classification:
-            evidence_bits.append(f"Classification: `{f.classification}`")
-        if f.evidence:
-            evidence_bits.append(f"Evidence reference: `{f.evidence}`")
-        if f.finding_id:
-            evidence_bits.append(f"Finding ID: `{f.finding_id}`")
-        if f.next_action:
-            evidence_bits.append(f"Suggested next action (from data): `{f.next_action}`")
-
-        if evidence_bits:
-            for bit in evidence_bits:
-                lines.append(f"- {bit}")
-        else:
-            lines.append("- Not specified in the source data.")
-
-        lines.append("")
-        lines.append("**Impact / Risk**")
-        lines.append(
-            "Potential data integrity, sequencing, or lifecycle mismatch across related payroll datasets. "
-            "These issues may reduce confidence in linked records and make payroll outcomes or employee "
-            "status changes harder to explain, validate, or reconcile."
-        )
-        lines.append("")
-        lines.append("**Recommended Action**")
-        lines.append("")
-        lines.append("- Validate this finding across the linked payroll, employee, leave, and termination records.")
-        lines.append("- Confirm whether the inconsistency reflects a true process issue, timing difference, or source-system mismatch.")
-        lines.append("- Correct any confirmed data alignment or lifecycle sequencing issues in the relevant systems.")
-        lines.append("- Where repeated patterns are identified, strengthen integration, mapping, and reconciliation controls.")
-        lines.append("")
-
-    lines.append("---")
-    lines.append("")
-    return "\n".join(lines)
+    cards = [render_cross_finding_card(f) for f in findings]
+    return intro + "\n\n" + "\n\n".join(cards)
 
 
 def build_cross_appendices(base_output_dir: Path) -> str:
@@ -260,12 +322,17 @@ def generate_cross_module_report(
             else "Period not specified"
         )
 
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
+
     parts: List[str] = []
     parts.append(
-        build_header(
-            "Cross-Module Integrity – Detailed Report",
-            organisation_name,
-            review_period,
+        build_cover_page(
+            report_title="Cross-Module Integrity",
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
         )
     )
 

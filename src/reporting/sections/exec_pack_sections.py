@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import List, Dict
+from html import escape
 
 
 # ======================================
@@ -357,6 +358,37 @@ This reflects a data coverage limitation rather than a confirmed absence of LSL 
 
 ---
 """.strip()
+
+def build_finding_meta(
+    *,
+    employee_id: str | None = None,
+    context_label: str | None = None,
+    context_value: str | None = None,
+    date_label: str | None = None,
+    date_value: str | None = None,
+    classification: str | None = None,
+    extra_parts: list[str] | None = None,
+) -> str:
+    parts: list[str] = []
+
+    if employee_id:
+        parts.append(f"Employee: {escape(employee_id)}")
+
+    if context_label and context_value:
+        parts.append(f"{escape(context_label)}: {escape(context_value)}")
+
+    if date_label and date_value:
+        parts.append(f"{escape(date_label)}: {escape(date_value)}")
+
+    if classification:
+        parts.append(f"Classification: {escape(classification)}")
+
+    if extra_parts:
+        for part in extra_parts:
+            if part and part.strip():
+                parts.append(escape(part.strip()))
+
+    return " | ".join(parts) if parts else "Reference details not specified"
 
 
 # ======================================

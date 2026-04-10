@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cross Module – Detailed Report</title>
+  <style>
+/* =========================
+   Page setup (for PDF)
+   ========================= */
+
+   @page {
+    size: A4;
+    margin: 34mm 18mm 22mm 18mm;
+    background: #ffffff;
+  
+    @top-left {
+      content: "Chase Risk & Compliance";
+      font-size: 9pt;
+      color: #64748b;
+      vertical-align: middle;
+    }
+  
+    @top-right {
+      content: "";
+    }
+  
+    @bottom-left {
+      content: "Confidential - Chase Risk & Compliance";
+      font-size: 8.5pt;
+      color: #64748b;
+      vertical-align: top;
+      border-top: 1px solid #d9dde3;
+      padding-top: 6px;
+    }
+  
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8.5pt;
+      color: #64748b;
+      vertical-align: top;
+      border-top: 1px solid #d9dde3;
+      padding-top: 6px;
+    }
+  }
+  
+  /* Cover page: no running header/footer */
+  @page :first {
+    @top-left {
+      content: none;
+    }
+  
+    @top-right {
+      content: none;
+    }
+  
+    @bottom-left {
+      content: none;
+      border-top: none;
+      padding-top: 0;
+    }
+  
+    @bottom-right {
+      content: none;
+      border-top: none;
+      padding-top: 0;
+    }
+  }
+  
+  
+  /* =========================
+     Colour tokens
+     ========================= */
+  :root {
+    --bg-page: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --card-bg: #ffffff;
+  
+    --heading-primary: #5b1b26;
+    --heading-secondary: #7a2431;
+    --heading-tertiary: #a63446;
+  
+    --accent-border: #d9dde3;
+    --accent-soft: #eef2f7;
+    --panel-bg: #fafbfc;
+  
+    --blockquote-bg: #fdf2f4;
+    --blockquote-border: #7a2431;
+    --blockquote-text: #1e293b;
+  
+    --callout-bg: #f8fafc;
+    --callout-border: #7a2431;
+    --callout-text: #1e293b;
+  
+    --table-header-bg: #111827;
+    --table-header-text: #f9fafb;
+    --table-row-stripe: #f8fafc;
+    --table-border: #d9dde3;
+  
+    --sev-high: #b3261e;
+    --sev-med: #d97706;
+    --sev-low: #2e7d32;
+    --sev-info: #475569;
+  
+    --sev-high-bg: #fdecea;
+    --sev-med-bg: #fff4e5;
+    --sev-low-bg: #e8f5e9;
+    --sev-info-bg: #e5e7eb;
+  
+    --sev-high-border: #e6b8b3;
+    --sev-med-border: #f0d3a2;
+    --sev-low-border: #b7d6b9;
+    --sev-info-border: #cbd5e1;
+  }
+  
+/* =========================
+   COVER PAGE
+   ========================= */
+
+   .cover-page {
+    page-break-after: always;
+    text-align: center;
+    padding: 18mm 10mm 10mm 10mm;
+    box-sizing: border-box;
+  }
+  
+  .cover-brand {
+    margin: 10mm 0 12mm 0;
+  }
+  
+  .cover-logo {
+    max-width: 72mm;
+    max-height: 32mm;
+    width: auto;
+    height: auto;
+  }
+  
+  .cover-kicker {
+    margin-top: 0;
+    margin-bottom: 8mm;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  
+  .cover-title {
+    margin: 0 auto 14mm auto;
+    display: inline-block;
+    padding: 10px 18px;
+    background: #6d1023;
+    color: #ffffff;
+    font-size: 16pt;
+    font-weight: 800;
+    line-height: 1.2;
+    max-width: 145mm;
+    border-radius: 6px;
+  }
+  
+  .cover-meta-card {
+    width: 100%;
+    max-width: 110mm;
+    margin: 0 auto 14mm auto;
+    padding: 7mm 9mm;
+    border: 1px solid #d9dde3;
+    border-radius: 8px;
+    background: #f8fafc;
+    box-sizing: border-box;
+  }
+  
+  .cover-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8mm;
+    padding: 4px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .cover-meta-row:last-child {
+    border-bottom: none;
+  }
+  
+  .cover-meta-label {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #475569;
+  }
+  
+  .cover-meta-value {
+    font-size: 9pt;
+    color: #0f172a;
+    text-align: right;
+  }
+  
+  .cover-confidentiality {
+    margin-top: 10mm;
+    padding-top: 5mm;
+    display: inline-block;
+    min-width: 55mm;
+    border-top: 1px solid #d9dde3;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  
+  /* =========================
+     Base layout & typography
+     ========================= */
+  html,
+  body {
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: var(--text-main);
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .report-container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 0 16px 24px 16px;
+    box-sizing: border-box;
+  }
+  
+  .report-container::before {
+    content: "";
+    display: block;
+    border-top: 1px solid #d9dde3;
+    margin: 0 0 14px 0;
+  }
+  
+  
+  /* =========================
+     Headings
+     ========================= */
+  h1 {
+    font-size: 21pt;
+    line-height: 1.25;
+    margin: 0 0 1em 0;
+    padding: 10px 12px;
+    color: #ffffff;
+    background: var(--heading-primary);
+    border-radius: 4px;
+  }
+  
+  h2 {
+    font-size: 16pt;
+    line-height: 1.3;
+    margin-top: 2.1em;
+    margin-bottom: 0.65em;
+    padding-bottom: 6px;
+    border-bottom: 3px solid var(--heading-secondary);
+    color: var(--heading-secondary);
+  }
+  
+  h3 {
+    font-size: 13pt;
+    line-height: 1.35;
+    margin-top: 1.5em;
+    margin-bottom: 0.4em;
+    color: var(--heading-tertiary);
+  }
+  
+  h4 {
+    font-size: 11.5pt;
+    line-height: 1.35;
+    margin-top: 1.1em;
+    margin-bottom: 0.35em;
+    color: var(--heading-tertiary);
+  }
+  
+  h1,
+  h2,
+  h3,
+  h4 {
+    page-break-after: avoid;
+  }
+  
+  h2,
+  h3,
+  h4 {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  
+  /* =========================
+     Paragraphs & inline text
+     ========================= */
+  p {
+    margin: 0.4em 0 0.8em 0;
+  }
+  
+  strong {
+    font-weight: 600;
+  }
+  
+  em {
+    color: var(--text-muted);
+  }
+  
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.5pt;
+    background: #f8fafc;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  
+  
+  /* =========================
+     Blockquotes / callouts
+     ========================= */
+  blockquote {
+    margin: 1em 0;
+    padding: 10px 14px;
+    background: var(--blockquote-bg);
+    border-left: 5px solid var(--blockquote-border);
+    color: var(--blockquote-text);
+    page-break-inside: avoid;
+  }
+  
+  .callout {
+    margin: 1em 0 1.2em 0;
+    padding: 12px 14px;
+    background: var(--callout-bg);
+    border-left: 4px solid var(--callout-border);
+    color: var(--callout-text);
+    border-radius: 4px;
+    page-break-inside: avoid;
+  }
+  
+  .callout p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .callout ul,
+  .callout ol {
+    margin: 0.2em 0 0.8em 1.2em;
+    padding-left: 0.4em;
+  }
+  
+  .callout li {
+    margin: 0.35em 0;
+  }
+  
+  
+  /* =========================
+     Lists
+     ========================= */
+  ul,
+  ol {
+    margin: 0.45em 0 0.9em 1.45em;
+    padding-left: 0.2em;
+  }
+  
+  li {
+    margin: 0.28em 0;
+  }
+  
+  li > ul,
+  li > ol {
+    margin-top: 0.3em;
+  }
+  
+  
+  /* =========================
+     Horizontal rules
+     ========================= */
+  hr {
+    border: none;
+    border-top: 1px solid var(--accent-border);
+    margin: 2em 0 1.6em 0;
+  }
+  
+  
+  /* =========================
+     Tables
+     ========================= */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0 1.4em 0;
+    font-size: 10.4pt;
+    border: 1px solid var(--table-border);
+    page-break-inside: avoid;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  th {
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    text-align: left;
+    padding: 7px 9px;
+    border-bottom: 2px solid #0f172a;
+    font-weight: 600;
+  }
+  
+  td {
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--table-border);
+    white-space: pre-wrap;
+    vertical-align: top;
+  }
+  
+  tr:nth-child(even) td {
+    background: var(--table-row-stripe);
+  }
+  
+  .summary-table {
+    margin-top: 0.8em;
+  }
+  
+  
+  /* =========================
+     Severity styling
+     ========================= */
+  .severity-high,
+  .badge-high {
+    color: var(--sev-high);
+    font-weight: 600;
+  }
+  
+  .severity-medium,
+  .badge-medium {
+    color: var(--sev-med);
+    font-weight: 600;
+  }
+  
+  .severity-low,
+  .badge-low {
+    color: var(--sev-low);
+    font-weight: 600;
+  }
+  
+  .severity-info,
+  .badge-info {
+    color: var(--sev-info);
+  }
+  
+  .badge-high,
+  .badge-medium,
+  .badge-low,
+  .badge-info {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9pt;
+    line-height: 1.25;
+    font-weight: 700;
+    border: 1px solid transparent;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  
+  .badge-high {
+    background-color: var(--sev-high-bg);
+    color: var(--sev-high);
+    border-color: var(--sev-high-border);
+  }
+  
+  .badge-medium {
+    background-color: var(--sev-med-bg);
+    color: var(--sev-med);
+    border-color: var(--sev-med-border);
+  }
+  
+  .badge-low {
+    background-color: var(--sev-low-bg);
+    color: var(--sev-low);
+    border-color: var(--sev-low-border);
+  }
+  
+  .badge-info {
+    background-color: var(--sev-info-bg);
+    color: var(--sev-info);
+    border-color: var(--sev-info-border);
+  }
+  
+  tr.sev-high td {
+    background-color: var(--sev-high-bg);
+  }
+  
+  tr.sev-medium td {
+    background-color: var(--sev-med-bg);
+  }
+  
+  tr.sev-low td {
+    background-color: var(--sev-low-bg);
+  }
+  
+  tr.sev-info td {
+    background-color: var(--sev-info-bg);
+  }
+  
+  
+  /* =========================
+   FINDING CARD BASE
+   ========================= */
+
+  .finding {
+    border: 1px solid var(--accent-border);
+    border-left: 6px solid transparent;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 18px 0;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    break-inside: avoid;
+  }
+
+  /* =========================
+    SEVERITY BORDER COLOURS
+    ========================= */
+
+  /* HIGH = RED */
+  .finding.high {
+    border-left-color: #dc2626;
+  }
+
+  /* MEDIUM = ORANGE */
+  .finding.medium {
+    border-left-color: #f59e0b;
+  }
+
+  /* LOW = BLUE */
+  .finding.low {
+    border-left-color: #3b82f6;
+  }
+
+  /* INFO = GREY */
+  .finding.info {
+    border-left-color: #9ca3af;
+  }
+
+  /* =========================
+    OPTIONAL SUBTLE BACKGROUND TINT
+    ========================= */
+
+  .finding.high {
+    background: linear-gradient(to right, #fef2f2 0%, #ffffff 40%);
+  }
+
+  .finding.medium {
+    background: linear-gradient(to right, #fff7ed 0%, #ffffff 40%);
+  }
+
+  .finding.low {
+    background: linear-gradient(to right, #eff6ff 0%, #ffffff 40%);
+  }
+
+  .finding.info {
+    background: linear-gradient(to right, #f9fafb 0%, #ffffff 40%);
+  }
+
+  /* =========================
+    HEADER ROW
+    ========================= */
+
+  .finding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .finding-title {
+    font-size: 13.5pt;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: 0.2px;
+  }
+
+  /* =========================
+    SEVERITY BADGE
+    ========================= */
+
+  .finding-badge-wrap {
+    display: flex;
+    align-items: center;
+  }
+
+  .badge-high,
+  .badge-medium,
+  .badge-low,
+  .badge-info {
+    font-size: 9pt;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* HIGH */
+  .badge-high {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  /* MEDIUM */
+  .badge-medium {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  /* LOW */
+  .badge-low {
+    background: #dbeafe;
+    color: #1e3a8a;
+  }
+
+  /* INFO */
+  .badge-info {
+    background: #e5e7eb;
+    color: #374151;
+  }
+
+  /* =========================
+    METADATA ROW
+    ========================= */
+
+  .finding-meta {
+    font-size: 9.5pt;
+    color: #6b7280;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  /* =========================
+    CONTENT SECTIONS
+    ========================= */
+
+  .finding-section {
+    margin-bottom: 12px;
+  }
+
+  .finding-label {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 3px;
+  }
+
+  .finding-text {
+    font-size: 10.5pt;
+    color: #111827;
+    line-height: 1.5;
+  }
+
+  /* =========================
+    CONTENT EMPHASIS
+    ========================= */
+
+  .finding-main {
+    font-weight: 500;
+  }
+
+  .finding-impact {
+    color: #7c2d12; /* subtle risk tone */
+  }
+
+  .finding-action {
+    color: #065f46; /* solution tone */
+    font-weight: 500;
+  }
+
+  /* =========================
+    EVIDENCE BLOCK
+    ========================= */
+
+  .finding-evidence {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: 6px;
+    font-size: 9pt;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+
+  /* =========================
+    SPACING BETWEEN CARDS
+    ========================= */
+
+  .finding + .finding {
+    margin-top: 20px;
+  }
+
+  /* =========================
+    HOVER (HTML ONLY)
+    ========================= */
+
+  .finding:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  }
+  
+  
+  /* =========================
+     Optional contents block
+     ========================= */
+  .contents-list {
+    margin: 0.8em 0 1.2em 0;
+    padding-left: 1.2em;
+  }
+  
+  .contents-list li {
+    margin: 0.35em 0;
+  }
+  
+  
+  /* =========================
+     Empty / no findings states
+     ========================= */
+  .no-findings {
+    margin: 1em 0 1.2em 0;
+    padding: 12px 14px;
+    background: #fafbfc;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #475569;
+    border-radius: 6px;
+    color: #334155;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  
+  .no-findings p:last-child {
+    margin-bottom: 0;
+  }
+  
+  
+  /* =========================
+     Print / PDF behaviour
+     ========================= */
+  table,
+  blockquote,
+  .callout,
+  .finding,
+  .no-findings {
+    page-break-inside: avoid;
+  }
+  
+  h2 + p,
+  h3 + p,
+  h4 + p,
+  h2 + ul,
+  h3 + ul,
+  h4 + ul,
+  h2 + ol,
+  h3 + ol,
+  h4 + ol,
+  h2 + table,
+  h3 + table,
+  h4 + table,
+  h2 + blockquote,
+  h3 + blockquote,
+  h4 + blockquote,
+  h2 + .callout,
+  h3 + .callout,
+  h4 + .callout,
+  h2 + .finding,
+  h3 + .finding,
+  h4 + .finding,
+  h2 + .no-findings,
+  h3 + .no-findings,
+  h4 + .no-findings,
+  h2 + div,
+  h3 + div,
+  h4 + div {
+    page-break-before: avoid;
+  }
+  
+  h2.page-break-before {
+    page-break-before: always;
+  }
+  
+  .keep-together {
+    page-break-inside: avoid;
+  }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
+
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Cross-Module Integrity</div>
+
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Organisation name not provided</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">01 Mar 2024 to 20 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
+
+  <div class="cover-confidentiality">Confidential</div>
+</div>
+<h2 class="page-break-before">1. Executive Summary</h2>
+
+<p>This Cross-Module Integrity report focuses solely on inconsistencies identified between related payroll datasets, including employee lifecycle, leave activity, payroll events, and termination-related records.</p>
+<p>A total of 12 cross-module integrity findings were identified across approximately 2 employees. These findings indicate possible linkage, sequencing, lifecycle, or dataset alignment weaknesses that may reduce confidence in the broader payroll data environment.</p>
+<p>Across the dataset provided, the automated checks identified:</p>
+<ul>
+<li><strong>High:</strong> 5</li>
+<li><strong>Medium:</strong> 7</li>
+<li><strong>Low:</strong> 0</li>
+</ul>
+<p>A detailed breakdown by severity is provided in the <strong>Findings Overview</strong> section.</p>
+<h2 class="page-break-before">2. Data Sources</h2>
+
+<p>This review was generated from the following analysis outputs within the project <code>outputs/</code> directory:</p>
+<ul>
+<li><code>cross_module_summary_by_severity.csv</code>  </li>
+<li><code>cross_module_findings.csv</code>  </li>
+<li><code>executive\executive_summary.md</code>  </li>
+<li><code>executive\executive_summary.json</code>  </li>
+</ul>
+<p>These outputs were produced by rule-based checks over payroll and HR CSV extracts supplied by the organisation for the review period.</p>
+<hr>
+<h2 class="page-break-before">3. Scope & Methodology</h2>
+
+<p><strong>Modules included in this engagement:</strong></p>
+<ul>
+<li>Cross-Module Integrity (CROSS_MODULE)</li>
+</ul>
+<hr>
+<h3><strong>Cross-Module Integrity – Scope &amp; Methodology</strong></h3>
+<p><strong>Scope</strong></p>
+<p>The Cross-Module Integrity review assesses whether related payroll datasets align consistently across employee lifecycle, leave, payroll event, and termination records.</p>
+<p>The purpose of this review is to identify inconsistencies between linked datasets that may indicate sequencing issues, lifecycle mismatches, incomplete integrations, or broader payroll data integrity weaknesses.</p>
+<p>This review is designed to support payroll, HR, finance, and governance teams in identifying where records may not align cleanly across the broader payroll data environment. Findings are integrity signals only and do not, on their own, confirm non-compliance, underpayment, or payroll error.</p>
+<p><strong>Data reviewed</strong></p>
+<ul>
+<li>employee master data (where supplied)</li>
+<li>leave balances and leave movement data (where supplied)</li>
+<li>payroll event / payroll transaction extracts (where supplied)</li>
+<li>termination and lifecycle-related records where included in the engagement data pack</li>
+</ul>
+<p><strong>Checks performed</strong></p>
+<ul>
+<li>consistency checks between employee lifecycle status and payroll activity</li>
+<li>identification of mismatches between leave activity and termination or employment status</li>
+<li>cross-dataset linkage checks for related employee and payroll records</li>
+<li>detection of sequencing anomalies between linked events across modules</li>
+</ul>
+<p><strong>Out of scope</strong></p>
+<p>This review does not:</p>
+<ul>
+<li>calculate entitlements, underpayments or overpayments</li>
+<li>interpret awards, enterprise agreements, or employment contracts</li>
+<li>provide legal, accounting, or industrial relations advice</li>
+<li>assert contraventions of legislation or confirm non-compliance.</li>
+</ul>
+<p>Cross-module findings should be interpreted as data integrity and linkage risk indicators. They highlight where records may not align cleanly across datasets and may require investigation before conclusions are drawn.</p>
+<hr>
+<h2>4. Findings Overview</h2>
+
+<p>Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect <strong>integrity risk indicators only</strong> and do not represent confirmed non-compliance or quantified financial exposure.</p>
+<table class="summary-table">
+  <thead>
+    <tr>
+      <th>Severity</th>
+      <th>Count</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge-high">High</span></td>
+      <td>5</td>
+      <td>Cross-dataset inconsistencies that may materially affect confidence in employee lifecycle, payroll sequencing, or linked record integrity.</td>
+    </tr>
+    <tr>
+      <td><span class="badge-medium">Medium</span></td>
+      <td>7</td>
+      <td>Cross-module mismatches or data linkage issues that warrant review but may be explainable through timing, process, or source-system differences.</td>
+    </tr>
+    <tr>
+      <td><span class="badge-low">Low</span></td>
+      <td>0</td>
+      <td>Lower-impact cross-module inconsistencies that should be monitored and improved over time.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+<h2>5. Detailed Findings</h2>
+
+<p>This section sets out detailed findings for <strong>Cross-Module Integrity</strong> only.
+Findings highlight potential sequencing, lifecycle, and dataset-alignment issues across related payroll records.
+They are integrity indicators and do <strong>not</strong> on their own confirm non-compliance or incorrect pay outcomes.</p>
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-003</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-20</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A termination record has no supporting evidence reference and payroll activity continues after the termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination evidence records and confirm whether payroll activity after termination was valid or requires correction.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">51bf850dc85e</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;pay_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;evidence_reference&quot;: null, &quot;days_after_termination&quot;: 50, &quot;gross_amount&quot;: 2500.0}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Termination evidence reference is missing and payroll activity continues significantly after termination, indicating a likely lifecycle control breakdown.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-006</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Payroll activity and leave ledger movement both continue after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review the employee termination timeline, payroll activity, and leave transactions to confirm whether the employee was correctly finalised.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">1ba6ace90e24</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;, &quot;leave_ledger.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;has_post_term_payroll_activity&quot;: true, &quot;has_post_term_leave_activity&quot;: true, &quot;latest_post_term_leave_date&quot;: &quot;2024-04-10&quot;, &quot;max_days_after_termination_pay&quot;: 50}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Payroll activity and leave ledger movement both continue significantly after termination, indicating a likely breakdown in off-boarding control integrity.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-017</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Event: 2024-03-05</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A final pay event was flagged but no termination evidence reference exists.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">061dc6f73892</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;issue&quot;: &quot;final pay without evidence&quot;, &quot;evidence_reference&quot;: null}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-017</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Classification: LOGICAL | Event: 2024-03-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A final pay event was flagged but no termination evidence reference exists.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">061dc6f73892</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;issue&quot;: &quot;final pay without evidence&quot;, &quot;evidence_reference&quot;: null}</pre>
+</div>
+</div>
+
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-020</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: CONTEXTUAL</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">An employee triggered multiple cross-module integrity failures.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review the full lifecycle of the employee including payroll, leave, termination and evidence records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">050e64ad6d2a</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;total_findings&quot;: 6, &quot;high_findings&quot;: 3, &quot;thresholds&quot;: {&quot;min_findings&quot;: 3, &quot;min_high_severity&quot;: 2}, &quot;explanation&quot;: &quot;The employee triggered multiple cross-module integrity failures, including multiple high-severity signals, indicating a likely systemic lifecycle control breakdown.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-002</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-04-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger movement was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination timing and leave processing history to confirm whether the movement is valid and properly evidenced.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">0b7e46d4abc1</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;leave_ledger.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-04-10&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: null, &quot;units&quot;: 8.0}, &quot;explanation&quot;: &quot;Leave ledger movement was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-002</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-03-15</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger movement was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination timing and leave processing history to confirm whether the movement is valid and properly evidenced.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">3f3de4c61b56</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;leave_ledger.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-03-15&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: null, &quot;units&quot;: 4.0}, &quot;explanation&quot;: &quot;Leave ledger movement was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-012</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-04-10</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger activity was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Confirm whether the employee was reinstated or whether the ledger events were posted incorrectly.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">ca37a32075d0</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;leave_ledger.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-04-10&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: &quot;nan&quot;, &quot;units&quot;: 8.0, &quot;days_after_termination&quot;: 40}, &quot;thresholds&quot;: {&quot;allowed_event_types&quot;: [&quot;ADJUSTMENT&quot;, &quot;PAYOUT&quot;]}, &quot;explanation&quot;: &quot;Leave ledger activity was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-012</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Related record / leave type: ANNUAL | Classification: CONTEXTUAL | Dates: 2024-03-01 → 2024-03-15</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Leave ledger activity was recorded after the employee termination date.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Confirm whether the employee was reinstated or whether the ledger events were posted incorrectly.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">d73511e58fab</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;leave_ledger.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;event_date&quot;: &quot;2024-03-15&quot;, &quot;leave_type&quot;: &quot;ANNUAL&quot;}, &quot;values&quot;: {&quot;event_type&quot;: &quot;nan&quot;, &quot;units&quot;: 4.0, &quot;days_after_termination&quot;: 14}, &quot;thresholds&quot;: {&quot;allowed_event_types&quot;: [&quot;ADJUSTMENT&quot;, &quot;PAYOUT&quot;]}, &quot;explanation&quot;: &quot;Leave ledger activity was recorded after the employee termination date.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-016</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E002 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A termination record exists but no supporting leave snapshot record was identified for the employee.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review snapshot extract completeness and confirm whether terminated employees were intentionally excluded or whether leave balances were missing from the extract.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">ca93e3ef4ed9</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;balances_snapshot.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;leave_snapshot_record_found&quot;: false}, &quot;thresholds&quot;: {&quot;leave_types_checked&quot;: [&quot;ANNUAL&quot;, &quot;LSL&quot;]}, &quot;explanation&quot;: &quot;A termination record exists but no supporting leave snapshot record was identified for the employee.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-016</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Classification: STRUCTURAL | Termination: 2024-03-01</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">A termination record exists but no supporting leave snapshot record was identified for the employee.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review snapshot extract completeness and confirm whether terminated employees were intentionally excluded or whether leave balances were missing from the extract.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">81c9d3c56fec</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;balances_snapshot.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;leave_snapshot_record_found&quot;: false}, &quot;thresholds&quot;: {&quot;leave_types_checked&quot;: [&quot;ANNUAL&quot;, &quot;LSL&quot;]}, &quot;explanation&quot;: &quot;A termination record exists but no supporting leave snapshot record was identified for the employee.&quot;}</pre>
+</div>
+</div>
+
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">CM-020</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">Employee: E005 | Classification: CONTEXTUAL</div>
+
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">An employee triggered multiple cross-module integrity failures.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review the full lifecycle of the employee including payroll, leave, termination and evidence records.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Finding ID</div>
+  <div class="finding-text">050e64ad6d2a</div>
+</div>
+
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;total_findings&quot;: 4, &quot;high_findings&quot;: 1, &quot;thresholds&quot;: {&quot;min_findings&quot;: 3, &quot;min_high_severity&quot;: 2}, &quot;explanation&quot;: &quot;The employee triggered multiple cross-module integrity failures, indicating a clustered lifecycle control issue that should be reviewed in context.&quot;}</pre>
+</div>
+</div>
+
+<h2>6. Limitations & Assumptions</h2>
+
+<p>This review is subject to the following limitations:</p>
+<ul>
+<li>Calculations assume the underlying pay rates, loadings and multipliers are correct in the source systems.</li>
+<li>Award and enterprise agreement interpretation is not performed by this tool.</li>
+<li>Holiday calendars, leave rules and accrual settings are assumed to reflect the organisation’s intended configuration.</li>
+<li>Data quality issues (missing records, duplicates, inconsistent identifiers) may affect the completeness and accuracy of the results.</li>
+</ul>
+<hr>
+<h2>7. Recommended Next Steps</h2>
+
+<ol>
+<li>Validate the highest-severity findings first.</li>
+<li>Review the most affected modules and confirm whether findings reflect genuine control issues or data limitations.</li>
+<li>Address structural data gaps that weaken evidentiary confidence.</li>
+<li>Confirm root causes before remediation.</li>
+<li>Re-run the review after corrective action to confirm that risk indicators have reduced.</li>
+</ol>
+<hr>
+<h2 class="page-break-before">8. Appendices</h2>
+
+<h3>Appendix A – Rule Definitions</h3>
+<p>This review used a set of automated rules to flag evidential and process risk indicators.</p>
+<h4>Cross-Module Integrity (CROSS_MODULE)</h4>
+<ul>
+<li>Employee lifecycle mismatches across datasets</li>
+<li>Leave activity inconsistent with employment or termination status</li>
+<li>Payroll events inconsistent with linked employee or termination records</li>
+<li>Cross-dataset linkage or sequencing anomalies</li>
+</ul>
+<hr>
+<h3>Appendix B – Machine-readable outputs</h3>
+<p>Complete machine-readable outputs are available in the generated CSV and summary files for the modules included in this engagement.</p>
+<p>These files provide row-level detail suitable for operational review, sampling, remediation planning, or incorporation into a broader audit work program.</p>
+<hr>
+  </div>
+</body>
+</html>

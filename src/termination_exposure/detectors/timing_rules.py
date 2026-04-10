@@ -72,6 +72,7 @@ def detect_termination_with_no_final_pay_event(
                 employee_id=emp_id,
                 leave_type=None,
                 as_of_date=str(term_date.date()),
+                termination_date=str(term_date.date()),
                 evidence_str=evidence_str,
             )
         )
@@ -137,6 +138,8 @@ def detect_final_pay_before_termination_date(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["termination_date"].date()),
+                termination_date=str(row["termination_date"].date()),
+                final_pay_date=str(row["pay_date"].date()),
                 evidence_str=evidence_str,
             )
         )
@@ -190,6 +193,8 @@ def detect_significant_gap_between_last_pay_and_termination(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["termination_date"].date()),
+                termination_date=str(row["termination_date"].date()),
+                final_pay_date=str(row["last_pay_date"].date()),
                 evidence_str=evidence_str,
             )
         )
@@ -250,6 +255,15 @@ def detect_final_pay_not_clearly_identifiable(
         if candidate_pays.empty or has_flagged_final:
             continue
 
+        candidate_dates = [
+            str(d.date()) for d in candidate_pays["pay_date"].dropna().tolist()
+        ]
+        last_candidate_pay_date = (
+            str(candidate_pays["pay_date"].max().date())
+            if not candidate_pays.empty and candidate_pays["pay_date"].notna().any()
+            else None
+        )
+
         evidence_str = json.dumps(
             {
                 "sources": ["terminations.csv", "pay_events.csv"],
@@ -258,9 +272,7 @@ def detect_final_pay_not_clearly_identifiable(
                     "termination_date": str(term_date.date()),
                 },
                 "values": {
-                    "candidate_pay_dates": [
-                        str(d.date()) for d in candidate_pays["pay_date"].dropna().tolist()
-                    ],
+                    "candidate_pay_dates": candidate_dates,
                 },
                 "thresholds": {
                     "window_before_days": window_before_days,
@@ -277,11 +289,14 @@ def detect_final_pay_not_clearly_identifiable(
                 employee_id=emp_id,
                 leave_type=None,
                 as_of_date=str(term_date.date()),
+                termination_date=str(term_date.date()),
+                final_pay_date=last_candidate_pay_date,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_payroll_activity_recorded_after_termination(
     rule: dict,
@@ -320,9 +335,6 @@ def detect_payroll_activity_recorded_after_termination(
     for _, row in bad.iterrows():
         days_after = int((row["pay_date"] - row["termination_date"]).days)
 
-        # Dynamic calibration:
-        # - small overruns beyond the tolerance window are often timing/process issues
-        # - larger overruns are stronger integrity signals
         if days_after <= 30:
             calibrated_severity = "MEDIUM"
             calibrated_classification = "CONTEXTUAL"
@@ -373,10 +385,11 @@ def detect_payroll_activity_recorded_after_termination(
             employee_id=str(row["employee_id"]),
             leave_type=None,
             as_of_date=str(row["pay_date"].date()),
+            termination_date=str(row["termination_date"].date()),
+            final_pay_date=str(row["pay_date"].date()),
             evidence_str=evidence_str,
         )
 
-        # Override rule defaults with calibrated severity/classification
         finding.severity = calibrated_severity
         if hasattr(finding, "classification"):
             finding.classification = calibrated_classification
@@ -458,6 +471,8 @@ def detect_employee_paid_after_termination_across_multiple_runs(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["last_post_term_pay_date"].date()) if pd.notna(row["last_post_term_pay_date"]) else None,
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                final_pay_date=str(row["last_post_term_pay_date"].date()) if pd.notna(row["last_post_term_pay_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -527,6 +542,7 @@ def detect_termination_without_any_flagged_final_pay_event(
                 employee_id=employee_id,
                 leave_type=None,
                 as_of_date=str(termination_date.date()),
+                termination_date=str(termination_date.date()),
                 evidence_str=evidence_str,
             )
         )
@@ -596,6 +612,8 @@ def detect_termination_date_precedes_last_recorded_payroll_activity(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["last_payroll_activity_date"].date()),
+                termination_date=str(row["termination_date"].date()),
+                final_pay_date=str(row["last_payroll_activity_date"].date()),
                 evidence_str=evidence_str,
             )
         )

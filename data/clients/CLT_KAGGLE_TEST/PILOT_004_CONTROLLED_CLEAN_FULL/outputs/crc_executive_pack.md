@@ -1,16 +1,28 @@
-# Payroll Risk & Evidence Review
+<div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
 
-**Organisation:** Organisation name not provided  
-**Review period:** 15 Feb 2010 to 20 Apr 2024  
-**Report prepared as at:** 09 Apr 2026  
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Payroll Risk &amp; Evidence Review</div>
 
-**Important note**
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">CLT Kaggle Test</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">15 Feb 2010 to 20 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
 
-This report highlights potential risk signals and process issues based on the data provided.  
-It does not constitute legal, accounting, or industrial relations advice.
-
----
-
+  <div class="cover-confidentiality">Confidential</div>
+</div>
 <h2 class="page-break-before">1. Executive Summary</h2>
 
 - CRC identified 28 findings across the reviewed modules.

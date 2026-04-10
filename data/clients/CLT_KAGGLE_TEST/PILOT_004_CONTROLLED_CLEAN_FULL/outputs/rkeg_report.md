@@ -1,16 +1,28 @@
-# Record-Keeping & Evidence Gaps (RKEG) – Detailed Report
+<div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
 
-**Organisation:** Organisation name not provided  
-**Review period:** 01 Mar 2024 to 20 Apr 2024  
-**Report prepared as at:** 09 Apr 2026  
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Record-Keeping &amp; Evidence Gaps (RKEG)</div>
 
-**Important note**
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">01 Mar 2024 to 20 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">10 Apr 2026</span>
+    </div>
+  </div>
 
-This report highlights potential risk signals and process issues based on the data provided.  
-It does not constitute legal, accounting, or industrial relations advice.
-
----
-
+  <div class="cover-confidentiality">Confidential</div>
+</div>
 <h2 class="page-break-before">1. Executive Summary</h2>
 
 This Record-Keeping & Evidence Gaps (RKEG) report focuses solely on evidential risk indicators identified from the supplied payroll and HR data. The review assesses how complete, consistent and traceable payroll-related records appear for audit and dispute purposes. It does **not** determine whether payroll outcomes are correct or incorrect under applicable legislation, awards or agreements.
@@ -120,101 +132,134 @@ The table below summarises the number of record-keeping and evidence gaps identi
 
 <h2>5. Detailed Findings</h2>
 
-This section sets out detailed findings for **Record-Keeping & Evidence Gaps (RKEG)** only. Findings highlight where payroll-related records may be incomplete, inconsistent or difficult to substantiate if reviewed by auditors, regulators or in the context of a dispute. They do **not** confirm incorrect pay outcomes.
+This section sets out detailed findings for <strong>Record-Keeping &amp; Evidence Gaps (RKEG)</strong> only.
+Findings highlight where payroll-related records may be incomplete, inconsistent or difficult
+to substantiate if reviewed by auditors, regulators or in the context of a dispute.
+They do <strong>not</strong> confirm incorrect pay outcomes.
 
-Each finding below follows a consistent **Finding → Evidence → Impact / Risk → Recommended Action** pattern.
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">RKEG-PAY-010</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
 
-### Finding 1: RKEG-PAY-010
-**Severity:** HIGH
+  <div class="finding-meta">Employee: E002 | As at: 2024-04-20 | Classification: LOGICAL</div>
 
-**Finding**
-Pay events were identified that fall outside the employee's recorded employment period.
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">Pay events were identified that fall outside the employee&#x27;s recorded employment period.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may increase evidential and audit risk in relation to payroll records. Weak, incomplete or inconsistent records can reduce the organisation&#x27;s ability to respond confidently if challenged.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Reconcile pay events against employment start and termination dates and investigate any payments recorded outside valid employment periods.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_events.csv&quot;, &quot;employees.csv&quot;, &quot;terminations.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;}, &quot;values&quot;: {&quot;pay_date&quot;: &quot;2024-04-20&quot;, &quot;start_date&quot;: &quot;2018-06-01&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;days_after_termination&quot;: 50}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Pay event occurred significantly after the recorded termination date, indicating a likely inconsistency between employment period and payroll activity.&quot;}</pre>
+</div>
+</div>
 
-**Evidence**
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">RKEG-TERM-001</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
 
-- Employee ID: `E002`
-- As at: `2024-04-20`
-- Evidence reference: `{"sources": ["pay_events.csv", "employees.csv", "terminations.csv"], "primary_keys": {"employee_id": "E002"}, "values": {"pay_date": "2024-04-20", "start_date": "2018-06-01", "termination_date": "2024-03-01", "days_after_termination": 50}, "thresholds": {"allowed_days_after_term": 14, "high_severity_cutoff_days": 30}, "explanation": "Pay event occurred significantly after the recorded termination date, indicating a likely inconsistency between employment period and payroll activity."}`
-- Finding ID: `dd592d106757`
-- Suggested next action (from data): `Reconcile pay events against employment start and termination dates and investigate any payments recorded outside valid employment periods.`
+  <div class="finding-meta">Employee: E002 | As at: 2024-03-01 | Classification: LOGICAL</div>
 
-**Impact / Risk**
-Increased evidential and audit risk in relation to payroll records. Weak or incomplete records can increase the effort required to explain pay decisions and may reduce the organisation’s ability to respond confidently if challenged.
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">One or more terminated employees appear to have received final pay outside the configured statutory timeframe.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may increase evidential and audit risk in relation to payroll records. Weak, incomplete or inconsistent records can reduce the organisation&#x27;s ability to respond confidently if challenged.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination processing workflows and ensure final pay is calculated and processed within the required statutory timeframe.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;derived_final_pay_date&quot;: &quot;2024-04-20&quot;, &quot;days_after_termination&quot;: 50}, &quot;thresholds&quot;: {&quot;max_days_after_termination&quot;: 7}, &quot;explanation&quot;: &quot;Latest pay event on or after termination date exceeds the configured final pay timing threshold.&quot;}</pre>
+</div>
+</div>
 
-**Recommended Action**
+<div class="finding high">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">RKEG-TERM-001</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-high">HIGH</span>
+    </div>
+  </div>
 
-- Validate this finding against underlying payroll, HR and source system records.
-- Strengthen documentation and evidence capture for the affected record types (for example, by ensuring key identifiers and dates are consistently populated).
-- Where systemic patterns are identified, update data capture processes, templates and training to reduce recurrence.
+  <div class="finding-meta">Employee: E005 | As at: 2024-03-01 | Classification: LOGICAL</div>
 
-### Finding 2: RKEG-TERM-001
-**Severity:** HIGH
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">One or more terminated employees appear to have received final pay outside the configured statutory timeframe.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may increase evidential and audit risk in relation to payroll records. Weak, incomplete or inconsistent records can reduce the organisation&#x27;s ability to respond confidently if challenged.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Review termination processing workflows and ensure final pay is calculated and processed within the required statutory timeframe.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E005&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;derived_final_pay_date&quot;: &quot;2024-03-10&quot;, &quot;days_after_termination&quot;: 9}, &quot;thresholds&quot;: {&quot;max_days_after_termination&quot;: 7}, &quot;explanation&quot;: &quot;Latest pay event on or after termination date exceeds the configured final pay timing threshold.&quot;}</pre>
+</div>
+</div>
 
-**Finding**
-One or more terminated employees appear to have received final pay outside the configured statutory timeframe.
+<div class="finding medium">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">RKEG-GOV-001</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-medium">MEDIUM</span>
+    </div>
+  </div>
 
-**Evidence**
+  <div class="finding-meta">Classification: STRUCTURAL</div>
 
-- Employee ID: `E002`
-- As at: `2024-03-01`
-- Evidence reference: `{"sources": ["terminations.csv", "pay_events.csv"], "primary_keys": {"employee_id": "E002", "termination_date": "2024-03-01"}, "values": {"termination_date": "2024-03-01", "derived_final_pay_date": "2024-04-20", "days_after_termination": 50}, "thresholds": {"max_days_after_termination": 7}, "explanation": "Latest pay event on or after termination date exceeds the configured final pay timing threshold."}`
-- Finding ID: `48bcf89ca83b`
-- Suggested next action (from data): `Review termination processing workflows and ensure final pay is calculated and processed within the required statutory timeframe.`
-
-**Impact / Risk**
-Increased evidential and audit risk in relation to payroll records. Weak or incomplete records can increase the effort required to explain pay decisions and may reduce the organisation’s ability to respond confidently if challenged.
-
-**Recommended Action**
-
-- Validate this finding against underlying payroll, HR and source system records.
-- Strengthen documentation and evidence capture for the affected record types (for example, by ensuring key identifiers and dates are consistently populated).
-- Where systemic patterns are identified, update data capture processes, templates and training to reduce recurrence.
-
-### Finding 3: RKEG-TERM-001
-**Severity:** HIGH
-
-**Finding**
-One or more terminated employees appear to have received final pay outside the configured statutory timeframe.
-
-**Evidence**
-
-- Employee ID: `E005`
-- As at: `2024-03-01`
-- Evidence reference: `{"sources": ["terminations.csv", "pay_events.csv"], "primary_keys": {"employee_id": "E005", "termination_date": "2024-03-01"}, "values": {"termination_date": "2024-03-01", "derived_final_pay_date": "2024-03-10", "days_after_termination": 9}, "thresholds": {"max_days_after_termination": 7}, "explanation": "Latest pay event on or after termination date exceeds the configured final pay timing threshold."}`
-- Finding ID: `34e1bc417782`
-- Suggested next action (from data): `Review termination processing workflows and ensure final pay is calculated and processed within the required statutory timeframe.`
-
-**Impact / Risk**
-Increased evidential and audit risk in relation to payroll records. Weak or incomplete records can increase the effort required to explain pay decisions and may reduce the organisation’s ability to respond confidently if challenged.
-
-**Recommended Action**
-
-- Validate this finding against underlying payroll, HR and source system records.
-- Strengthen documentation and evidence capture for the affected record types (for example, by ensuring key identifiers and dates are consistently populated).
-- Where systemic patterns are identified, update data capture processes, templates and training to reduce recurrence.
-
-### Finding 4: RKEG-GOV-001
-**Severity:** MEDIUM
-
-**Finding**
-No structured override or exception log was provided for manual payroll adjustments.
-
-**Evidence**
-
-- Evidence reference: `{"sources": ["pay_overrides.csv"], "primary_keys": {}, "values": {}, "explanation": "No structured pay_overrides dataset was provided, or the dataset was empty."}`
-- Finding ID: `6d64e12c4c87`
-- Suggested next action (from data): `Introduce a basic override register or system-based workflow to record all manual payroll changes, including who made the change, when, and for what reason.`
-
-**Impact / Risk**
-Increased evidential and audit risk in relation to payroll records. Weak or incomplete records can increase the effort required to explain pay decisions and may reduce the organisation’s ability to respond confidently if challenged.
-
-**Recommended Action**
-
-- Validate this finding against underlying payroll, HR and source system records.
-- Strengthen documentation and evidence capture for the affected record types (for example, by ensuring key identifiers and dates are consistently populated).
-- Where systemic patterns are identified, update data capture processes, templates and training to reduce recurrence.
-
----
+  <div class="finding-section">
+  <div class="finding-label">Finding</div>
+  <div class="finding-text finding-main">No structured override or exception log was provided for manual payroll adjustments.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Impact</div>
+  <div class="finding-text finding-impact">This may increase evidential and audit risk in relation to payroll records. Weak, incomplete or inconsistent records can reduce the organisation&#x27;s ability to respond confidently if challenged.</div>
+</div>
+  <div class="finding-section">
+  <div class="finding-label">Recommendation</div>
+  <div class="finding-text finding-action">Introduce a basic override register or system-based workflow to record all manual payroll changes, including who made the change, when, and for what reason.</div>
+</div>
+  
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;pay_overrides.csv&quot;], &quot;primary_keys&quot;: {}, &quot;values&quot;: {}, &quot;explanation&quot;: &quot;No structured pay_overrides dataset was provided, or the dataset was empty.&quot;}</pre>
+</div>
+</div>
 
 <h2>6. Limitations & Assumptions</h2>
 
