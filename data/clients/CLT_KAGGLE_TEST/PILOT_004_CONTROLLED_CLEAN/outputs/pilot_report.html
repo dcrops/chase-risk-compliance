@@ -1,4 +1,10 @@
-/* =========================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pilot Report</title>
+  <style>
+    /* =========================
    Page setup (for PDF)
    ========================= */
 
@@ -827,3 +833,115 @@
   .keep-together {
     page-break-inside: avoid;
   }
+  </style>
+</head>
+<body>
+  <main class="report-container pilot-report">
+    <div class="cover-page">
+  <div class="cover-brand">
+    <img src="file:///C:/Users/dcropper/Projects/chase-risk-compliance/src/reporting/assets/crc_logo_full.png" alt="Chase Risk & Compliance" class="cover-logo">
+  </div>
+
+  <div class="cover-kicker">Payroll Risk &amp; Evidence Review</div>
+  <div class="cover-title">Payroll Integrity Pilot Review</div>
+
+  <div class="cover-meta-card">
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Organisation</span>
+      <span class="cover-meta-value">Test Org</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Review period</span>
+      <span class="cover-meta-value">15 Mar 2024 to 10 Apr 2024</span>
+    </div>
+    <div class="cover-meta-row">
+      <span class="cover-meta-label">Prepared as at</span>
+      <span class="cover-meta-value">14 Apr 2026</span>
+    </div>
+  </div>
+
+  <div class="cover-confidentiality">Confidential</div>
+</div>
+
+<h1 id="payroll-integrity-pilot-review">Payroll Integrity Pilot Review</h1>
+<p><strong>Organisation:</strong> Test Org<br />
+<strong>Pilot:</strong> PILOT_004_CONTROLLED_CLEAN<br />
+<strong>Review Period:</strong> 15 Mar 2024 to 10 Apr 2024  </p>
+<hr />
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+<p>A targeted payroll diagnostics review was conducted using available payroll data to identify triggered findings across key payroll integrity and evidence-related risk areas.</p>
+<p><strong>Total Findings Identified:</strong> <strong>14</strong></p>
+<h3 id="severity-breakdown">Severity Breakdown</h3>
+<ul>
+<li>High: 5</li>
+<li>Medium: 9</li>
+<li>Low: 0</li>
+</ul>
+<h3 id="interpretation">Interpretation</h3>
+<p>14 findings were identified, including 5 HIGH severity items. HIGH severity findings are present but do not dominate the overall distribution.</p>
+<p>Findings distribution: 5 HIGH, 9 MEDIUM, 0 LOW (Total: 14).</p>
+<p>The findings profile is primarily concentrated in logical items.</p>
+<p>Assessment coverage is partial. Some risk areas may require additional data to fully evaluate.</p>
+<h3 id="recommended-focus">Recommended Focus</h3>
+<p>Prioritise review of HIGH severity findings, followed by broader validation of related processes and data inputs.</p>
+<h2 id="2-why-this-matters">2. Why This Matters</h2>
+<p>This pilot review is designed to surface triggered findings from the supplied payroll data so they can be validated and prioritised for follow-up.</p>
+<ul>
+<li>Triggered findings may indicate process weaknesses, data inconsistencies, or evidentiary gaps</li>
+<li>Higher-severity findings should be reviewed first to confirm root cause and operational impact</li>
+<li>Lower-severity findings can still highlight control weaknesses worth addressing over time</li>
+</ul>
+<p>This pilot is intended to provide an initial evidence-based view of observed issues within the supplied data, not a full assurance conclusion.</p>
+<h2 id="3-sample-findings">3. Sample Findings</h2>
+<p><em>This pilot includes a limited selection of findings to demonstrate the types of issues identified.</em></p>
+<h3 id="finding-1-termination-processing">Finding 1 — Termination processing</h3>
+<ul>
+<li><strong>Rule:</strong> TERM-010</li>
+<li><strong>Severity:</strong> HIGH</li>
+<li><strong>Example employee:</strong> E002</li>
+</ul>
+<p><strong>Issue</strong>
+Payroll activity was recorded after the employee termination date beyond the allowed tolerance window.</p>
+<p><strong>Suggested Action</strong>
+Review the termination date and subsequent payroll activity to confirm whether the employee was correctly finalised.</p>
+<h3 id="finding-2-leave-and-entitlement-integrity">Finding 2 — Leave and entitlement integrity</h3>
+<ul>
+<li><strong>Rule:</strong> LEAVE-007</li>
+<li><strong>Severity:</strong> HIGH</li>
+<li><strong>Example employee:</strong> E002</li>
+</ul>
+<p><strong>Issue</strong>
+Leave transactions were recorded after the employee termination date.</p>
+<p><strong>Suggested Action</strong>
+Review termination processing and correct any invalid leave transactions.</p>
+<h3 id="finding-3-cross-module-integrity">Finding 3 — Cross-module integrity</h3>
+<ul>
+<li><strong>Rule:</strong> CM-006</li>
+<li><strong>Severity:</strong> HIGH</li>
+<li><strong>Example employee:</strong> E002</li>
+</ul>
+<p><strong>Issue</strong>
+Payroll activity and leave ledger movement both continue after the employee termination date.</p>
+<p><strong>Suggested Action</strong>
+Review the employee termination timeline, payroll activity, and leave transactions to confirm whether the employee was correctly finalised.</p>
+<p>These examples represent a subset of the findings identified and are intended to illustrate the types of triggered conditions present rather than the full extent of issues across the review.</p>
+<h2 id="4-scope-methodology">4. Scope &amp; Methodology</h2>
+<p>This review was conducted using structured payroll data extracts and rule-based diagnostics.</p>
+<ul>
+<li>No system access was required</li>
+<li>Analysis focused on payroll transactions and derived outcomes</li>
+<li>Findings reflect triggered rule conditions observable within the supplied data</li>
+<li>All findings are derived directly from supplied payroll data and system outputs</li>
+</ul>
+<h2 id="5-next-steps">5. Next Steps</h2>
+<p>A full review can provide:</p>
+<ul>
+<li>complete findings across all modules</li>
+<li>detailed employee-level impact analysis</li>
+<li>root cause identification</li>
+<li>practical remediation guidance</li>
+<li>audit-ready reporting outputs</li>
+</ul>
+  </main>
+</body>
+</html>

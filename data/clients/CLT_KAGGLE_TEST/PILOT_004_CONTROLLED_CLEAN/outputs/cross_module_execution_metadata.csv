@@ -1,2 +1,2 @@
 module,mode,include_supporting,generated_at_utc
-CROSS_MODULE,full,False,2026-04-10T07:21:26.429758+00:00
+CROSS_MODULE,payroll_only,True,2026-04-14T06:03:33.788085+00:00

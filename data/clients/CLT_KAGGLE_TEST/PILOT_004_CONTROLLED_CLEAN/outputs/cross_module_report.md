@@ -17,7 +17,7 @@
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Prepared as at</span>
-      <span class="cover-meta-value">10 Apr 2026</span>
+      <span class="cover-meta-value">14 Apr 2026</span>
     </div>
   </div>
 
@@ -27,11 +27,11 @@
 
 This Cross-Module Integrity report focuses solely on inconsistencies identified between related payroll datasets, including employee lifecycle, leave activity, payroll events, and termination-related records.
 
-A total of 12 cross-module integrity findings were identified across approximately 2 employees. These findings indicate possible linkage, sequencing, lifecycle, or dataset alignment weaknesses that may reduce confidence in the broader payroll data environment.
+A total of 8 cross-module integrity findings were identified across approximately 2 employees. These findings indicate possible linkage, sequencing, lifecycle, or dataset alignment weaknesses that may reduce confidence in the broader payroll data environment.
 
 Across the dataset provided, the automated checks identified:
 
-- **High:** 5
+- **High:** 1
 - **Medium:** 7
 - **Low:** 0
 
@@ -97,7 +97,7 @@ Cross-module findings should be interpreted as data integrity and linkage risk i
 
 <h2>4. Findings Overview</h2>
 
-Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect **integrity risk indicators only** and do not represent confirmed non-compliance or quantified financial exposure.
+Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect **integrity risk indicators only** and do not represent confirmed non-compliance or a quantified monetary impact.
 
 <table class="summary-table">
   <thead>
@@ -110,7 +110,7 @@ Where a Cross-Module Integrity review was performed, the table below summarises 
   <tbody>
     <tr>
       <td><span class="badge-high">High</span></td>
-      <td>5</td>
+      <td>1</td>
       <td>Cross-dataset inconsistencies that may materially affect confidence in employee lifecycle, payroll sequencing, or linked record integrity.</td>
     </tr>
     <tr>
@@ -133,41 +133,6 @@ Where a Cross-Module Integrity review was performed, the table below summarises 
 This section sets out detailed findings for <strong>Cross-Module Integrity</strong> only.
 Findings highlight potential sequencing, lifecycle, and dataset-alignment issues across related payroll records.
 They are integrity indicators and do <strong>not</strong> on their own confirm non-compliance or incorrect pay outcomes.
-
-<div class="finding high">
-  <div class="finding-header">
-    <div class="finding-title-wrap">
-      <div class="finding-title">CM-003</div>
-    </div>
-    <div class="finding-badge-wrap">
-      <span class="badge-high">HIGH</span>
-    </div>
-  </div>
-
-  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Dates: 2024-03-01 → 2024-04-20</div>
-
-  <div class="finding-section">
-  <div class="finding-label">Finding</div>
-  <div class="finding-text finding-main">A termination record has no supporting evidence reference and payroll activity continues after the termination date.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Impact</div>
-  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Recommendation</div>
-  <div class="finding-text finding-action">Review termination evidence records and confirm whether payroll activity after termination was valid or requires correction.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Finding ID</div>
-  <div class="finding-text">51bf850dc85e</div>
-</div>
-  
-<div class="finding-section">
-  <div class="finding-label">Evidence Reference</div>
-  <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;, &quot;pay_date&quot;: &quot;2024-04-20&quot;}, &quot;values&quot;: {&quot;evidence_reference&quot;: null, &quot;days_after_termination&quot;: 50, &quot;gross_amount&quot;: 2500.0}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Termination evidence reference is missing and payroll activity continues significantly after termination, indicating a likely lifecycle control breakdown.&quot;}</pre>
-</div>
-</div>
 
 <div class="finding high">
   <div class="finding-header">
@@ -201,111 +166,6 @@ They are integrity indicators and do <strong>not</strong> on their own confirm n
 <div class="finding-section">
   <div class="finding-label">Evidence Reference</div>
   <pre class="finding-evidence">{&quot;sources&quot;: [&quot;terminations.csv&quot;, &quot;pay_events.csv&quot;, &quot;leave_ledger.csv&quot;], &quot;primary_keys&quot;: {&quot;employee_id&quot;: &quot;E002&quot;, &quot;termination_date&quot;: &quot;2024-03-01&quot;}, &quot;values&quot;: {&quot;has_post_term_payroll_activity&quot;: true, &quot;has_post_term_leave_activity&quot;: true, &quot;latest_post_term_leave_date&quot;: &quot;2024-04-10&quot;, &quot;max_days_after_termination_pay&quot;: 50}, &quot;thresholds&quot;: {&quot;allowed_days_after_term&quot;: 14, &quot;high_severity_cutoff_days&quot;: 30}, &quot;explanation&quot;: &quot;Payroll activity and leave ledger movement both continue significantly after termination, indicating a likely breakdown in off-boarding control integrity.&quot;}</pre>
-</div>
-</div>
-
-<div class="finding high">
-  <div class="finding-header">
-    <div class="finding-title-wrap">
-      <div class="finding-title">CM-017</div>
-    </div>
-    <div class="finding-badge-wrap">
-      <span class="badge-high">HIGH</span>
-    </div>
-  </div>
-
-  <div class="finding-meta">Employee: E002 | Classification: LOGICAL | Event: 2024-03-05</div>
-
-  <div class="finding-section">
-  <div class="finding-label">Finding</div>
-  <div class="finding-text finding-main">A final pay event was flagged but no termination evidence reference exists.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Impact</div>
-  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Recommendation</div>
-  <div class="finding-text finding-action">Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Finding ID</div>
-  <div class="finding-text">061dc6f73892</div>
-</div>
-  
-<div class="finding-section">
-  <div class="finding-label">Evidence Reference</div>
-  <pre class="finding-evidence">{&quot;issue&quot;: &quot;final pay without evidence&quot;, &quot;evidence_reference&quot;: null}</pre>
-</div>
-</div>
-
-<div class="finding high">
-  <div class="finding-header">
-    <div class="finding-title-wrap">
-      <div class="finding-title">CM-017</div>
-    </div>
-    <div class="finding-badge-wrap">
-      <span class="badge-high">HIGH</span>
-    </div>
-  </div>
-
-  <div class="finding-meta">Employee: E005 | Classification: LOGICAL | Event: 2024-03-10</div>
-
-  <div class="finding-section">
-  <div class="finding-label">Finding</div>
-  <div class="finding-text finding-main">A final pay event was flagged but no termination evidence reference exists.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Impact</div>
-  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Recommendation</div>
-  <div class="finding-text finding-action">Ensure termination evidence such as resignation or termination documentation is recorded and linked to payroll records.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Finding ID</div>
-  <div class="finding-text">061dc6f73892</div>
-</div>
-  
-<div class="finding-section">
-  <div class="finding-label">Evidence Reference</div>
-  <pre class="finding-evidence">{&quot;issue&quot;: &quot;final pay without evidence&quot;, &quot;evidence_reference&quot;: null}</pre>
-</div>
-</div>
-
-<div class="finding high">
-  <div class="finding-header">
-    <div class="finding-title-wrap">
-      <div class="finding-title">CM-020</div>
-    </div>
-    <div class="finding-badge-wrap">
-      <span class="badge-high">HIGH</span>
-    </div>
-  </div>
-
-  <div class="finding-meta">Employee: E002 | Classification: CONTEXTUAL</div>
-
-  <div class="finding-section">
-  <div class="finding-label">Finding</div>
-  <div class="finding-text finding-main">An employee triggered multiple cross-module integrity failures.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Impact</div>
-  <div class="finding-text finding-impact">This may indicate data integrity, sequencing, or lifecycle mismatches across related payroll datasets. These issues can reduce confidence in linked records and make payroll outcomes or employee status changes harder to explain, validate, or reconcile.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Recommendation</div>
-  <div class="finding-text finding-action">Review the full lifecycle of the employee including payroll, leave, termination and evidence records.</div>
-</div>
-  <div class="finding-section">
-  <div class="finding-label">Finding ID</div>
-  <div class="finding-text">050e64ad6d2a</div>
-</div>
-  
-<div class="finding-section">
-  <div class="finding-label">Evidence Reference</div>
-  <pre class="finding-evidence">{&quot;total_findings&quot;: 6, &quot;high_findings&quot;: 3, &quot;thresholds&quot;: {&quot;min_findings&quot;: 3, &quot;min_high_severity&quot;: 2}, &quot;explanation&quot;: &quot;The employee triggered multiple cross-module integrity failures, including multiple high-severity signals, indicating a likely systemic lifecycle control breakdown.&quot;}</pre>
 </div>
 </div>
 
@@ -529,7 +389,7 @@ They are integrity indicators and do <strong>not</strong> on their own confirm n
     </div>
   </div>
 
-  <div class="finding-meta">Employee: E005 | Classification: CONTEXTUAL</div>
+  <div class="finding-meta">Employee: E002 | Classification: CONTEXTUAL</div>
 
   <div class="finding-section">
   <div class="finding-label">Finding</div>

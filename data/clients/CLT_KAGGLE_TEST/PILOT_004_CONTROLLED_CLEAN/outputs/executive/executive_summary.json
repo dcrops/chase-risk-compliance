@@ -1,32 +1,33 @@
 {
-  "total_findings": 21,
+  "total_findings": 14,
   "class_summary": {
-    "CONTEXTUAL": 6,
-    "LOGICAL": 13,
+    "CONTEXTUAL": 5,
+    "LOGICAL": 7,
     "STRUCTURAL": 2
   },
   "severity_summary": {
-    "HIGH": 12,
+    "HIGH": 5,
     "MEDIUM": 9
   },
   "class_shares": {
-    "CONTEXTUAL": 0.2857142857142857,
-    "LOGICAL": 0.6190476190476191,
-    "STRUCTURAL": 0.09523809523809523
+    "CONTEXTUAL": 0.35714285714285715,
+    "LOGICAL": 0.5,
+    "STRUCTURAL": 0.14285714285714285
   },
   "dominant_classification": "LOGICAL",
-  "dominant_severity": "HIGH",
+  "dominant_severity": "MEDIUM",
   "top_high_modules": [
-    "CROSS_MODULE",
-    "RKEG"
+    "LEAVE",
+    "TERM"
   ],
   "summary_lines": [
-    "CRC identified 21 findings across the reviewed modules.",
-    "The overall profile is primarily driven by logical integrity failures rather than structural data limitations.",
-    "High-severity findings are concentrated in cross-module lifecycle consistency and record-keeping controls, indicating the strongest exposure sits in those areas.",
-    "Structural findings are present, but they are not the primary driver of risk in this review.",
-    "Findings are split between high (57%) and medium (43%) severity, indicating a mix of immediate control concerns and broader process weaknesses."
+    "CRC identified 14 findings across the reviewed modules.",
+    "14 findings were identified, including 5 HIGH severity items. HIGH severity findings are present but do not dominate the overall distribution.",
+    "Findings distribution: 5 HIGH, 9 MEDIUM, 0 LOW (Total: 14).",
+    "The findings profile is primarily concentrated in logical items.",
+    "HIGH severity findings account for 36% of results, but do not represent the majority of findings.",
+    "HIGH severity findings were identified most often in leave calculation and balance integrity and termination handling."
   ],
-  "what_this_means": "The results suggest the main concern is substantive payroll processing and control integrity rather than simple evidentiary or data quality limitations.",
-  "recommended_focus": "Prioritise detailed review of cross-module lifecycle consistency and record-keeping controls first, then address structural data gaps that may weaken evidentiary confidence."
+  "what_this_means": "This summary reflects the distribution of triggered findings in the supplied results. It is intended to describe the observed findings profile and does not, on its own, confirm payroll error, non-compliance, or quantified exposure.",
+  "recommended_focus": "Prioritise review of HIGH severity findings, followed by broader validation of related processes and data inputs."
 }

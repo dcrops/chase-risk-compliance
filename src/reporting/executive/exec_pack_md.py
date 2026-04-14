@@ -9,7 +9,7 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from common.severity import SEVERITY_BY_CODE
-from common.report_text import scan_report_text
+from reporting.core.report_text import scan_report_text
 from reporting.core.paths import get_repo_root, get_default_outputs_dir
 from reporting.core.review_period import derive_review_period_from_windows
 from reporting.core.structure import ReportStructure
@@ -38,6 +38,19 @@ from reporting.sections.exec_pack_sections import (
 )
 
 from reporting.core.cover_page import build_cover_page
+
+from reporting.core.narrative_guard import (
+    NarrativeMetrics,
+    build_severity_interpretation,
+    build_severity_distribution_line,
+    build_classification_interpretation,
+    build_coverage_statement,
+    build_recommendation_summary,
+    ensure_valid_narrative,
+    build_calibrated_risk_line,
+    build_calibrated_module_focus_line,
+    ensure_valid_report_text,
+)
 
 
 MELBOURNE_TZ = ZoneInfo("Australia/Melbourne")
@@ -339,6 +352,20 @@ def _friendly_module_label(module_code: str) -> str:
     }
     return labels.get((module_code or "").upper(), module_code or "Unknown")
 
+def _build_exec_narrative_metrics(summary: Dict) -> NarrativeMetrics:
+    class_summary = summary.get("class_summary", {}) or {}
+    severity_summary = summary.get("severity_summary", {}) or {}
+
+    return NarrativeMetrics(
+        total=int(summary.get("total_findings", 0) or 0),
+        high=int(severity_summary.get("HIGH", 0) or 0),
+        medium=int(severity_summary.get("MEDIUM", 0) or 0),
+        low=int(severity_summary.get("LOW", 0) or 0),
+        structural=int(class_summary.get("STRUCTURAL", 0) or 0),
+        logical=int(class_summary.get("LOGICAL", 0) or 0),
+        contextual=int(class_summary.get("CONTEXTUAL", 0) or 0),
+        coverage="full",
+    )
 
 # ---------- Executive summary / risk profile ----------
 
@@ -426,13 +453,8 @@ def build_highlight_insights(base_output_dir: Path) -> str:
     if not summary:
         return "_Highlight insights not available for this run._"
 
-    total_findings = summary.get("total_findings", 0)
-    dominant_classification = summary.get("dominant_classification", "Unknown")
-    top_high_modules = summary.get("top_high_modules", [])
-    severity_summary = summary.get("severity_summary", {})
-
-    high_count = severity_summary.get("HIGH", 0)
-    medium_count = severity_summary.get("MEDIUM", 0)
+    metrics = _build_exec_narrative_metrics(summary)
+    top_high_modules = summary.get("top_high_modules", []) or []
 
     narrative_labels = {
         "TERM": "termination handling",
@@ -442,36 +464,33 @@ def build_highlight_insights(base_output_dir: Path) -> str:
         "CROSS_MODULE": "cross-module lifecycle consistency",
     }
 
-    friendly_modules = [narrative_labels.get(m, m) for m in top_high_modules[:2]]
+    severity_line = build_severity_interpretation(metrics)
+    distribution_line = build_severity_distribution_line(metrics)
+    classification_line = build_classification_interpretation(metrics)
+    calibrated_risk_line = build_calibrated_risk_line(metrics)
+    module_line = build_calibrated_module_focus_line(
+        top_modules=top_high_modules,
+        module_labels=narrative_labels,
+        m=metrics,
+    )
 
-    if len(friendly_modules) >= 2:
-        module_text = f"{friendly_modules[0]} and {friendly_modules[1]}"
-    elif len(friendly_modules) == 1:
-        module_text = friendly_modules[0]
-    else:
-        module_text = "the highest-severity areas identified"
-
-    if total_findings > 0:
-        high_pct = round((high_count / total_findings) * 100)
-        medium_pct = round((medium_count / total_findings) * 100)
-
-        severity_line = (
-            f"- Findings are split between **high ({high_pct}%)** and **medium ({medium_pct}%) severity**, "
-            "indicating a mix of immediate control concerns and broader process weaknesses."
-        )
-    else:
-        severity_line = (
-            "- Severity distribution could not be determined from the available results."
-        )
+    for line in [
+        severity_line,
+        distribution_line,
+        classification_line,
+        calibrated_risk_line,
+        module_line,
+    ]:
+        ensure_valid_narrative(line.replace("**", ""), metrics)
 
     lines: List[str] = []
     lines.append("The following points summarise the most important observations from the analysis:")
     lines.append("")
-    lines.append(f"- The strongest concentration of risk sits in **{module_text}**.")
-    lines.append(
-        f"- The overall profile is dominated by **{dominant_classification.lower()}** findings rather than primarily structural data issues."
-    )
-    lines.append(severity_line)
+    lines.append(f"- {severity_line}")
+    lines.append(f"- {distribution_line}")
+    lines.append(f"- {classification_line}")
+    lines.append(f"- {calibrated_risk_line}")
+    lines.append(f"- {module_line}")
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -507,15 +526,14 @@ def build_risk_profile_overview(base_output_dir: Path) -> str:
     low_count = severity_summary.get("LOW", 0)
 
     friendly_modules = [_friendly_module_label(m) for m in top_high_modules]
-    module_text = (
-        ", ".join(friendly_modules)
-        if friendly_modules
-        else "No dominant module concentration identified"
-    )
+    if friendly_modules:
+        module_text = ", ".join(friendly_modules)
+    else:
+        module_text = "None identified"
 
     lines: List[str] = []
     lines.append(
-        "This section summarises the overall risk profile across all included modules using the consolidated CRC summary outputs."
+        "This section summarises the overall findings profile across all included modules using the consolidated CRC summary outputs."
     )
     lines.append("")
 
@@ -533,11 +551,9 @@ def build_risk_profile_overview(base_output_dir: Path) -> str:
     lines.append(f"    <tr><td>High severity findings</td><td>{_fmt_count_pct(high_count, total_findings)}</td></tr>")
     lines.append(f"    <tr><td>Medium severity findings</td><td>{_fmt_count_pct(medium_count, total_findings)}</td></tr>")
     lines.append(f"    <tr><td>Low severity findings</td><td>{_fmt_count_pct(low_count, total_findings)}</td></tr>")
+    lines.append(f"    <tr><td>Modules with most HIGH severity findings</td><td>{module_text}</td></tr>")
     lines.append("  </tbody>")
     lines.append("</table>")
-    lines.append("")
-
-    lines.append(f"**Highest concentration of high-severity findings:** {module_text}")
     lines.append("")
     lines.append(
         "Classification is used to distinguish between substantive integrity issues, structural data limitations, and contextual items requiring human judgement."
@@ -554,7 +570,7 @@ def build_coverage_data_dependency_insight(base_output_dir: Path) -> str:
     text = load_optional_markdown(path, drop_first_h1=True)
 
     if not text:
-        return "_Coverage and data dependency insight not available for this run._"
+        return "_Coverage and data dependency insight was not generated for this run, as no comparison dataset was provided._"
 
     intro = """
 ### What this section shows
@@ -767,58 +783,58 @@ def _build_report_title(modules: set[str]) -> str:
     return "Payroll Risk & Evidence Review"
 
 
-def build_interpretation_block_exec(included_modules: set[str]) -> str:
-    mods = {m.strip().upper() for m in (included_modules or set())}
+def build_interpretation_block_exec(base_output_dir: Path) -> str:
+    summary = load_executive_summary_json(base_output_dir)
+    if not summary:
+        return "_Interpretation not available for this run._"
 
-    items: list[str] = []
+    # Build metrics
+    metrics = _build_exec_narrative_metrics(summary)
 
-    if MODULE_LEAVE in mods or MODULE_LSL in mods:
-        if MODULE_LEAVE in mods and MODULE_LSL in mods:
-            label = "Leave &amp; LSL findings"
-        elif MODULE_LEAVE in mods:
-            label = "Leave findings"
-        else:
-            label = "LSL findings"
+    # Build controlled narrative components
+    severity_line = build_severity_interpretation(metrics)
+    distribution_line = build_severity_distribution_line(metrics)
+    classification_line = build_classification_interpretation(metrics)
+    coverage_line = build_coverage_statement(metrics)
+    recommendation_line = build_recommendation_summary(metrics)
 
-        items.append(
-            f"<li><strong>{label}</strong> highlight potential anomalies in leave balances, accruals and usage. "
-            "These indicators relate to <em>payroll outcomes and configuration</em> and may require remediation if confirmed.</li>"
-        )
+    # Validate all narrative before output
+    for line in [
+        severity_line,
+        distribution_line,
+        classification_line,
+        coverage_line,
+        recommendation_line,
+    ]:
+        ensure_valid_narrative(line.replace("**", ""), metrics)
 
-    if MODULE_TERM in mods:
-        items.append(
-            "<li><strong>Termination Exposure findings</strong> relate to the completeness, sequencing and documentation "
-            "of termination events and final pay. They indicate how readily the organisation could evidence termination "
-            "processing if challenged.</li>"
-        )
+    # Assemble output
+    lines: List[str] = []
+    lines.append(
+        "The following interpretation summarises the observed findings profile based on the available data."
+    )
+    lines.append("")
+    lines.append(severity_line)
+    lines.append("")
+    lines.append(distribution_line)
+    lines.append("")
+    lines.append(classification_line)
+    lines.append("")
+    lines.append(coverage_line)
+    lines.append("")
+    lines.append("### Recommended Focus")
+    lines.append("")
+    lines.append(recommendation_line)
+    lines.append("")
+    lines.append(
+        "_This interpretation is based on triggered findings and reflects observed patterns in the supplied data. "
+        "It does not, on its own, confirm payroll error, non-compliance, or quantified exposure._"
+    )
+    lines.append("")
+    lines.append("---")
+    lines.append("")
 
-    if MODULE_RKEG in mods:
-        items.append(
-            "<li><strong>Record-Keeping &amp; Evidence Gaps (RKEG) findings</strong> assess the strength of the evidentiary "
-            "trail supporting payroll decisions. They do <strong>not</strong> indicate incorrect pay outcomes; they highlight "
-            "where records may be incomplete or difficult to substantiate.</li>"
-        )
-
-    if MODULE_CROSS in mods:
-        items.append(
-            "<li><strong>Cross-Module Integrity findings</strong> highlight inconsistencies between related datasets, such as "
-            "employee lifecycle status, leave activity, and payroll events. They indicate where linked records may not align "
-            "cleanly across the broader payroll data environment.</li>"
-        )
-
-    list_html = ""
-    if items:
-        list_html = "<ul>\n" + "\n".join(items) + "\n</ul>\n"
-
-    return f"""
-**How to interpret findings across modules**
-
-<div class="callout keep-together">
-  {list_html}
-  <p>Findings are risk indicators requiring validation and do not, on their own, confirm non-compliance, legislative contravention, or underpayment.</p>
-  <p><em>Severity levels reflect evidential risk and control strength, and do not represent confirmed contraventions or quantified financial exposure.</em></p>
-</div>
-""".strip()
+    return "\n".join(lines)
 
 
 def build_data_sources_section(included_modules: set[str] | list[str] | None, base_output_dir: Path) -> str:
@@ -1121,7 +1137,7 @@ def generate_exec_pack(
                 cross_summary_content,
             )
 
-        interpretation_content = build_interpretation_block_exec(included)
+        interpretation_content = build_interpretation_block_exec(target_dir)
         structure.add(
             "How to interpret findings",
             2,
@@ -1134,6 +1150,17 @@ def generate_exec_pack(
 
     parts.append(structure.render_markdown())
     final_md = "\n".join(parts)
+
+    summary_for_metrics = load_executive_summary_json(target_dir)
+    exec_metrics = _build_exec_narrative_metrics(summary_for_metrics) if summary_for_metrics else NarrativeMetrics(
+        total=0,
+        high=0,
+        medium=0,
+        low=0,
+        coverage="full",
+    )
+
+    ensure_valid_report_text(final_md, exec_metrics)
 
     scan_result = scan_report_text(final_md)
 

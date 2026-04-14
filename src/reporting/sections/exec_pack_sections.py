@@ -210,7 +210,7 @@ def build_scope_term() -> str:
     lines.append("Severity does not represent:")
     lines.append("")
     lines.append("- likelihood of underpayment")
-    lines.append("- magnitude of financial exposure")
+    lines.append("- magnitude of potential monetary impact")
     lines.append("- remediation priority")
     lines.append("")
     lines.append("---")
@@ -404,7 +404,7 @@ As part of this review, a Record-Keeping & Evidence Gaps (RKEG) assessment was p
 
 The RKEG assessment focuses on evidential strength only. It does not determine whether payroll outcomes are correct or incorrect, and does not interpret awards, enterprise agreements or employment contracts.
 
-The table below summarises the number of record-keeping and evidence gaps identified by severity. Counts reflect **evidential risk** only and do not represent confirmed non-compliance or quantified financial exposure.
+The table below summarises the number of record-keeping and evidence gaps identified by severity. Counts reflect **evidential risk** only and do not represent confirmed non-compliance or a quantified monetary impact.
 
 <table class="summary-table">
   <thead>
@@ -479,7 +479,7 @@ def build_term_severity_summary(term_counts: Dict[str, int]) -> str:
         return build_term_no_findings_message("termination-related")
 
     return f"""
-Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect **evidential risk only** and do not represent confirmed non-compliance or quantified financial exposure, or remediation priority.
+Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect **evidential risk only** and do not represent confirmed non-compliance, a quantified monetary impact, or remediation priority.
 
 <table class="summary-table">
   <thead>
@@ -516,7 +516,7 @@ def build_cross_module_summary(cross_counts: Dict[str, int]) -> str:
     if not any(cross_counts.values()):
         return build_cross_no_findings_message("cross-module integrity")
 
-    return f"""Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect **integrity risk indicators only** and do not represent confirmed non-compliance or quantified financial exposure.
+    return f"""Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect **integrity risk indicators only** and do not represent confirmed non-compliance or a quantified monetary impact.
 
 <table class="summary-table">
   <thead>

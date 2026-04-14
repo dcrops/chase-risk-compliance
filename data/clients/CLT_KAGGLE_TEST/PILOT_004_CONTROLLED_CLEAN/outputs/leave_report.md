@@ -17,7 +17,7 @@
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Prepared as at</span>
-      <span class="cover-meta-value">10 Apr 2026</span>
+      <span class="cover-meta-value">14 Apr 2026</span>
     </div>
   </div>
 
