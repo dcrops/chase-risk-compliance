@@ -1,11 +1,11 @@
 ## Executive Summary
 
-- CRC identified 14 findings across the reviewed modules.
-- 14 findings were identified, including 5 HIGH severity items. HIGH severity findings are present but do not dominate the overall distribution.
-- Findings distribution: 5 HIGH, 9 MEDIUM, 0 LOW (Total: 14).
-- The findings profile is primarily concentrated in logical items.
-- HIGH severity findings account for 36% of results, but do not represent the majority of findings.
-- HIGH severity findings were identified most often in leave calculation and balance integrity and termination handling.
+- CRC identified 21 findings across the reviewed modules.
+- 21 findings were identified, including 12 HIGH severity items. HIGH severity findings represent a significant proportion of total findings.
+- Findings distribution: 12 HIGH, 9 MEDIUM, 0 LOW (Total: 21).
+- The findings profile is strongly concentrated in logical items.
+- HIGH severity findings account for 57% of results, indicating an elevated findings profile that should be prioritised for review.
+- HIGH severity findings were concentrated most heavily in cross-module lifecycle consistency and record-keeping controls.
 
 ### What this means
 

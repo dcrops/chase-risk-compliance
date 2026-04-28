@@ -24,39 +24,33 @@
   <div class="cover-confidentiality">Confidential</div>
 </div>
 
-# Payroll Integrity Pilot Review
-
-**Organisation:** Test Org  
-**Pilot:** PILOT_004_CONTROLLED_CLEAN  
-**Review Period:** 15 Mar 2024 to 10 Apr 2024  
-
----
-
 ## 1. Executive Summary
 
 A targeted payroll diagnostics review was conducted using available payroll data to identify triggered findings across key payroll integrity and evidence-related risk areas.
 
-**Total Findings Identified:** **14**
+**Total Findings Identified:** **21**
 
 ### Severity Breakdown
 
-- High: 5
+- High: 12
 - Medium: 9
 - Low: 0
 
 ### Interpretation
 
-14 findings were identified, including 5 HIGH severity items. HIGH severity findings are present but do not dominate the overall distribution.
+21 findings were identified, including 12 HIGH severity items. HIGH severity findings represent a significant proportion of total findings.
 
-Findings distribution: 5 HIGH, 9 MEDIUM, 0 LOW (Total: 14).
+Findings distribution: 12 HIGH, 9 MEDIUM, 0 LOW (Total: 21).
 
-The findings profile is primarily concentrated in logical items.
+The findings profile is strongly concentrated in logical items.
 
 Assessment coverage is partial. Some risk areas may require additional data to fully evaluate.
 
 ### Recommended Focus
 
 Prioritise review of HIGH severity findings, followed by broader validation of related processes and data inputs.
+
+HIGH severity findings represent conditions that may warrant immediate validation, while lower severity items may indicate control weaknesses that can be addressed over time.
 
 ## 2. Why This Matters
 
@@ -96,19 +90,21 @@ Leave transactions were recorded after the employee termination date.
 **Suggested Action**
 Review termination processing and correct any invalid leave transactions.
 
-### Finding 3 — Cross-module integrity
+### Finding 3 — Record-keeping and evidence
 
-- **Rule:** CM-006
+- **Rule:** RKEG-PAY-010
 - **Severity:** HIGH
 - **Example employee:** E002
 
 **Issue**
-Payroll activity and leave ledger movement both continue after the employee termination date.
+Pay events were identified that fall outside the employee's recorded employment period.
 
 **Suggested Action**
-Review the employee termination timeline, payroll activity, and leave transactions to confirm whether the employee was correctly finalised.
+Reconcile pay events against employment start and termination dates and investigate any payments recorded outside valid employment periods.
 
 These examples represent a subset of the findings identified and are intended to illustrate the types of triggered conditions present rather than the full extent of issues across the review.
+
+The presence of these examples suggests similar conditions may exist across a broader portion of the dataset and should be considered as part of a wider validation effort.
 
 ## 4. Scope & Methodology
 
@@ -128,3 +124,5 @@ A full review can provide:
 - root cause identification
 - practical remediation guidance
 - audit-ready reporting outputs
+
+This pilot provides an initial, data-driven view of triggered conditions and is not intended to represent a full payroll assurance review.

@@ -863,27 +863,23 @@
   <div class="cover-confidentiality">Confidential</div>
 </div>
 
-<h1 id="payroll-integrity-pilot-review">Payroll Integrity Pilot Review</h1>
-<p><strong>Organisation:</strong> Test Org<br />
-<strong>Pilot:</strong> PILOT_004_CONTROLLED_CLEAN<br />
-<strong>Review Period:</strong> 15 Mar 2024 to 10 Apr 2024  </p>
-<hr />
 <h2 id="1-executive-summary">1. Executive Summary</h2>
 <p>A targeted payroll diagnostics review was conducted using available payroll data to identify triggered findings across key payroll integrity and evidence-related risk areas.</p>
-<p><strong>Total Findings Identified:</strong> <strong>14</strong></p>
+<p><strong>Total Findings Identified:</strong> <strong>21</strong></p>
 <h3 id="severity-breakdown">Severity Breakdown</h3>
 <ul>
-<li>High: 5</li>
+<li>High: 12</li>
 <li>Medium: 9</li>
 <li>Low: 0</li>
 </ul>
 <h3 id="interpretation">Interpretation</h3>
-<p>14 findings were identified, including 5 HIGH severity items. HIGH severity findings are present but do not dominate the overall distribution.</p>
-<p>Findings distribution: 5 HIGH, 9 MEDIUM, 0 LOW (Total: 14).</p>
-<p>The findings profile is primarily concentrated in logical items.</p>
+<p>21 findings were identified, including 12 HIGH severity items. HIGH severity findings represent a significant proportion of total findings.</p>
+<p>Findings distribution: 12 HIGH, 9 MEDIUM, 0 LOW (Total: 21).</p>
+<p>The findings profile is strongly concentrated in logical items.</p>
 <p>Assessment coverage is partial. Some risk areas may require additional data to fully evaluate.</p>
 <h3 id="recommended-focus">Recommended Focus</h3>
 <p>Prioritise review of HIGH severity findings, followed by broader validation of related processes and data inputs.</p>
+<p>HIGH severity findings represent conditions that may warrant immediate validation, while lower severity items may indicate control weaknesses that can be addressed over time.</p>
 <h2 id="2-why-this-matters">2. Why This Matters</h2>
 <p>This pilot review is designed to surface triggered findings from the supplied payroll data so they can be validated and prioritised for follow-up.</p>
 <ul>
@@ -914,17 +910,18 @@ Review the termination date and subsequent payroll activity to confirm whether t
 Leave transactions were recorded after the employee termination date.</p>
 <p><strong>Suggested Action</strong>
 Review termination processing and correct any invalid leave transactions.</p>
-<h3 id="finding-3-cross-module-integrity">Finding 3 — Cross-module integrity</h3>
+<h3 id="finding-3-record-keeping-and-evidence">Finding 3 — Record-keeping and evidence</h3>
 <ul>
-<li><strong>Rule:</strong> CM-006</li>
+<li><strong>Rule:</strong> RKEG-PAY-010</li>
 <li><strong>Severity:</strong> HIGH</li>
 <li><strong>Example employee:</strong> E002</li>
 </ul>
 <p><strong>Issue</strong>
-Payroll activity and leave ledger movement both continue after the employee termination date.</p>
+Pay events were identified that fall outside the employee's recorded employment period.</p>
 <p><strong>Suggested Action</strong>
-Review the employee termination timeline, payroll activity, and leave transactions to confirm whether the employee was correctly finalised.</p>
+Reconcile pay events against employment start and termination dates and investigate any payments recorded outside valid employment periods.</p>
 <p>These examples represent a subset of the findings identified and are intended to illustrate the types of triggered conditions present rather than the full extent of issues across the review.</p>
+<p>The presence of these examples suggests similar conditions may exist across a broader portion of the dataset and should be considered as part of a wider validation effort.</p>
 <h2 id="4-scope-methodology">4. Scope &amp; Methodology</h2>
 <p>This review was conducted using structured payroll data extracts and rule-based diagnostics.</p>
 <ul>
@@ -942,6 +939,7 @@ Review the employee termination timeline, payroll activity, and leave transactio
 <li>practical remediation guidance</li>
 <li>audit-ready reporting outputs</li>
 </ul>
+<p>This pilot provides an initial, data-driven view of triggered conditions and is not intended to represent a full payroll assurance review.</p>
   </main>
 </body>
 </html>

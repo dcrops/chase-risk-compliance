@@ -3,3 +3,5 @@ pyyaml
 numpy
 openai
 pytest
+markdown
+weasyprint

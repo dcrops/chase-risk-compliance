@@ -233,14 +233,6 @@ def write_pilot_report(
     )
     lines.append("")
 
-    lines.append("# Payroll Integrity Pilot Review")
-    lines.append("")
-    lines.append(f"**Organisation:** {organisation_name}  ")
-    lines.append(f"**Pilot:** {pilot}  ")
-    lines.append(f"**Review Period:** {display_review_period}  ")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
     lines.append("## 1. Executive Summary")
     lines.append("")
     lines.append(
@@ -268,6 +260,10 @@ def write_pilot_report(
     lines.append("### Recommended Focus")
     lines.append("")
     lines.append(recommendation_interp)
+    lines.append("")
+    lines.append(
+        "HIGH severity findings represent conditions that may warrant immediate validation, while lower severity items may indicate control weaknesses that can be addressed over time."
+    )
     lines.append("")
     lines.append("## 2. Why This Matters")
     lines.append("")
@@ -310,6 +306,10 @@ def write_pilot_report(
         "These examples represent a subset of the findings identified and are intended to illustrate the types of triggered conditions present rather than the full extent of issues across the review."
     )
     lines.append("")
+    lines.append(
+        "The presence of these examples suggests similar conditions may exist across a broader portion of the dataset and should be considered as part of a wider validation effort."
+    )
+    lines.append("")
 
     lines.append("## 4. Scope & Methodology")
     lines.append("")
@@ -339,6 +339,10 @@ def write_pilot_report(
     lines.append("- root cause identification")
     lines.append("- practical remediation guidance")
     lines.append("- audit-ready reporting outputs")
+    lines.append("")
+    lines.append(
+        "This pilot provides an initial, data-driven view of triggered conditions and is not intended to represent a full payroll assurance review."
+    )
     lines.append("")
 
     final_text = "\n".join(lines)
