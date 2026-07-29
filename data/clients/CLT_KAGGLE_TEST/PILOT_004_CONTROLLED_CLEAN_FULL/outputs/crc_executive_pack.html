@@ -207,6 +207,45 @@
   }
   
   /* =========================
+   PILOT REPORT
+   ========================= */
+
+  .pilot-report h1 {
+    font-size: 22pt;
+    margin-bottom: 10pt;
+    color: #111827;
+  }
+
+  .pilot-report h2 {
+    font-size: 15pt;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    color: #6d1023;
+  }
+
+  .pilot-report h3 {
+    font-size: 11.5pt;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    color: #374151;
+  }
+
+  .pilot-report p,
+  .pilot-report li {
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+
+  .pilot-report ul {
+    margin-top: 4pt;
+    margin-bottom: 10pt;
+  }
+
+  .pilot-report strong {
+    color: #111827;
+  }
+
+  /* =========================
      Base layout & typography
      ========================= */
   html,
@@ -809,7 +848,7 @@
   <div class="cover-meta-card">
     <div class="cover-meta-row">
       <span class="cover-meta-label">Organisation</span>
-      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+      <span class="cover-meta-value">Organisation name not provided</span>
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Review period</span>
@@ -817,7 +856,7 @@
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Prepared as at</span>
-      <span class="cover-meta-value">10 Apr 2026</span>
+      <span class="cover-meta-value">09 Jul 2026</span>
     </div>
   </div>
 
@@ -829,7 +868,7 @@
 <li>CRC identified 28 findings across the reviewed modules.</li>
 <li>The overall profile is primarily driven by logical integrity failures rather than structural data limitations.</li>
 <li>High-severity findings are concentrated in cross-module lifecycle consistency and record-keeping controls, indicating the strongest exposure sits in those areas.</li>
-<li>Structural findings are present, but they are not the primary driver of risk in this review.</li>
+<li>Structural findings are present, but they are not the main contributor to the observed risk indicators in this review.</li>
 <li>Findings are split between high (43%) and medium (57%) severity, indicating a mix of immediate control concerns and broader process weaknesses.</li>
 </ul>
 <h3>What this means</h3>
@@ -840,14 +879,16 @@
 
 <p>The following points summarise the most important observations from the analysis:</p>
 <ul>
-<li>The strongest concentration of risk sits in <strong>cross-module lifecycle consistency and record-keeping controls</strong>.</li>
-<li>The overall profile is dominated by <strong>logical</strong> findings rather than primarily structural data issues.</li>
-<li>Findings are split between <strong>high (43%)</strong> and <strong>medium (57%) severity</strong>, indicating a mix of immediate control concerns and broader process weaknesses.</li>
+<li>28 findings were identified, including 12 HIGH severity items. HIGH severity findings represent a significant proportion of total findings.</li>
+<li>Findings distribution: 12 HIGH, 16 MEDIUM, 0 LOW (Total: 28).</li>
+<li>The findings profile is primarily concentrated in logical items.</li>
+<li>HIGH severity findings account for 43% of results, indicating a materially elevated concentration of higher-severity findings.</li>
+<li>HIGH severity findings were concentrated most heavily in cross-module lifecycle consistency and record-keeping controls.</li>
 </ul>
 <hr>
 <h2>3. Risk Profile Overview</h2>
 
-<p>This section summarises the overall risk profile across all included modules using the consolidated CRC summary outputs.</p>
+<p>This section summarises the overall findings profile across all included modules using the consolidated CRC summary outputs.</p>
 <table class="summary-table">
   <thead>
     <tr><th>Metric</th><th>Value</th></tr>
@@ -862,10 +903,10 @@
     <tr><td>High severity findings</td><td>12 (43%)</td></tr>
     <tr><td>Medium severity findings</td><td>16 (57%)</td></tr>
     <tr><td>Low severity findings</td><td>0 (0%)</td></tr>
+    <tr><td>Modules with most HIGH severity findings</td><td>Cross-Module Integrity, Record-Keeping & Evidence Gaps</td></tr>
   </tbody>
 </table>
 
-<p><strong>Highest concentration of high-severity findings:</strong> Cross-Module Integrity, Record-Keeping &amp; Evidence Gaps</p>
 <p>Classification is used to distinguish between substantive integrity issues, structural data limitations, and contextual items requiring human judgement.</p>
 <hr>
 <h2 class="page-break-before">4. Coverage & Data Dependency Insight</h2>
@@ -883,48 +924,49 @@
 <li>Full analysis findings: <strong>28</strong></li>
 <li>Additional findings identified with broader data coverage: <strong>7 (33%)</strong></li>
 </ul>
-<p><strong>TERM</strong> shows the largest increase in findings when additional datasets are available, with <strong>6 additional findings</strong> (150% increase).</p>
+<p>In this comparison, <strong>TERM</strong> had the largest increase in findings when broader datasets were included, with <strong>6 additional findings</strong> (150% increase).</p>
 <h2>Module Breakdown</h2>
 <h3>LEAVE</h3>
 <ul>
 <li>Payroll-only: 2 findings (core=2, supporting=0, extended=0)</li>
 <li>Full: 2 findings (core=2, supporting=0, extended=0)</li>
-<li>No additional findings were identified with broader datasets. This module is largely assessable using payroll-only data.</li>
+<li>No additional findings were identified with broader datasets. Based on this comparison run, this module did not show expanded finding coverage when broader data was included.</li>
 </ul>
 <h3>LSL</h3>
 <ul>
 <li>Payroll-only: 0 findings (core=0, supporting=0, extended=0)</li>
 <li>Full: 0 findings (core=0, supporting=0, extended=0)</li>
-<li>No additional findings were identified with broader datasets. This module is largely assessable using payroll-only data.</li>
+<li>No additional findings were identified with broader datasets. Based on this comparison run, this module did not show expanded finding coverage when broader data was included.</li>
 </ul>
 <h3>TERM</h3>
 <ul>
 <li>Payroll-only: 4 findings (core=4, supporting=0, extended=0)</li>
 <li>Full: 10 findings (core=4, supporting=0, extended=6)</li>
 <li>Additional findings identified: 6 (150% increase)</li>
+<li>In this comparison, broader datasets identified additional termination-related findings that were not triggered in the payroll-only run.</li>
 </ul>
-<p>Termination-related risks show the strongest dependency on additional datasets. These areas are not fully assessable using payroll-only data and may only be identified when broader system context is available.</p>
 <h3>RKEG</h3>
 <ul>
 <li>Payroll-only: 3 findings (core=0, supporting=3, extended=0)</li>
 <li>Full: 4 findings (core=0, supporting=3, extended=1)</li>
 <li>Additional findings identified: 1 (33% increase)</li>
+<li>In this comparison, broader datasets identified additional record-keeping and evidence-related findings that were not triggered in the payroll-only run.</li>
 </ul>
-<p>Governance and evidence-related risks are partially observable in payroll data, with additional datasets improving both coverage and confidence of assessment.</p>
 <h3>CROSS_MODULE</h3>
 <ul>
 <li>Payroll-only: 12 findings (core=1, supporting=11, extended=0)</li>
 <li>Full: 12 findings (core=1, supporting=11, extended=0)</li>
-<li>No additional findings were identified with broader datasets. This module is fully assessable using payroll-only data and provides strong visibility into cross-dataset inconsistencies.</li>
+<li>No additional findings were identified with broader datasets. Based on this comparison run, this module was assessable from payroll-only data.</li>
 </ul>
 <h2>Interpretation</h2>
-<p>Payroll-only analysis provides strong visibility into balance integrity, lifecycle sequencing, and cross-dataset consistency.</p>
-<p>However, certain risk categories—particularly termination handling and governance controls—are not fully assessable without broader system context.</p>
-<p>This reflects a coverage-based diagnostic model, where different datasets enable different levels of risk visibility.</p>
+<p>This comparison shows how findings counts changed between the payroll-only run and the broader-data run.</p>
+<p>Where additional findings appear in the broader-data run, this indicates that those findings were only triggered when additional datasets were available in that comparison.</p>
+<p>Where no additional findings appear, this indicates that the broader-data run did not increase triggered findings for that module in this comparison.</p>
+<p>These results should be interpreted as a comparison of triggered finding coverage between two analysis modes, not as a conclusion about overall payroll risk.</p>
 <p>This supports a tiered diagnostic approach:</p>
 <ul>
-<li>Payroll-only → fast, low-friction, high-confidence baseline</li>
-<li>Full analysis → expanded coverage and deeper risk visibility</li>
+<li>Payroll-only → baseline review using core payroll datasets</li>
+<li>Full analysis → broader review using additional available datasets</li>
 </ul>
 <h2 class="page-break-before">5. Data Sources</h2>
 
@@ -1043,7 +1085,7 @@
 <p>Severity does not represent:</p>
 <ul>
 <li>likelihood of underpayment</li>
-<li>magnitude of financial exposure</li>
+<li>magnitude of potential monetary impact</li>
 <li>remediation priority</li>
 </ul>
 <hr>
@@ -1153,7 +1195,7 @@ This reflects a data coverage limitation rather than a confirmed absence of LSL 
 <hr>
 <h3>7.3. Termination Exposure – Severity Overview</h3>
 
-<p>Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect <strong>evidential risk only</strong> and do not represent confirmed non-compliance or quantified financial exposure, or remediation priority.</p>
+<p>Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect <strong>evidential risk only</strong> and do not represent confirmed non-compliance, a quantified monetary impact, or remediation priority.</p>
 <table class="summary-table">
   <thead>
     <tr>
@@ -1186,7 +1228,7 @@ This reflects a data coverage limitation rather than a confirmed absence of LSL 
 
 <p>As part of this review, a Record-Keeping &amp; Evidence Gaps (RKEG) assessment was performed to evaluate whether payroll-related records are sufficiently complete, consistent and traceable to support payroll decisions if subject to audit or regulatory review.</p>
 <p>The RKEG assessment focuses on evidential strength only. It does not determine whether payroll outcomes are correct or incorrect, and does not interpret awards, enterprise agreements or employment contracts.</p>
-<p>The table below summarises the number of record-keeping and evidence gaps identified by severity. Counts reflect <strong>evidential risk</strong> only and do not represent confirmed non-compliance or quantified financial exposure.</p>
+<p>The table below summarises the number of record-keeping and evidence gaps identified by severity. Counts reflect <strong>evidential risk</strong> only and do not represent confirmed non-compliance or a quantified monetary impact.</p>
 <table class="summary-table">
   <thead>
     <tr>
@@ -1217,7 +1259,7 @@ This reflects a data coverage limitation rather than a confirmed absence of LSL 
 <hr>
 <h3>7.5. Cross-Module Integrity – Summary Overview</h3>
 
-<p>Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect <strong>integrity risk indicators only</strong> and do not represent confirmed non-compliance or quantified financial exposure.</p>
+<p>Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect <strong>integrity risk indicators only</strong> and do not represent confirmed non-compliance or a quantified monetary impact.</p>
 <table class="summary-table">
   <thead>
     <tr>
@@ -1248,19 +1290,15 @@ This reflects a data coverage limitation rather than a confirmed absence of LSL 
 <hr>
 <h3>7.6. How to interpret findings</h3>
 
-<p><strong>How to interpret findings across modules</strong></p>
-<div class="callout keep-together">
-  <ul>
-<li><strong>Leave &amp; LSL findings</strong> highlight potential anomalies in leave balances, accruals and usage. These indicators relate to <em>payroll outcomes and configuration</em> and may require remediation if confirmed.</li>
-<li><strong>Termination Exposure findings</strong> relate to the completeness, sequencing and documentation of termination events and final pay. They indicate how readily the organisation could evidence termination processing if challenged.</li>
-<li><strong>Record-Keeping &amp; Evidence Gaps (RKEG) findings</strong> assess the strength of the evidentiary trail supporting payroll decisions. They do <strong>not</strong> indicate incorrect pay outcomes; they highlight where records may be incomplete or difficult to substantiate.</li>
-<li><strong>Cross-Module Integrity findings</strong> highlight inconsistencies between related datasets, such as employee lifecycle status, leave activity, and payroll events. They indicate where linked records may not align cleanly across the broader payroll data environment.</li>
-</ul>
-
-  <p>Findings are risk indicators requiring validation and do not, on their own, confirm non-compliance, legislative contravention, or underpayment.</p>
-  <p><em>Severity levels reflect evidential risk and control strength, and do not represent confirmed contraventions or quantified financial exposure.</em></p>
-</div>
-
+<p>The following interpretation summarises the observed findings profile based on the available data.</p>
+<p>28 findings were identified, including 12 HIGH severity items. HIGH severity findings represent a significant proportion of total findings.</p>
+<p>Findings distribution: 12 HIGH, 16 MEDIUM, 0 LOW (Total: 28).</p>
+<p>The findings profile is primarily concentrated in logical items.</p>
+<p>Assessment coverage reflects all datasets supplied for this review.</p>
+<h3>Recommended Focus</h3>
+<p>Prioritise review of HIGH severity findings, followed by broader validation of related processes and data inputs.</p>
+<p><em>This interpretation is based on triggered findings and reflects observed patterns in the supplied data. It does not, on its own, confirm payroll error, non-compliance, or quantified exposure.</em></p>
+<hr>
 <h2>8. Limitations & Assumptions</h2>
 
 <p>This review is subject to the following limitations:</p>

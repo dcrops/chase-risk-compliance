@@ -4,71 +4,107 @@
 # Copy this file into:
 # data/clients/<CLIENT>/<PILOT>/config/column_mapping.yaml
 #
-# Then update the right-hand side values to match your dataset.
+# Contract
+# --------
+# Each section configures one canonical dataset:
+#
+#   <dataset>:
+#     source_file: <file name inside the pilot's raw/ directory>
+#     rename:
+#       <source column>: <canonical column>
+#
+# Direction: SOURCE column on the LEFT, CANONICAL column on the RIGHT.
+# Ingestion applies `rename` directly to the raw dataframe, so anything on the
+# left must exist in the source file and anything on the right is what the
+# diagnostic modules read.
+#
+# Declare `rename` even when the source headers are already canonical
+# (map each column to itself).
+#
+# Required datasets: employees, terminations, pay_events, leave_ledger.
+# Optional dataset:  leave_snapshot.
+# The mapping is validated before ingestion begins; unsupported keys, missing
+# source files and malformed date formats fail immediately.
+#
+# Dates
+# -----
+# Dates are parsed against declared formats only; formats are never inferred.
+# The default is ISO %Y-%m-%d. Override it at three levels, most specific first:
+#
+#   date_format: "%d/%m/%Y"          # whole run (top level, optional)
+#   <dataset>.date_format            # one dataset
+#   <dataset>.date_formats.<column>  # one canonical column
+#
+# A column may declare a list of formats where the source genuinely mixes them.
+# Any non-null value matching none of the declared formats stops ingestion.
 
-# If a field is not available in the source data, leave it unmapped.
-# CRC will handle optional fields gracefully where possible.
-
-# Each section maps a raw dataset to CRC's expected schema.
-# Left = CRC canonical field
-# Right = column name in client file
+# Uncomment for Australian day-first source extracts:
+# date_format: "%d/%m/%Y"
 
 # ------------------------------------------
-# EMPLOYEES
+# EMPLOYEES (required)
 # ------------------------------------------
 employees:
-  source: employees.csv
-  columns:
+  source_file: employees.csv
+  rename:
     employee_id: employee_id
     start_date: start_date
-    termination_date: termination_date   # optional
-    employment_status: employment_status # optional
-    employment_type: employment_type     # optional
-    annual_salary: annual_salary         # optional
-    base_rate: base_rate                 # optional
+    employment_status: employment_status   # optional
+    employment_type: employment_type       # optional
+    standard_hours: standard_hours         # optional
+    fte: fte                               # optional
+    base_rate: base_rate                   # optional
+    department: department                 # optional
+  # date_formats:
+  #   start_date: "%d/%m/%Y"
 
 # ------------------------------------------
-# TERMINATIONS
+# TERMINATIONS (required)
 # ------------------------------------------
 terminations:
-  source: terminations.csv
-  columns:
+  source_file: terminations.csv
+  rename:
     employee_id: employee_id
     termination_date: termination_date
-    termination_reason: termination_reason   # optional
-    evidence_reference: evidence_ref         # optional
+    termination_type: termination_type         # optional
+    termination_reason: termination_reason     # optional
+    evidence_ref: evidence_reference           # optional
 
 # ------------------------------------------
-# PAY EVENTS
+# PAY EVENTS (required)
 # ------------------------------------------
 pay_events:
-  source: pay_events.csv
-  columns:
+  source_file: pay_events.csv
+  rename:
     employee_id: employee_id
     pay_date: pay_date
-    pay_run_id: pay_run_id           # optional
+    pay_run_id: pay_run_id       # optional
     gross_amount: gross_amount
-    is_final_pay: is_final_pay       # optional
+    ote_amount: ote_amount       # optional
+    super_amount: super_amount   # optional
+    is_final_pay: is_final_pay   # optional
+    pay_code: pay_code           # optional
 
 # ------------------------------------------
-# LEAVE LEDGER
+# LEAVE LEDGER (required)
 # ------------------------------------------
 leave_ledger:
-  source: leave_ledger.csv
-  columns:
+  source_file: leave_ledger.csv
+  rename:
+    transaction_id: transaction_id       # optional but improves finding identity
     employee_id: employee_id
     event_date: event_date
     leave_type: leave_type
     units: units
-    event_type: event_type           # optional (ACCRUAL / TAKEN / etc)
+    transaction_type: transaction_type   # ACCRUAL / TAKEN / PAYOUT / ADJUSTMENT
 
 # ------------------------------------------
-# LEAVE SNAPSHOT (OPTIONAL)
+# LEAVE SNAPSHOT (optional)
 # ------------------------------------------
 leave_snapshot:
-  source: balances_snapshot.csv
-  columns:
+  source_file: balances_snapshot.csv
+  rename:
     employee_id: employee_id
     leave_type: leave_type
-    as_of_date: as_of_date           # optional (can be derived)
+    as_of_date: as_of_date   # optional; derived from the latest pay date if absent
     balance: balance

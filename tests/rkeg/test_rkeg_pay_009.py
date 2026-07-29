@@ -1,18 +1,13 @@
-from pathlib import Path
+"""RKEG-PAY-009: gaps or overlaps in recorded rate history.
 
-from rkeg.datasets import load_all_datasets
-from rkeg.engine import run_rkeg_engine
-
-
-def _load_sample():
-    repo_root = Path(__file__).resolve().parents[2]
-    data_dir = repo_root / "data" / "sample"
-    return load_all_datasets(data_dir)
+Rewritten from the retired ``rkeg.engine`` harness onto the current rule
+configuration and detector registry.
+"""
 
 
-def test_pay_009_rate_history_gaps_or_overlaps():
-    datasets = _load_sample()
-    findings = list(run_rkeg_engine(datasets, enabled_tiers={1, 2}))
-    pay_009 = [f for f in findings if f.rule_code == "RKEG-PAY-009"]
+def test_pay_009_rate_history_gaps_or_overlaps(run_sample_rule):
+    findings = run_sample_rule("RKEG-PAY-009")
 
-    assert len(pay_009) > 0
+    assert findings, "Expected RKEG-PAY-009 to produce findings for sample data"
+    assert all(f.rule_code == "RKEG-PAY-009" for f in findings)
+    assert all(f.finding_id for f in findings)

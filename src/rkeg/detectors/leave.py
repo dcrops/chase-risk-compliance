@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 from typing import Iterable, Dict, List
-from uuid import uuid4
 
 import pandas as pd
 
-from rkeg.models import Finding
+from rkeg.models import Finding, build_finding
 from common.nulls import is_missing
 
 
@@ -68,6 +67,10 @@ def _run_leave_001(rule: dict, datasets: Dict[str, pd.DataFrame]) -> Iterable[Fi
     taken["__event_date"] = taken[event_date_col].dt.date
     pe["__pay_date"] = pe[pay_date_col].dt.date
 
+    # The merge resets the index, so carry the ledger row ordinal across as a
+    # last-resort identity key for extracts that supply no transaction_id.
+    taken["__source_row"] = taken.index
+
     merged = taken.merge(
         pe[[emp_col_pe, "__pay_date"]],
         how="left",
@@ -115,17 +118,32 @@ def _run_leave_001(rule: dict, datasets: Dict[str, pd.DataFrame]) -> Iterable[Fi
             f"matched_pay_event_on_same_date=False"
         )
 
+        # One rule fires per ledger row, so the row itself must be identifiable:
+        # an employee can legitimately have two identical TAKEN movements on the
+        # same date. transaction_id is the natural key when the extract supplies
+        # one; otherwise fall back to the ledger row ordinal.
+        transaction_id = str(row.get("transaction_id", "") or "").strip()
+        primary_keys = {
+            "employee_id": employee_id,
+            "leave_type": leave_type,
+            "event_date": event_date.date().isoformat(),
+        }
+        if transaction_id:
+            primary_keys["transaction_id"] = transaction_id
+        else:
+            primary_keys["source_row"] = int(row["__source_row"])
+
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
+                discriminator=f"units={units:.2f}",
                 employee_id=employee_id,
                 leave_type=leave_type,
                 as_of_date=event_date.date().isoformat(),
-                rule_code=rule["id"],
                 severity=severity,
                 message=message,
-                diff_units=None,
                 evidence=evidence,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation_text,
             )
         )
@@ -285,16 +303,20 @@ def _run_leave_002(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Findin
         )
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={
+                    "employee_id": employee_id,
+                    "leave_type": leave_type,
+                    "as_of_date": as_of_str,
+                },
                 employee_id=employee_id,
                 leave_type=leave_type,
                 as_of_date=as_of_str,
-                rule_code=rule["id"],
                 severity=severity,
                 message=message,
                 diff_units="units",
                 evidence=evidence,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation_text,
             )
         )
@@ -413,16 +435,20 @@ def _run_leave_003(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Findin
         )
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={
+                    "employee_id": employee_id,
+                    "leave_type": leave_type,
+                    "as_of_date": as_of_str,
+                },
                 employee_id=employee_id,
                 leave_type=leave_type,
                 as_of_date=as_of_str,
-                rule_code=rule["id"],
                 severity=severity,
                 message=message,
                 diff_units="units",
                 evidence=evidence,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation_text,
             )
         )
@@ -446,6 +472,7 @@ def _run_leave_004(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Findin
     emp_col = ll_cols.get("employee_id", "employee_id")
     leave_type_col = ll_cols.get("leave_type", "leave_type")
     event_type_col = ll_cols.get("event_type", "event_type")
+    transaction_id_col = ll_cols.get("transaction_id") or ll_cols.get("ledger_id")
 
     event_date_col = (
         ll_cols.get("event_date")
@@ -494,9 +521,23 @@ def _run_leave_004(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Findin
         else:
             issue = f"invalid {event_date_col}"
 
+        # A ledger row with no valid event date has no business key of its own,
+        # so fall back to the transaction reference where the source provides
+        # one and otherwise to the source row ordinal.
+        if transaction_id_col is not None and not is_missing(row.get(transaction_id_col)):
+            record_key = {"transaction_id": str(row[transaction_id_col]).strip()}
+        else:
+            record_key = {"source_row": idx}
+
+        primary_keys = {
+            "employee_id": employee_id,
+            "leave_type": leave_type,
+            **record_key,
+        }
+
         evidence_obj = {
             "sources": ["leave_ledger.csv"],
-            "primary_keys": {"employee_id": employee_id},
+            "primary_keys": primary_keys,
             "values": {
                 event_date_col: "" if pd.isna(row[event_date_col]) else str(row[event_date_col]),
                 "leave_type": leave_type,
@@ -508,16 +549,14 @@ def _run_leave_004(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Findin
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=employee_id,
                 leave_type=leave_type if leave_type else None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
                 message=base_finding_text,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation_text,
             )
         )

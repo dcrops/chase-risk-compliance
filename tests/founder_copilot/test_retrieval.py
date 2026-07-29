@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import List
 
+import pytest
+
 from src.founder_copilot.retrieval import retrieve, clear_index_cache
 
 
@@ -84,7 +86,12 @@ def test_explicit_module_filter_overrides_inference():
     assert all(m == "TERM" for m in modules(results))
 
 
+@pytest.mark.network
 def test_semantic_query_returns_some_results():
+    """Falls through to embedding search, which calls the OpenAI API.
+
+    Every other retrieval test resolves from rule metadata and runs offline.
+    """
     results = retrieve("rules about missing termination evidence", k=5)
 
     assert len(results) >= 1

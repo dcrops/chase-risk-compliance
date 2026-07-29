@@ -8,7 +8,7 @@ import yaml
 from src.common.paths import get_processed_dir, get_outputs_dir
 from src.common.data_window import write_data_window
 from src.common.rule_filter import should_run_rule
-from src.common.execution_metadata import write_execution_metadata
+from src.common.execution_metadata import finalize_module_run
 from src.common.rule_metadata import load_rule_metadata_map
 
 from src.cross_module_integrity.models import Finding
@@ -111,14 +111,6 @@ def main(
     print(f"[input] Unparseable pay_date rows: {bad_pay_dates}")
     print(f"[input] Unparseable snapshot as_of_date rows: {bad_snapshot_dates}")
     print(f"[input] Unparseable ledger event_date rows: {bad_ledger_dates}")
-
-    metadata_path = write_execution_metadata(
-        output_dir=output_dir,
-        module_name="CROSS_MODULE",
-        mode=mode,
-        include_supporting=include_supporting,
-    )
-    print(f"Wrote: {metadata_path}")
 
     window_dates: list[date] = []
 
@@ -309,5 +301,34 @@ def main(
     print(f"Wrote: {classification_summary_path}")
     print(f"Wrote: {classification_x_severity_path}")
     print(f"Wrote: {viability_summary_path}")
+
+    metadata_path, manifest_path = finalize_module_run(
+        output_dir=output_dir,
+        module_name="CROSS_MODULE",
+        mode=mode,
+        include_supporting=include_supporting,
+        client=client,
+        pilot=pilot,
+        input_paths=[
+            processed_dir / "terminations.csv",
+            processed_dir / "pay_events.csv",
+            processed_dir / "employees.csv",
+            processed_dir / "leave_ledger.csv",
+            *([leave_snapshot_path] if not leave_snapshot.empty else []),
+        ],
+        config_paths=[rules_path],
+        output_paths=[
+            output_dir / "cross_module_data_window.csv",
+            findings_path,
+            summary_path,
+            severity_summary_path,
+            classification_summary_path,
+            classification_x_severity_path,
+            viability_summary_path,
+        ],
+        repo_root=Path(__file__).resolve().parents[2],
+    )
+    print(f"Wrote: {metadata_path}")
+    print(f"Wrote: {manifest_path}")
 
     return 0

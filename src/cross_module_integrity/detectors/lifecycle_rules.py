@@ -1491,17 +1491,35 @@ def detect_final_pay_without_termination_evidence(
     bad = merged[merged["evidence_reference_norm"].apply(is_missing)]
 
     for _, row in bad.iterrows():
+        employee_id = str(row["employee_id"])
+        pay_date = str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None
+        run_id = "" if is_missing(row.get("run_id")) else str(row.get("run_id")).strip()
+        primary_keys = {
+            "employee_id": employee_id,
+            "pay_date": pay_date,
+        }
+        if run_id:
+            primary_keys["run_id"] = run_id
+
         findings.append(
             _build_finding(
                 rule=rule,
-                employee_id=str(row["employee_id"]),
+                employee_id=employee_id,
                 leave_type=None,
-                as_of_date=str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None,
-                event_date=str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None,
+                as_of_date=pay_date,
+                event_date=pay_date,
                 evidence_str=json.dumps(
                     {
-                        "issue": "final pay without evidence",
-                        "evidence_reference": None,
+                        "sources": ["pay_events.csv", "terminations.csv"],
+                        "primary_keys": primary_keys,
+                        "values": {
+                            "is_final_pay": True,
+                            "evidence_reference": None,
+                        },
+                        "explanation": (
+                            "A final pay was processed but the termination record "
+                            "carries no evidence reference."
+                        ),
                     },
                     ensure_ascii=False,
                 )
@@ -1661,14 +1679,33 @@ def detect_silent_termination(
         if emp in pay_ids or emp in ledger_ids:
             continue
 
+        termination_date = (
+            str(row["termination_date"].date())
+            if pd.notna(row["termination_date"])
+            else None
+        )
+
         findings.append(
             _build_finding(
                 rule=rule,
                 employee_id=emp,
                 leave_type=None,
-                as_of_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
-                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
-                evidence_str=json.dumps({"issue": "no lifecycle activity"}, ensure_ascii=False)
+                as_of_date=termination_date,
+                termination_date=termination_date,
+                evidence_str=json.dumps(
+                    {
+                        "sources": ["terminations.csv", "pay_events.csv", "leave_ledger.csv"],
+                        "primary_keys": {
+                            "employee_id": emp,
+                            "termination_date": termination_date,
+                        },
+                        "explanation": (
+                            "A termination was recorded with no corresponding payroll "
+                            "or leave ledger activity."
+                        ),
+                    },
+                    ensure_ascii=False,
+                )
             )
         )
 
@@ -1717,10 +1754,16 @@ def detect_multi_failure_cluster(
         else:
             continue
 
+        employee_id = str(row["employee_id"]).strip()
+
         evidence_str = json.dumps(
             {
-                "total_findings": total_findings,
-                "high_findings": high_findings,
+                "sources": ["cross_module_findings.csv"],
+                "primary_keys": {"employee_id": employee_id},
+                "values": {
+                    "total_findings": total_findings,
+                    "high_findings": high_findings,
+                },
                 "thresholds": {
                     "min_findings": min_findings,
                     "min_high_severity": min_high,
@@ -1732,7 +1775,7 @@ def detect_multi_failure_cluster(
 
         finding = _build_finding(
             rule=rule,
-            employee_id=row["employee_id"],
+            employee_id=employee_id,
             leave_type=None,
             as_of_date=None,
             evidence_str=evidence_str,

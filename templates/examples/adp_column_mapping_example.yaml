@@ -1,0 +1,70 @@
+# ==========================================
+# Example: ADP-shaped payroll export
+# ==========================================
+# A worked example of the mapping contract against non-canonical source
+# headers. It is deliberately representative rather than exhaustive: ADP
+# products differ, so treat this as a shape to copy, not a fixed schema.
+#
+# Two things it demonstrates:
+#   1. Vendor headers on the LEFT, canonical CRC columns on the RIGHT.
+#   2. Australian day-first dates declared explicitly, with one dataset
+#      overriding the run-wide format because that extract emits ISO.
+#
+# The same fixture is exercised by tests/ingestion/test_ingest_adp_mapping.py.
+
+# ADP AU exports are day-first by default.
+date_format: "%d/%m/%Y"
+
+employees:
+  source_file: ADP_Worker_Demographics.csv
+  rename:
+    Associate ID: employee_id
+    Hire Date: start_date
+    Position Status: employment_status
+    Worker Category: employment_type
+    Scheduled Hours: standard_hours
+    FTE: fte
+    Regular Pay Rate: base_rate
+    Home Department Description: department
+
+terminations:
+  source_file: ADP_Termination_Report.csv
+  rename:
+    Associate ID: employee_id
+    Termination Date: termination_date
+    Termination Type: termination_type
+    Termination Reason Description: termination_reason
+    Supporting Document Reference: evidence_reference
+
+pay_events:
+  source_file: ADP_Payroll_Register.csv
+  rename:
+    Associate ID: employee_id
+    Check Date: pay_date
+    Payroll Run Number: pay_run_id
+    Gross Pay: gross_amount
+    Ordinary Time Earnings: ote_amount
+    Employer Superannuation: super_amount
+    Final Pay Indicator: is_final_pay
+    Earnings Code: pay_code
+
+leave_ledger:
+  # This extract is emitted by a reporting layer that renders ISO dates,
+  # so it overrides the run-wide day-first format.
+  source_file: ADP_Time_Off_Transactions.csv
+  date_format: "%Y-%m-%d"
+  rename:
+    Transaction Number: transaction_id
+    Associate ID: employee_id
+    Transaction Date: event_date
+    Time Off Policy: leave_type
+    Transaction Category: transaction_type
+    Hours: units
+
+leave_snapshot:
+  source_file: ADP_Time_Off_Balances.csv
+  rename:
+    Associate ID: employee_id
+    Time Off Policy: leave_type
+    Balance As Of Date: as_of_date
+    Available Balance Hours: balance

@@ -9,7 +9,7 @@
   <div class="cover-meta-card">
     <div class="cover-meta-row">
       <span class="cover-meta-label">Organisation</span>
-      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+      <span class="cover-meta-value">Organisation name not provided</span>
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Review period</span>
@@ -17,7 +17,7 @@
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Prepared as at</span>
-      <span class="cover-meta-value">10 Apr 2026</span>
+      <span class="cover-meta-value">09 Jul 2026</span>
     </div>
   </div>
 
@@ -98,7 +98,7 @@ Cross-module findings should be interpreted as data integrity and linkage risk i
 
 <h2>4. Findings Overview</h2>
 
-Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect **integrity risk indicators only** and do not represent confirmed non-compliance or quantified financial exposure.
+Where a Cross-Module Integrity review was performed, the table below summarises the number of cross-module inconsistencies identified by severity. Counts reflect **integrity risk indicators only** and do not represent confirmed non-compliance or a quantified monetary impact.
 
 <table class="summary-table">
   <thead>

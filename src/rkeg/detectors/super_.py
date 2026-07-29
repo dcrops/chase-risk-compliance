@@ -3,11 +3,9 @@ from __future__ import annotations
 
 from typing import Iterable, Dict, Optional, List
 
-from uuid import uuid4
-
 import pandas as pd
 
-from rkeg.models import Finding
+from rkeg.models import Finding, build_finding
 from common.nulls import is_missing
 
 # You can tweak these if you like
@@ -216,16 +214,15 @@ def _run_sup_001(
         )
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": emp_id, "pay_date": pay_date},
+                discriminator=f"earnings={earnings:.2f}|super={sup_amt:.2f}",
                 employee_id=emp_id,
-                leave_type=None,
                 as_of_date=pay_date,
-                rule_code=rule["id"],
                 severity=severity,
                 message=message,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -389,16 +386,13 @@ def _run_sup_002(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         )
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": employee_id, "period_month": month},
                 employee_id=employee_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
                 message=message,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation_text,
             )
         )
@@ -511,17 +505,24 @@ def _run_sup_003(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
             f"days_late={days_late_val}"
         )
 
+        primary_keys = {
+            "period_end_date": period_end_str,
+            "payment_date": payment_str,
+        }
+        if employee_id:
+            primary_keys["employee_id"] = employee_id
+        else:
+            primary_keys["source_row"] = idx
+
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=employee_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
                 message=message,
                 diff_units="days_late",
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation_text,
             )
         )
@@ -604,16 +605,13 @@ def _run_sup_004(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         emp_id = str(row["employee_id"])
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": emp_id},
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
                 message=base_msg,
-                diff_units=None,
                 evidence=f"employee_id={emp_id}, fund_missing_or_blank=True",
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -677,12 +675,25 @@ def _run_sup_005(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         else:
             issue = f"invalid {payment_date_col}"
 
+        period_end = "" if pd.isna(row.get("period_end_date")) else str(row.get("period_end_date"))
+
+        # The payment date is the natural key and it is the field that is
+        # missing, so identify the record by its contribution period and fall
+        # back to the source row ordinal when the period is absent too.
+        primary_keys = {
+            "employee_id": emp_id,
+        }
+        if period_end:
+            primary_keys["period_end_date"] = period_end
+        else:
+            primary_keys["source_row"] = idx
+
         evidence_obj = {
             "sources": ["super_payments.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {
                 payment_date_col: "" if pd.isna(row[payment_date_col]) else str(row[payment_date_col]),
-                "period_end_date": "" if pd.isna(row.get("period_end_date")) else str(row.get("period_end_date")),
+                "period_end_date": period_end,
                 "super_amount": "" if pd.isna(row.get("super_amount")) else str(row.get("super_amount")),
             },
             "explanation": issue,
@@ -690,16 +701,13 @@ def _run_sup_005(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
                 message=base_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -828,16 +836,13 @@ def _run_sup_006(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": emp_id},
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
                 message=base_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )

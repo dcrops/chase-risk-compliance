@@ -1,18 +1,21 @@
-from pathlib import Path
+"""RKEG-PAY-006: ordinary earnings recorded without a base rate.
 
-from rkeg.datasets import load_all_datasets
-from rkeg.engine import run_rkeg_engine
-
-
-def _load_sample():
-    repo_root = Path(__file__).resolve().parents[2]
-    data_dir = repo_root / "data" / "sample"
-    return load_all_datasets(data_dir)
+Rewritten from the retired ``rkeg.engine`` harness onto the current rule
+configuration and detector registry. The assertion is unchanged: the rule must
+stay live against the sample dataset.
+"""
 
 
-def test_pay_006_missing_base_rate_produces_findings():
-    datasets = _load_sample()
-    findings = list(run_rkeg_engine(datasets, enabled_tiers={1, 2}))
-    pay_006 = [f for f in findings if f.rule_code == "RKEG-PAY-006"]
+def test_pay_006_missing_base_rate_produces_findings(run_sample_rule):
+    findings = run_sample_rule("RKEG-PAY-006")
 
-    assert len(pay_006) > 0, "Expected RKEG-PAY-006 to produce findings for sample data"
+    assert findings, "Expected RKEG-PAY-006 to produce findings for sample data"
+    assert all(f.rule_code == "RKEG-PAY-006" for f in findings)
+    assert all(f.finding_id for f in findings)
+
+
+def test_pay_006_findings_are_stable_across_reruns(run_sample_rule):
+    first = run_sample_rule("RKEG-PAY-006")
+    second = run_sample_rule("RKEG-PAY-006")
+
+    assert [f.finding_id for f in first] == [f.finding_id for f in second]

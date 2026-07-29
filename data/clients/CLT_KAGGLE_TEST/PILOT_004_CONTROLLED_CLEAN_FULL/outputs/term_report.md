@@ -9,7 +9,7 @@
   <div class="cover-meta-card">
     <div class="cover-meta-row">
       <span class="cover-meta-label">Organisation</span>
-      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+      <span class="cover-meta-value">Organisation name not provided</span>
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Review period</span>
@@ -17,7 +17,7 @@
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Prepared as at</span>
-      <span class="cover-meta-value">10 Apr 2026</span>
+      <span class="cover-meta-value">09 Jul 2026</span>
     </div>
   </div>
 
@@ -93,14 +93,14 @@ Each finding is assigned a severity based on evidential impact, reflecting how m
 Severity does not represent:
 
 - likelihood of underpayment
-- magnitude of financial exposure
+- magnitude of potential monetary impact
 - remediation priority
 
 ---
 
 <h2>4. Findings Overview</h2>
 
-Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect **evidential risk only** and do not represent confirmed non-compliance or quantified financial exposure, or remediation priority.
+Where a Termination Exposure review was performed, the table below summarises the number of termination-related evidential issues identified by severity. Counts reflect **evidential risk only** and do not represent confirmed non-compliance, a quantified monetary impact, or remediation priority.
 
 <table class="summary-table">
   <thead>

@@ -9,7 +9,7 @@
   <div class="cover-meta-card">
     <div class="cover-meta-row">
       <span class="cover-meta-label">Organisation</span>
-      <span class="cover-meta-value">Chase Risk &amp; Compliance Demo Client</span>
+      <span class="cover-meta-value">Organisation name not provided</span>
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Review period</span>
@@ -17,7 +17,7 @@
     </div>
     <div class="cover-meta-row">
       <span class="cover-meta-label">Prepared as at</span>
-      <span class="cover-meta-value">10 Apr 2026</span>
+      <span class="cover-meta-value">09 Jul 2026</span>
     </div>
   </div>
 
@@ -99,7 +99,7 @@ As part of this review, a Record-Keeping & Evidence Gaps (RKEG) assessment was p
 
 The RKEG assessment focuses on evidential strength only. It does not determine whether payroll outcomes are correct or incorrect, and does not interpret awards, enterprise agreements or employment contracts.
 
-The table below summarises the number of record-keeping and evidence gaps identified by severity. Counts reflect **evidential risk** only and do not represent confirmed non-compliance or quantified financial exposure.
+The table below summarises the number of record-keeping and evidence gaps identified by severity. Counts reflect **evidential risk** only and do not represent confirmed non-compliance or a quantified monetary impact.
 
 <table class="summary-table">
   <thead>

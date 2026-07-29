@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Optional
-import json
-import hashlib
+
+from common.finding_identity import compute_finding_id_from_evidence
 
 
 @dataclass
@@ -27,20 +27,13 @@ class Finding:
 
 
 def compute_finding_id(rule_code: str, evidence_json: Optional[str]) -> str:
-    primary_keys = {}
-    if evidence_json:
-        try:
-            payload = json.loads(evidence_json)
-            primary_keys = payload.get("primary_keys") or {}
-        except Exception:
-            primary_keys = {}
+    """
+    Deterministic ID based on rule_code + evidence.primary_keys.
 
-    parts = [rule_code]
-    for k in sorted(primary_keys.keys()):
-        parts.append(f"{k}={primary_keys.get(k)}")
-
-    canonical = "|".join(parts)
-    return hashlib.sha1(canonical.encode("utf-8")).hexdigest()[:12]
+    Raises FindingIdentityError when the evidence carries no usable primary
+    keys, rather than collapsing every finding for the rule onto one ID.
+    """
+    return compute_finding_id_from_evidence(rule_code, evidence_json)
 
 
 def _build_finding(
