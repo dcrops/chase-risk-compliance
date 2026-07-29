@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from typing import List, Iterable, Dict
-from uuid import uuid4
 
 import pandas as pd
 
-from rkeg.models import Finding
+from rkeg.models import Finding, build_finding
 from common.nulls import is_missing
 
 
@@ -120,30 +119,38 @@ def _pay_001_missing_or_invalid_pay_date(
     finding_msg = rule["text"]["finding"]
     remediation = rule["text"]["remediation"]
 
-    for _, row in pay_events[invalid_mask].iterrows():
+    for idx, row in pay_events[invalid_mask].iterrows():
         emp_id = str(row["employee_id"]).strip()
         raw_date = row.get("pay_date")
+        run_id = "" if is_missing(row.get("run_id")) else str(row.get("run_id")).strip()
+
+        # The pay date is the natural key and it is the field at fault, so
+        # identify the event by its run reference and fall back to the source
+        # row ordinal when no run reference was supplied.
+        primary_keys = {
+            "employee_id": emp_id,
+        }
+        if run_id:
+            primary_keys["run_id"] = run_id
+        else:
+            primary_keys["source_row"] = idx
 
         evidence_obj = {
             "sources": ["pay_events.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {"pay_date": "" if pd.isna(raw_date) else str(raw_date)},
             "explanation": "Pay event has a missing or invalid pay date that could not be parsed.",
         }
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=rule["severity"],
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -181,30 +188,38 @@ def _pay_002_missing_or_invalid_gross_amount(
     finding_msg = rule["text"]["finding"]
     remediation = rule["text"]["remediation"]
 
-    for _, row in pay_events[invalid_mask].iterrows():
+    for idx, row in pay_events[invalid_mask].iterrows():
         emp_id = str(row["employee_id"]).strip()
         raw_gross = row.get("gross_amount")
+        pay_date = "" if is_missing(row.get("pay_date")) else str(row.get("pay_date")).strip()
+        run_id = "" if is_missing(row.get("run_id")) else str(row.get("run_id")).strip()
+
+        primary_keys = {
+            "employee_id": emp_id,
+        }
+        if pay_date:
+            primary_keys["pay_date"] = pay_date
+        if run_id:
+            primary_keys["run_id"] = run_id
+        if not (pay_date or run_id):
+            primary_keys["source_row"] = idx
 
         evidence_obj = {
             "sources": ["pay_events.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {"gross_amount": "" if pd.isna(raw_gross) else str(raw_gross)},
             "explanation": "Pay event has a missing or non-numeric gross amount value.",
         }
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=rule["severity"],
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -244,32 +259,39 @@ def _pay_003_missing_pay_run_reference(
     finding_msg = rule["text"]["finding"]
     remediation = rule["text"]["remediation"]
 
-    for _, row in pay_events[missing_mask].iterrows():
+    for idx, row in pay_events[missing_mask].iterrows():
         emp_id = str(row["employee_id"]).strip()
         raw_run = row.get("run_id")
 
         display_run = "" if pd.isna(raw_run) else str(raw_run).strip()
+        pay_date = "" if is_missing(row.get("pay_date")) else str(row.get("pay_date")).strip()
+
+        # The run reference is the field at fault, so the pay date identifies
+        # the event, with the source row ordinal as a last resort.
+        primary_keys = {
+            "employee_id": emp_id,
+        }
+        if pay_date:
+            primary_keys["pay_date"] = pay_date
+        else:
+            primary_keys["source_row"] = idx
 
         evidence_obj = {
             "sources": ["pay_events.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {"run_id": display_run},
             "explanation": "Pay event has no pay run or batch reference recorded.",
         }
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=rule["severity"],
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -317,7 +339,7 @@ def _pay_004_pay_without_employee_record(
     finding_msg = rule["text"]["finding"]
     remediation = rule["text"]["remediation"]
 
-    for emp_id in orphan_ids:
+    for emp_id in sorted(orphan_ids):
         evidence_obj = {
             "sources": ["pay_events.csv", "employees.csv"],
             "primary_keys": {"employee_id": emp_id},
@@ -329,17 +351,13 @@ def _pay_004_pay_without_employee_record(
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": emp_id},
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=rule["severity"],
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -400,8 +418,9 @@ def _pay_005_earnings_adjustment_without_proportional_super_recalculation(rule: 
 
     findings: List[Finding] = []
 
-    for _, row in flagged.iterrows():
+    for idx, row in flagged.iterrows():
         emp_id = str(row.get("employee_id", ""))
+        pay_date = "" if is_missing(row.get("pay_date")) else str(row.get("pay_date")).strip()
 
         evidence = (
             f"employee_id={emp_id}, "
@@ -410,17 +429,17 @@ def _pay_005_earnings_adjustment_without_proportional_super_recalculation(rule: 
         )
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={
+                    "employee_id": emp_id,
+                    **({"pay_date": pay_date} if pay_date else {"source_row": idx}),
+                },
+                discriminator=f"gross={row['gross_amount']}",
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=base_msg,
-                diff_units=None,
                 evidence=evidence,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -538,17 +557,13 @@ def _pay_006_ordinary_earnings_without_base_rate(rule: dict, datasets: dict) -> 
         )
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": emp_id},
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=message,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -630,7 +645,7 @@ def _pay_007_negative_gross_pay_outside_expected_adjustment_patterns(rule: dict,
 
     findings: List[Finding] = []
 
-    for _, row in suspicious.iterrows():
+    for idx, row in suspicious.iterrows():
         emp_id = str(row["employee_id"])
         gross = float(row["gross_amount"])
         net = float(row["__net_gross"])
@@ -652,18 +667,24 @@ def _pay_007_negative_gross_pay_outside_expected_adjustment_patterns(rule: dict,
             f"amount {gross:.2f} with net gross for that run {net:.2f}."
         )
 
+        primary_keys = {"employee_id": emp_id}
+        if run_id:
+            primary_keys["run_id"] = run_id
+        if pay_date:
+            primary_keys["pay_date"] = pay_date
+        if not (run_id or pay_date):
+            primary_keys["source_row"] = idx
+
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
+                discriminator=f"gross={gross:.2f}",
                 employee_id=emp_id,
-                leave_type=None,
                 as_of_date=pay_date,
-                rule_code=rule["id"],
                 severity=severity,
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=message,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -752,17 +773,17 @@ def _pay_008_unmatched_rate_history(rule: dict, datasets: Dict[str, pd.DataFrame
             )
 
             findings.append(
-                Finding(
+                build_finding(
+                    rule,
+                    primary_keys={
+                        "employee_id": str(employee_id),
+                        "pay_date": pay_date.date().isoformat(),
+                    },
                     employee_id=str(employee_id),
-                    leave_type=None,
                     as_of_date=pay_date.date().isoformat(),
-                    rule_code=rule["id"],
                     severity=severity,
-                    classification=rule.get("classification", "UNCLASSIFIED"),
                     message=message,
-                    diff_units=None,
                     evidence=evidence,
-                    finding_id=uuid4().hex[:12],
                     next_action=remediation_text,
                 )
             )
@@ -806,7 +827,7 @@ def _pay_009_rate_history_gaps_or_overlaps(rule, datasets):
             | (grp[end_col] < grp[start_col])
         ]
 
-        for _, row in invalid.iterrows():
+        for idx, row in invalid.iterrows():
             evidence = (
                 f"employee_id={employee_id}, "
                 f"{start_col}={row[start_col]}, "
@@ -815,20 +836,20 @@ def _pay_009_rate_history_gaps_or_overlaps(rule, datasets):
             )
 
             findings.append(
-                Finding(
+                build_finding(
+                    rule,
+                    primary_keys={
+                        "employee_id": employee_id,
+                        "rate_history_row": idx,
+                    },
+                    discriminator="invalid_date_range",
                     employee_id=employee_id,
-                    leave_type=None,
-                    as_of_date=None,
-                    rule_code=rule["id"],
                     severity=severity,
-                    classification=rule.get("classification", "UNCLASSIFIED"),
                     message=(
                         f"{text.get('finding')} Employee {employee_id} has an invalid "
                         f"rate history effective date range."
                     ),
-                    diff_units=None,
                     evidence=evidence,
-                    finding_id=uuid4().hex[:12],
                     next_action=text.get("remediation", ""),
                 )
             )
@@ -859,20 +880,22 @@ def _pay_009_rate_history_gaps_or_overlaps(rule, datasets):
                 )
 
                 findings.append(
-                    Finding(
+                    build_finding(
+                        rule,
+                        primary_keys={
+                            "employee_id": employee_id,
+                            "previous_end": prev[end_col].date().isoformat(),
+                            "current_start": curr[start_col].date().isoformat(),
+                        },
+                        discriminator="overlap",
                         employee_id=employee_id,
-                        leave_type=None,
-                        as_of_date=None,
-                        rule_code=rule["id"],
                         severity=severity,
-                        classification=rule.get("classification", "UNCLASSIFIED"),
                         message=(
                             f"{text.get('finding')} Employee {employee_id} has overlapping "
                             f"rate history periods."
                         ),
                         diff_units="days",
                         evidence=evidence,
-                        finding_id=uuid4().hex[:12],
                         next_action=text.get("remediation", ""),
                     )
                 )
@@ -892,20 +915,22 @@ def _pay_009_rate_history_gaps_or_overlaps(rule, datasets):
                 )
 
                 findings.append(
-                    Finding(
+                    build_finding(
+                        rule,
+                        primary_keys={
+                            "employee_id": employee_id,
+                            "previous_end": prev[end_col].date().isoformat(),
+                            "current_start": curr[start_col].date().isoformat(),
+                        },
+                        discriminator="gap",
                         employee_id=employee_id,
-                        leave_type=None,
-                        as_of_date=None,
-                        rule_code=rule["id"],
                         severity=severity,
-                        classification=rule.get("classification", "UNCLASSIFIED"),
                         message=(
                             f"{text.get('finding')} Employee {employee_id} has a gap of "
                             f"{gap_days} day(s) between adjacent rate history periods."
                         ),
                         diff_units="days",
                         evidence=evidence,
-                        finding_id=uuid4().hex[:12],
                         next_action=text.get("remediation", ""),
                     )
                 )
@@ -1050,9 +1075,18 @@ def _pay_010_pay_events_outside_employment_period(
         else:
             explanation = "Pay event occurred before recorded employment start date."
 
+        pay_date_iso = row["_pay_date"].date().isoformat() if pd.notna(row["_pay_date"]) else ""
+
+        primary_keys = {
+            "employee_id": emp_id,
+            "pay_date": pay_date_iso,
+        }
+        if not is_missing(row.get("run_id")):
+            primary_keys["run_id"] = str(row.get("run_id")).strip()
+
         evidence_obj = {
             "sources": ["pay_events.csv", "employees.csv", "terminations.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {
                 "pay_date": row["_pay_date"].date().isoformat() if pd.notna(row["_pay_date"]) else "",
                 "start_date": row["_start_date"].date().isoformat() if pd.notna(row["_start_date"]) else "",
@@ -1077,17 +1111,15 @@ def _pay_010_pay_events_outside_employment_period(
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
                 as_of_date=row["_pay_date"].date().isoformat() if pd.notna(row["_pay_date"]) else None,
-                rule_code=rule["id"],
                 severity=calibrated_severity,
                 classification=calibrated_classification,
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -1151,9 +1183,13 @@ def _pay_011_rate_history_missing_effective_date_fields(
         elif end_invalid.loc[idx]:
             issues.append(f"invalid {end_col}")
 
+        # Both effective date fields may be the fields at fault, so the record
+        # is identified by its source row ordinal within rate_history.
+        primary_keys = {"employee_id": emp_id, "rate_history_row": idx}
+
         evidence_obj = {
             "sources": ["rate_history.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {
                 start_col: "" if pd.isna(row[start_col]) else str(row[start_col]),
                 end_col: "" if pd.isna(row[end_col]) else str(row[end_col]),
@@ -1165,17 +1201,13 @@ def _pay_011_rate_history_missing_effective_date_fields(
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=rule["severity"],
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from leave_leakage.rules import run_rule
+from leave_leakage.detectors.registry import run_rule
 
 
 def test_leave_005():
@@ -44,7 +44,9 @@ def test_leave_005():
         ]
     )
 
-    findings = run_rule(rule, datasets, ledger_recon=ledger_recon)
+    # The ledger reconciliation frame now reaches detectors through the shared
+    # run context rather than a dedicated keyword argument.
+    findings = run_rule(rule, datasets, context={"ledger_recon": ledger_recon})
 
     assert len(findings) == 1
     assert findings[0].employee_id == "E001"

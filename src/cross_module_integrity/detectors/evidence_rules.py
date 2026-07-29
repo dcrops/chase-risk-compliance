@@ -101,6 +101,8 @@ def detect_termination_without_evidence_and_payroll_continues(
             employee_id=str(row["employee_id"]),
             leave_type=None,
             as_of_date=str(row["pay_date"].date()),
+            termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+            event_date=str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None,
             evidence_str=evidence_str,
         )
         finding.severity = calibrated_severity
@@ -202,6 +204,8 @@ def detect_termination_lacks_evidence_and_open_leave_balance_remains(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()),
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                event_date=str(row["as_of_date"].date()) if pd.notna(row["as_of_date"]) else None,
                 evidence_str=evidence_str,
             )
         )

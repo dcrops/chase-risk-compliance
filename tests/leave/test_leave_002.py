@@ -1,6 +1,6 @@
 import pandas as pd
 
-from leave_leakage.rules import run_rule
+from leave_leakage.detectors.registry import run_rule
 
 
 def test_leave_002():

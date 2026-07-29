@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from typing import Iterable, Dict, List
-from uuid import uuid4
 
 import pandas as pd
 
-from rkeg.models import Finding
+from rkeg.models import Finding, build_finding
 from common.nulls import is_missing
 
 
@@ -40,18 +39,17 @@ def _run_gov_001(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
     }
     evidence_str = str(evidence_obj).replace("'", '"')
 
+    # Engagement-level finding: the absence of an override log is a single
+    # organisation-wide observation, so it has no entity primary keys.
     return [
-        Finding(
+        build_finding(
+            rule,
+            primary_keys={},
+            allow_empty_keys=True,
             employee_id=None,
-            leave_type=None,
-            as_of_date=None,
-            rule_code=rule["id"],
             severity=severity,
-            classification=rule.get("classification", "UNCLASSIFIED"),
             message=base_msg,
-            diff_units=None,
             evidence=evidence_str,
-            finding_id=uuid4().hex[:12],
             next_action=remediation,
         )
     ]
@@ -115,12 +113,22 @@ def _run_gov_002(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         if approval_col is not None and approval_missing.loc[idx]:
             issues.append(f"missing {approval_col}")
 
+        pay_date = "" if pd.isna(row.get("pay_date")) else str(row.get("pay_date"))
+        override_type = "" if pd.isna(row.get("override_type")) else str(row.get("override_type"))
+
+        primary_keys = {
+            "employee_id": emp_id,
+            "pay_date": pay_date,
+            "override_type": override_type,
+            "source_row": idx,
+        }
+
         evidence_obj = {
             "sources": ["pay_overrides.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {
-                "pay_date": "" if pd.isna(row.get("pay_date")) else str(row.get("pay_date")),
-                "override_type": "" if pd.isna(row.get("override_type")) else str(row.get("override_type")),
+                "pay_date": pay_date,
+                "override_type": override_type,
                 reason_col if reason_col else "reason_code": (
                     "" if reason_col is None or pd.isna(row.get(reason_col)) else str(row.get(reason_col))
                 ),
@@ -133,17 +141,13 @@ def _run_gov_002(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=base_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -208,18 +212,18 @@ def _run_gov_003(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
     }
     evidence_str = str(evidence_obj).replace("'", '"')
 
+    # Engagement-level finding: override volume is measured across the whole
+    # population, so it has no entity primary keys.
     return [
-        Finding(
+        build_finding(
+            rule,
+            primary_keys={},
+            allow_empty_keys=True,
             employee_id=None,
-            leave_type=None,
-            as_of_date=None,
-            rule_code=rule["id"],
             severity=severity,
-            classification=rule.get("classification", "UNCLASSIFIED"),
             message=message,
             diff_units="ratio",
             evidence=evidence_str,
-            finding_id=uuid4().hex[:12],
             next_action=remediation,
         )
     ]
@@ -285,13 +289,25 @@ def _run_gov_004(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         else:
             issue = f"invalid {timestamp_col}"
 
+        pay_date = "" if pd.isna(row.get("pay_date")) else str(row.get("pay_date"))
+        field_overridden = (
+            "" if pd.isna(row.get("field_overridden")) else str(row.get("field_overridden"))
+        )
+
+        primary_keys = {
+            "employee_id": emp_id,
+            "pay_date": pay_date,
+            "field_overridden": field_overridden,
+            "source_row": idx,
+        }
+
         evidence_obj = {
             "sources": ["pay_overrides.csv"],
-            "primary_keys": {"employee_id": emp_id},
+            "primary_keys": primary_keys,
             "values": {
-                "pay_date": "" if pd.isna(row.get("pay_date")) else str(row.get("pay_date")),
+                "pay_date": pay_date,
                 "override_type": "" if pd.isna(row.get("override_type")) else str(row.get("override_type")),
-                "field_overridden": "" if pd.isna(row.get("field_overridden")) else str(row.get("field_overridden")),
+                "field_overridden": field_overridden,
                 timestamp_col: "" if pd.isna(row.get(timestamp_col)) else str(row.get(timestamp_col)),
             },
             "explanation": issue,
@@ -299,17 +315,13 @@ def _run_gov_004(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=base_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )

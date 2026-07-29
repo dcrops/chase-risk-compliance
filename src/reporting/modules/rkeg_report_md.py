@@ -4,32 +4,31 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, List, Optional
+from html import escape
 
 from reporting.core.review_period import derive_review_period_from_windows
-from reporting.executive.exec_pack_md import MODULES_DIR
 from reporting.core.structure import ReportStructure
 from reporting.executive.exec_pack_md import (
     MODULE_RKEG,
-    RKEG_FINDINGS_CSV,
+    MODULE_LABELS,
+    MODULE_ORDER,
     OUTPUTS_DIR,
     sort_findings,
     build_header,
     build_data_sources_section,
+    load_rkeg_severity_counts,
+)
+
+from reporting.sections.exec_pack_sections import (
     build_scope_and_methodology,
     build_limitations,
     build_next_steps,
     build_appendices,
-    load_rkeg_severity_counts,
     build_rkeg_summary,
+    build_finding_meta,
 )
 
-# Where this RKEG-only module report will be written
-RKEG_REPORT_MD_PATH = OUTPUTS_DIR / "rkeg_report.md"
-
-RKEG_DATA_WINDOW_CSV = MODULES_DIR / "rkeg_data_window.csv"
-
-
-# ---------- Data model ----------
+from reporting.core.cover_page import build_cover_page
 
 @dataclass
 class RKEGFinding:
@@ -39,18 +38,13 @@ class RKEGFinding:
     leave_type: str
     as_of_date: str
     message: str
+    classification: str | None = None
     evidence: Optional[str] = None
     finding_id: Optional[str] = None
     next_action: Optional[str] = None
 
     @classmethod
     def from_row(cls, row: Dict[str, str]) -> "RKEGFinding":
-        """
-        Map an RKEG findings CSV row into an RKEGFinding.
-
-        Column names are aligned with the RKEG appendices in exec_pack_md, but
-        this is defensive against minor header variations.
-        """
         return cls(
             rule_code=row.get("rule_code") or row.get("rule_id") or "",
             severity=(row.get("severity", "") or "").upper(),
@@ -58,38 +52,120 @@ class RKEGFinding:
             leave_type=row.get("leave_type", "") or row.get("record_type", "") or "",
             as_of_date=row.get("as_of_date", "") or row.get("snapshot_date", "") or "",
             message=row.get("message") or row.get("description") or "",
+            classification=(row.get("classification") or "").upper() or None,
             evidence=row.get("evidence") or row.get("evidence_ref") or None,
             finding_id=row.get("finding_id") or None,
             next_action=row.get("next_action") or None,
         )
 
 
-# ---------- CSV helpers ----------
+def _severity_class(severity: str) -> str:
+    s = (severity or "").upper()
+    if s == "HIGH":
+        return "high"
+    if s == "MEDIUM":
+        return "medium"
+    if s == "LOW":
+        return "low"
+    return "info"
+
+
+def _safe(value: str | None, fallback: str = "Not specified") -> str:
+    text = (value or "").strip()
+    return escape(text) if text else fallback
+
+
+def _render_labeled_section(label: str, body: str, extra_class: str = "") -> str:
+    class_attr = f"finding-text {extra_class}".strip()
+    return f"""
+<div class="finding-section">
+  <div class="finding-label">{escape(label)}</div>
+  <div class="{class_attr}">{body}</div>
+</div>
+""".strip()
+
+
+def render_rkeg_finding_card(f: RKEGFinding) -> str:
+    severity_class = _severity_class(f.severity)
+    severity = (f.severity or "").upper() or "INFO"
+
+    rule_code = _safe(f.rule_code, "UNSPECIFIED RULE")
+    message = _safe(f.message, "No description provided.")
+    evidence = _safe(f.evidence, "")
+    recommendation_text = f.next_action or (
+        "Validate the underlying records, ensure key identifiers and dates are consistently captured, "
+        "and strengthen documentation and data capture processes where patterns are identified."
+    )
+
+    meta_text = build_finding_meta(
+        employee_id=f.employee_id or None,
+        context_label="Record type",
+        context_value=f.leave_type or None,
+        date_label="As at",
+        date_value=f.as_of_date or None,
+        classification=f.classification or None,
+    )
+
+    impact = (
+        "This may increase evidential and audit risk in relation to payroll records. "
+        "Weak, incomplete or inconsistent records can reduce the organisation's ability "
+        "to respond confidently if challenged."
+    )
+
+    sections: list[str] = [
+        _render_labeled_section("Finding", message, "finding-main"),
+        _render_labeled_section("Impact", escape(impact), "finding-impact"),
+        _render_labeled_section("Recommendation", escape(recommendation_text), "finding-action"),
+    ]
+
+    if evidence:
+        sections.append(
+            """
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">"""
+            + evidence
+            + """</pre>
+</div>
+""".strip()
+        )
+
+    section_html = "\n  ".join(sections)
+
+    return f"""
+<div class="finding {severity_class}">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">{rule_code}</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-{severity_class}">{severity}</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">{meta_text}</div>
+
+  {section_html}
+</div>
+""".strip()
+
 
 def _load_csv(path: Path) -> List[Dict[str, str]]:
     if not path.exists():
         return []
-    import csv  # local import to keep top-level light
+    import csv
 
     with path.open("r", newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         return list(reader)
 
 
-def load_rkeg_findings() -> List[RKEGFinding]:
-    rows = _load_csv(RKEG_FINDINGS_CSV)
+def load_rkeg_findings(base_output_dir: Path) -> List[RKEGFinding]:
+    rows = _load_csv(base_output_dir / "rkeg_findings.csv")
     return [RKEGFinding.from_row(r) for r in rows]
 
 
-# ---------- Review period helpers ----------
-
 def _parse_iso_date(s: str | None) -> Optional[date]:
-    """
-    Try to parse a date string in a few common formats.
-
-    - Ignores blanks and common placeholders
-    - Ignores obviously unrealistic years (< 2000 or > current_year + 1)
-    """
     if not s:
         return None
 
@@ -97,46 +173,32 @@ def _parse_iso_date(s: str | None) -> Optional[date]:
     if not value:
         return None
 
-    # Ignore common placeholder / junk values
     if value.lower() in {"n/a", "na", "none", "null", "unknown", "-"}:
         return None
 
-    # Try a few common formats
     for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"):
         try:
             parsed = datetime.strptime(value, fmt).date()
         except ValueError:
             continue
 
-        # Sanity-check the year so we don't treat obviously bogus dates as real
         today = date.today()
         if parsed.year < 2000 or parsed.year > today.year + 1:
             return None
 
         return parsed
 
-    # Nothing matched
     return None
 
 
-def _derive_review_period(findings: List[RKEGFinding]) -> str:
-    """
-    Derive a human-readable review period for the RKEG report.
-
-    Priority:
-      1) A module-level data window CSV (rkeg_data_window.csv) if present.
-      2) Fallback: derive from any valid as_of_date values in the findings.
-      3) If nothing usable is found, return a neutral placeholder.
-    """
-    # 1) Prefer data window CSV if/when the engine writes it
+def _derive_review_period(findings: List[RKEGFinding], data_window_csv: Path) -> str:
     period_from_window = derive_review_period_from_windows(
-        [RKEG_DATA_WINDOW_CSV],
+        [data_window_csv],
         fallback=None,
     )
     if period_from_window:
         return period_from_window
 
-    # 2) Fallback: use findings' as_of_date values (ISO-only, dodgy values ignored)
     dates: List[date] = []
     for f in findings:
         d = _parse_iso_date(f.as_of_date)
@@ -144,7 +206,6 @@ def _derive_review_period(findings: List[RKEGFinding]) -> str:
             dates.append(d)
 
     if not dates:
-        # 3) Nothing usable → neutral string, consistent with other modules
         return "Period not specified"
 
     start = min(dates)
@@ -156,15 +217,7 @@ def _derive_review_period(findings: List[RKEGFinding]) -> str:
     return f"{start.strftime('%d %b %Y')} to {end.strftime('%d %b %Y')}"
 
 
-# ---------- Section builders specific to the RKEG module report ----------
-
 def build_rkeg_module_summary(findings: List[RKEGFinding]) -> str:
-    """
-    Top-level Executive Summary for the RKEG module report.
-
-    Provides narrative plus a concise severity snapshot. The full severity
-    table is presented in the Findings Overview section.
-    """
     parts: List[str] = []
 
     parts.append(
@@ -176,7 +229,6 @@ def build_rkeg_module_summary(findings: List[RKEGFinding]) -> str:
     )
     parts.append("")
 
-    # Headline severity counts (table lives in Findings Overview)
     high = sum(1 for f in findings if f.severity == "HIGH")
     med = sum(1 for f in findings if f.severity == "MEDIUM")
     low = sum(1 for f in findings if f.severity == "LOW")
@@ -195,145 +247,85 @@ def build_rkeg_module_summary(findings: List[RKEGFinding]) -> str:
     return "\n".join(parts).strip()
 
 
-def build_rkeg_findings_overview() -> str:
-    """
-    Use the existing RKEG severity summary helper from the exec pack so the
-    table and wording stay consistent across reports.
-    """
-    counts = load_rkeg_severity_counts()
+def build_rkeg_findings_overview(base_output_dir: Path) -> str:
+    counts = load_rkeg_severity_counts(base_output_dir)
     return build_rkeg_summary(counts)
 
 
 def build_detailed_findings(findings: List[RKEGFinding]) -> str:
     if not findings:
-        return """No record-keeping or evidence gaps were identified for the supplied data.
+        return """
+<div class="no-findings">
+No record-keeping or evidence gaps were identified for the supplied data.
+</div>
+""".strip()
 
----
+    intro = """
+This section sets out detailed findings for <strong>Record-Keeping &amp; Evidence Gaps (RKEG)</strong> only.
+Findings highlight where payroll-related records may be incomplete, inconsistent or difficult
+to substantiate if reviewed by auditors, regulators or in the context of a dispute.
+They do <strong>not</strong> confirm incorrect pay outcomes.
+""".strip()
 
-"""
+    cards = [render_rkeg_finding_card(f) for f in findings]
 
-    lines: List[str] = []
-
-    lines.append(
-        "This section sets out detailed findings for **Record-Keeping & Evidence Gaps (RKEG)** only. "
-        "Findings highlight where payroll-related records may be incomplete, inconsistent or difficult "
-        "to substantiate if reviewed by auditors, regulators or in the context of a dispute. "
-        "They do **not** confirm incorrect pay outcomes."
-    )
-    lines.append("")
-    lines.append(
-        "Each finding below follows a consistent **Finding → Evidence → Impact / Risk → Recommended Action** pattern."
-    )
-    lines.append("")
-
-    for idx, f in enumerate(findings, start=1):
-        lines.append(f"### Finding {idx}: {f.rule_code or 'UNSPECIFIED RULE'}")
-        lines.append(f"**Severity:** {f.severity or 'UNSPECIFIED'}")
-        lines.append("")
-        lines.append("**Finding**")
-        lines.append(f"{f.message or 'No description provided.'}")
-        lines.append("")
-        lines.append("**Evidence**")
-        lines.append("")
-
-        evidence_bits: List[str] = []
-        if f.employee_id:
-            evidence_bits.append(f"Employee ID: `{f.employee_id}`")
-        if f.leave_type:
-            evidence_bits.append(f"Record type: `{f.leave_type}`")
-        if f.as_of_date:
-            evidence_bits.append(f"As at: `{f.as_of_date}`")
-        if f.evidence:
-            evidence_bits.append(f"Evidence reference: `{f.evidence}`")
-        if f.finding_id:
-            evidence_bits.append(f"Finding ID: `{f.finding_id}`")
-        if f.next_action:
-            evidence_bits.append(f"Suggested next action (from data): `{f.next_action}`")
-
-        if evidence_bits:
-            lines.append("- " + "\n- ".join(evidence_bits))
-        else:
-            lines.append("- Not specified in the source data.")
-        lines.append("")
-
-        lines.append("**Impact / Risk**")
-        lines.append(
-            "Increased evidential and audit risk in relation to payroll records. "
-            "Weak or incomplete records can increase the effort required to explain pay decisions "
-            "and may reduce the organisation’s ability to respond confidently if challenged."
-        )
-        lines.append("")
-
-        lines.append("**Recommended Action**")
-        lines.append("")
-        lines.append("- Validate this finding against underlying payroll, HR and source system records.")
-        lines.append(
-            "- Strengthen documentation and evidence capture for the affected record types "
-            "(for example, by ensuring key identifiers and dates are consistently populated)."
-        )
-        lines.append(
-            "- Where systemic patterns are identified, update data capture processes, templates "
-            "and training to reduce recurrence."
-        )
-        lines.append("")
-
-    lines.append("---")
-    lines.append("")
-    return "\n".join(lines)
+    return intro + "\n\n" + "\n\n".join(cards)
 
 
-def build_rkeg_appendices() -> str:
-    """
-    Thin wrapper so the RKEG module report can reuse the shared appendices logic,
-    scoped to RKEG only.
-    """
-    return build_appendices({MODULE_RKEG})
+def build_rkeg_appendices(base_output_dir: Path) -> str:
+    return build_appendices({MODULE_RKEG}, base_output_dir)
 
-
-# ---------- Main generator ----------
 
 def generate_rkeg_report(
     organisation_name: str = "Organisation not specified",
     review_period: str | None = None,
+    output_dir: Path | None = None,
 ) -> Path:
-    """
-    Generate outputs/rkeg_report.md – a RKEG-only, detailed module report.
-    """
-    included = {MODULE_RKEG}  # this is an RKEG-only report
+    target_dir = output_dir or OUTPUTS_DIR
+    report_path = target_dir / "rkeg_report.md"
+    rkeg_data_window_csv = target_dir / "rkeg_data_window.csv"
 
-    findings = load_rkeg_findings()
+    findings = load_rkeg_findings(target_dir)
     sorted_findings = sort_findings(findings) if findings else []
 
     if review_period is None:
-        review_period = _derive_review_period(sorted_findings) if sorted_findings else "Period not specified"
+        review_period = (
+            _derive_review_period(sorted_findings, rkeg_data_window_csv)
+            if sorted_findings
+            else "Period not specified"
+        )
+
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
 
     parts: List[str] = []
     parts.append(
-        build_header(
-            "Record-Keeping & Evidence Gaps (RKEG) – Detailed Report",
-            organisation_name,
-            review_period,
+        build_cover_page(
+            report_title="Record-Keeping & Evidence Gaps (RKEG)",
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
         )
     )
 
     structure = ReportStructure()
-    structure.add("Executive Summary", 1, lambda: build_rkeg_module_summary(sorted_findings))
-    structure.add("Data Sources", 1, lambda: build_data_sources_section({MODULE_RKEG}))
-    structure.add("Scope & Methodology", 1, lambda: build_scope_and_methodology({MODULE_RKEG}))
-    structure.add("Findings Overview", 1, lambda: build_rkeg_findings_overview())
-    structure.add("Detailed Findings", 1, lambda: build_detailed_findings(sorted_findings))
-    structure.add("Limitations & Assumptions", 1, lambda: build_limitations())
-    structure.add("Recommended Next Steps", 1, lambda: build_next_steps())
-    structure.add("Appendices", 1, lambda: build_rkeg_appendices())
+    structure.add("Executive Summary", 1, build_rkeg_module_summary(sorted_findings))
+    structure.add("Data Sources", 1, build_data_sources_section({MODULE_RKEG}, target_dir))
+    structure.add(
+        "Scope & Methodology",
+        1,
+        build_scope_and_methodology({MODULE_RKEG}, MODULE_LABELS, MODULE_ORDER),
+    )
+    structure.add("Findings Overview", 1, build_rkeg_findings_overview(target_dir))
+    structure.add("Detailed Findings", 1, build_detailed_findings(sorted_findings))
+    structure.add("Limitations & Assumptions", 1, build_limitations())
+    structure.add("Recommended Next Steps", 1, build_next_steps(target_dir))
+    structure.add("Appendices", 1, build_rkeg_appendices(target_dir))
 
     parts.append(structure.render_markdown())
     final_md = "\n".join(parts)
 
-    RKEG_REPORT_MD_PATH.parent.mkdir(parents=True, exist_ok=True)
-    RKEG_REPORT_MD_PATH.write_text(final_md, encoding="utf-8")
-    return RKEG_REPORT_MD_PATH
-
-
-if __name__ == "__main__":
-    path = generate_rkeg_report()
-    print(f"Generated RKEG detailed report at: {path}")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(final_md, encoding="utf-8")
+    return report_path

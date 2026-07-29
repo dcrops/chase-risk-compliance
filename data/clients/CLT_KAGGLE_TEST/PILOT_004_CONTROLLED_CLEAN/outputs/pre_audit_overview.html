@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pre-Audit Payroll Compliance Review</title>
+  <style>
+/* =========================
+   Page setup (for PDF)
+   ========================= */
+
+   @page {
+    size: A4;
+    margin: 34mm 18mm 22mm 18mm;
+    background: #ffffff;
+  
+    @top-left {
+      content: "Chase Risk & Compliance";
+      font-size: 9pt;
+      color: #64748b;
+      vertical-align: middle;
+    }
+  
+    @top-right {
+      content: "";
+    }
+  
+    @bottom-left {
+      content: "Confidential - Chase Risk & Compliance";
+      font-size: 8.5pt;
+      color: #64748b;
+      vertical-align: top;
+      border-top: 1px solid #d9dde3;
+      padding-top: 6px;
+    }
+  
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8.5pt;
+      color: #64748b;
+      vertical-align: top;
+      border-top: 1px solid #d9dde3;
+      padding-top: 6px;
+    }
+  }
+  
+  /* Cover page: no running header/footer */
+  @page :first {
+    @top-left {
+      content: none;
+    }
+  
+    @top-right {
+      content: none;
+    }
+  
+    @bottom-left {
+      content: none;
+      border-top: none;
+      padding-top: 0;
+    }
+  
+    @bottom-right {
+      content: none;
+      border-top: none;
+      padding-top: 0;
+    }
+  }
+  
+  
+  /* =========================
+     Colour tokens
+     ========================= */
+  :root {
+    --bg-page: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --card-bg: #ffffff;
+  
+    --heading-primary: #5b1b26;
+    --heading-secondary: #7a2431;
+    --heading-tertiary: #a63446;
+  
+    --accent-border: #d9dde3;
+    --accent-soft: #eef2f7;
+    --panel-bg: #fafbfc;
+  
+    --blockquote-bg: #fdf2f4;
+    --blockquote-border: #7a2431;
+    --blockquote-text: #1e293b;
+  
+    --callout-bg: #f8fafc;
+    --callout-border: #7a2431;
+    --callout-text: #1e293b;
+  
+    --table-header-bg: #111827;
+    --table-header-text: #f9fafb;
+    --table-row-stripe: #f8fafc;
+    --table-border: #d9dde3;
+  
+    --sev-high: #b3261e;
+    --sev-med: #d97706;
+    --sev-low: #2e7d32;
+    --sev-info: #475569;
+  
+    --sev-high-bg: #fdecea;
+    --sev-med-bg: #fff4e5;
+    --sev-low-bg: #e8f5e9;
+    --sev-info-bg: #e5e7eb;
+  
+    --sev-high-border: #e6b8b3;
+    --sev-med-border: #f0d3a2;
+    --sev-low-border: #b7d6b9;
+    --sev-info-border: #cbd5e1;
+  }
+  
+/* =========================
+   COVER PAGE
+   ========================= */
+
+   .cover-page {
+    page-break-after: always;
+    text-align: center;
+    padding: 18mm 10mm 10mm 10mm;
+    box-sizing: border-box;
+  }
+  
+  .cover-brand {
+    margin: 10mm 0 12mm 0;
+  }
+  
+  .cover-logo {
+    max-width: 72mm;
+    max-height: 32mm;
+    width: auto;
+    height: auto;
+  }
+  
+  .cover-kicker {
+    margin-top: 0;
+    margin-bottom: 8mm;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  
+  .cover-title {
+    margin: 0 auto 14mm auto;
+    display: inline-block;
+    padding: 10px 18px;
+    background: #6d1023;
+    color: #ffffff;
+    font-size: 16pt;
+    font-weight: 800;
+    line-height: 1.2;
+    max-width: 145mm;
+    border-radius: 6px;
+  }
+  
+  .cover-meta-card {
+    width: 100%;
+    max-width: 110mm;
+    margin: 0 auto 14mm auto;
+    padding: 7mm 9mm;
+    border: 1px solid #d9dde3;
+    border-radius: 8px;
+    background: #f8fafc;
+    box-sizing: border-box;
+  }
+  
+  .cover-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8mm;
+    padding: 4px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .cover-meta-row:last-child {
+    border-bottom: none;
+  }
+  
+  .cover-meta-label {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #475569;
+  }
+  
+  .cover-meta-value {
+    font-size: 9pt;
+    color: #0f172a;
+    text-align: right;
+  }
+  
+  .cover-confidentiality {
+    margin-top: 10mm;
+    padding-top: 5mm;
+    display: inline-block;
+    min-width: 55mm;
+    border-top: 1px solid #d9dde3;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  
+  /* =========================
+   PILOT REPORT
+   ========================= */
+
+  .pilot-report h1 {
+    font-size: 22pt;
+    margin-bottom: 10pt;
+    color: #111827;
+  }
+
+  .pilot-report h2 {
+    font-size: 15pt;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    color: #6d1023;
+  }
+
+  .pilot-report h3 {
+    font-size: 11.5pt;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    color: #374151;
+  }
+
+  .pilot-report p,
+  .pilot-report li {
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+
+  .pilot-report ul {
+    margin-top: 4pt;
+    margin-bottom: 10pt;
+  }
+
+  .pilot-report strong {
+    color: #111827;
+  }
+
+  /* =========================
+     Base layout & typography
+     ========================= */
+  html,
+  body {
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: var(--text-main);
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .report-container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 0 16px 24px 16px;
+    box-sizing: border-box;
+  }
+  
+  .report-container::before {
+    content: "";
+    display: block;
+    border-top: 1px solid #d9dde3;
+    margin: 0 0 14px 0;
+  }
+  
+  
+  /* =========================
+     Headings
+     ========================= */
+  h1 {
+    font-size: 21pt;
+    line-height: 1.25;
+    margin: 0 0 1em 0;
+    padding: 10px 12px;
+    color: #ffffff;
+    background: var(--heading-primary);
+    border-radius: 4px;
+  }
+  
+  h2 {
+    font-size: 16pt;
+    line-height: 1.3;
+    margin-top: 2.1em;
+    margin-bottom: 0.65em;
+    padding-bottom: 6px;
+    border-bottom: 3px solid var(--heading-secondary);
+    color: var(--heading-secondary);
+  }
+  
+  h3 {
+    font-size: 13pt;
+    line-height: 1.35;
+    margin-top: 1.5em;
+    margin-bottom: 0.4em;
+    color: var(--heading-tertiary);
+  }
+  
+  h4 {
+    font-size: 11.5pt;
+    line-height: 1.35;
+    margin-top: 1.1em;
+    margin-bottom: 0.35em;
+    color: var(--heading-tertiary);
+  }
+  
+  h1,
+  h2,
+  h3,
+  h4 {
+    page-break-after: avoid;
+  }
+  
+  h2,
+  h3,
+  h4 {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  
+  /* =========================
+     Paragraphs & inline text
+     ========================= */
+  p {
+    margin: 0.4em 0 0.8em 0;
+  }
+  
+  strong {
+    font-weight: 600;
+  }
+  
+  em {
+    color: var(--text-muted);
+  }
+  
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.5pt;
+    background: #f8fafc;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  
+  
+  /* =========================
+     Blockquotes / callouts
+     ========================= */
+  blockquote {
+    margin: 1em 0;
+    padding: 10px 14px;
+    background: var(--blockquote-bg);
+    border-left: 5px solid var(--blockquote-border);
+    color: var(--blockquote-text);
+    page-break-inside: avoid;
+  }
+  
+  .callout {
+    margin: 1em 0 1.2em 0;
+    padding: 12px 14px;
+    background: var(--callout-bg);
+    border-left: 4px solid var(--callout-border);
+    color: var(--callout-text);
+    border-radius: 4px;
+    page-break-inside: avoid;
+  }
+  
+  .callout p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .callout ul,
+  .callout ol {
+    margin: 0.2em 0 0.8em 1.2em;
+    padding-left: 0.4em;
+  }
+  
+  .callout li {
+    margin: 0.35em 0;
+  }
+  
+  
+  /* =========================
+     Lists
+     ========================= */
+  ul,
+  ol {
+    margin: 0.45em 0 0.9em 1.45em;
+    padding-left: 0.2em;
+  }
+  
+  li {
+    margin: 0.28em 0;
+  }
+  
+  li > ul,
+  li > ol {
+    margin-top: 0.3em;
+  }
+  
+  
+  /* =========================
+     Horizontal rules
+     ========================= */
+  hr {
+    border: none;
+    border-top: 1px solid var(--accent-border);
+    margin: 2em 0 1.6em 0;
+  }
+  
+  
+  /* =========================
+     Tables
+     ========================= */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0 1.4em 0;
+    font-size: 10.4pt;
+    border: 1px solid var(--table-border);
+    page-break-inside: avoid;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  th {
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    text-align: left;
+    padding: 7px 9px;
+    border-bottom: 2px solid #0f172a;
+    font-weight: 600;
+  }
+  
+  td {
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--table-border);
+    white-space: pre-wrap;
+    vertical-align: top;
+  }
+  
+  tr:nth-child(even) td {
+    background: var(--table-row-stripe);
+  }
+  
+  .summary-table {
+    margin-top: 0.8em;
+  }
+  
+  
+  /* =========================
+     Severity styling
+     ========================= */
+  .severity-high,
+  .badge-high {
+    color: var(--sev-high);
+    font-weight: 600;
+  }
+  
+  .severity-medium,
+  .badge-medium {
+    color: var(--sev-med);
+    font-weight: 600;
+  }
+  
+  .severity-low,
+  .badge-low {
+    color: var(--sev-low);
+    font-weight: 600;
+  }
+  
+  .severity-info,
+  .badge-info {
+    color: var(--sev-info);
+  }
+  
+  .badge-high,
+  .badge-medium,
+  .badge-low,
+  .badge-info {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9pt;
+    line-height: 1.25;
+    font-weight: 700;
+    border: 1px solid transparent;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  
+  .badge-high {
+    background-color: var(--sev-high-bg);
+    color: var(--sev-high);
+    border-color: var(--sev-high-border);
+  }
+  
+  .badge-medium {
+    background-color: var(--sev-med-bg);
+    color: var(--sev-med);
+    border-color: var(--sev-med-border);
+  }
+  
+  .badge-low {
+    background-color: var(--sev-low-bg);
+    color: var(--sev-low);
+    border-color: var(--sev-low-border);
+  }
+  
+  .badge-info {
+    background-color: var(--sev-info-bg);
+    color: var(--sev-info);
+    border-color: var(--sev-info-border);
+  }
+  
+  tr.sev-high td {
+    background-color: var(--sev-high-bg);
+  }
+  
+  tr.sev-medium td {
+    background-color: var(--sev-med-bg);
+  }
+  
+  tr.sev-low td {
+    background-color: var(--sev-low-bg);
+  }
+  
+  tr.sev-info td {
+    background-color: var(--sev-info-bg);
+  }
+  
+  
+  /* =========================
+   FINDING CARD BASE
+   ========================= */
+
+  .finding {
+    border: 1px solid var(--accent-border);
+    border-left: 6px solid transparent;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 18px 0;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    break-inside: avoid;
+  }
+
+  /* =========================
+    SEVERITY BORDER COLOURS
+    ========================= */
+
+  /* HIGH = RED */
+  .finding.high {
+    border-left-color: #dc2626;
+  }
+
+  /* MEDIUM = ORANGE */
+  .finding.medium {
+    border-left-color: #f59e0b;
+  }
+
+  /* LOW = BLUE */
+  .finding.low {
+    border-left-color: #3b82f6;
+  }
+
+  /* INFO = GREY */
+  .finding.info {
+    border-left-color: #9ca3af;
+  }
+
+  /* =========================
+    OPTIONAL SUBTLE BACKGROUND TINT
+    ========================= */
+
+  .finding.high {
+    background: linear-gradient(to right, #fef2f2 0%, #ffffff 40%);
+  }
+
+  .finding.medium {
+    background: linear-gradient(to right, #fff7ed 0%, #ffffff 40%);
+  }
+
+  .finding.low {
+    background: linear-gradient(to right, #eff6ff 0%, #ffffff 40%);
+  }
+
+  .finding.info {
+    background: linear-gradient(to right, #f9fafb 0%, #ffffff 40%);
+  }
+
+  /* =========================
+    HEADER ROW
+    ========================= */
+
+  .finding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .finding-title {
+    font-size: 13.5pt;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: 0.2px;
+  }
+
+  /* =========================
+    SEVERITY BADGE
+    ========================= */
+
+  .finding-badge-wrap {
+    display: flex;
+    align-items: center;
+  }
+
+  .badge-high,
+  .badge-medium,
+  .badge-low,
+  .badge-info {
+    font-size: 9pt;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* HIGH */
+  .badge-high {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  /* MEDIUM */
+  .badge-medium {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  /* LOW */
+  .badge-low {
+    background: #dbeafe;
+    color: #1e3a8a;
+  }
+
+  /* INFO */
+  .badge-info {
+    background: #e5e7eb;
+    color: #374151;
+  }
+
+  /* =========================
+    METADATA ROW
+    ========================= */
+
+  .finding-meta {
+    font-size: 9.5pt;
+    color: #6b7280;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  /* =========================
+    CONTENT SECTIONS
+    ========================= */
+
+  .finding-section {
+    margin-bottom: 12px;
+  }
+
+  .finding-label {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 3px;
+  }
+
+  .finding-text {
+    font-size: 10.5pt;
+    color: #111827;
+    line-height: 1.5;
+  }
+
+  /* =========================
+    CONTENT EMPHASIS
+    ========================= */
+
+  .finding-main {
+    font-weight: 500;
+  }
+
+  .finding-impact {
+    color: #7c2d12; /* subtle risk tone */
+  }
+
+  .finding-action {
+    color: #065f46; /* solution tone */
+    font-weight: 500;
+  }
+
+  /* =========================
+    EVIDENCE BLOCK
+    ========================= */
+
+  .finding-evidence {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: 6px;
+    font-size: 9pt;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+
+  /* =========================
+    SPACING BETWEEN CARDS
+    ========================= */
+
+  .finding + .finding {
+    margin-top: 20px;
+  }
+
+  /* =========================
+    HOVER (HTML ONLY)
+    ========================= */
+
+  .finding:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  }
+  
+  
+  /* =========================
+     Optional contents block
+     ========================= */
+  .contents-list {
+    margin: 0.8em 0 1.2em 0;
+    padding-left: 1.2em;
+  }
+  
+  .contents-list li {
+    margin: 0.35em 0;
+  }
+  
+  
+  /* =========================
+     Empty / no findings states
+     ========================= */
+  .no-findings {
+    margin: 1em 0 1.2em 0;
+    padding: 12px 14px;
+    background: #fafbfc;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #475569;
+    border-radius: 6px;
+    color: #334155;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  
+  .no-findings p:last-child {
+    margin-bottom: 0;
+  }
+  
+  
+  /* =========================
+     Print / PDF behaviour
+     ========================= */
+  table,
+  blockquote,
+  .callout,
+  .finding,
+  .no-findings {
+    page-break-inside: avoid;
+  }
+  
+  h2 + p,
+  h3 + p,
+  h4 + p,
+  h2 + ul,
+  h3 + ul,
+  h4 + ul,
+  h2 + ol,
+  h3 + ol,
+  h4 + ol,
+  h2 + table,
+  h3 + table,
+  h4 + table,
+  h2 + blockquote,
+  h3 + blockquote,
+  h4 + blockquote,
+  h2 + .callout,
+  h3 + .callout,
+  h4 + .callout,
+  h2 + .finding,
+  h3 + .finding,
+  h4 + .finding,
+  h2 + .no-findings,
+  h3 + .no-findings,
+  h4 + .no-findings,
+  h2 + div,
+  h3 + div,
+  h4 + div {
+    page-break-before: avoid;
+  }
+  
+  h2.page-break-before {
+    page-break-before: always;
+  }
+  
+  .keep-together {
+    page-break-inside: avoid;
+  }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <h1>Pre-Audit Payroll Compliance Review</h1>
+<p><strong>Organisation:</strong> Organisation name not provided<br>
+<strong>Prepared as at:</strong> 14 Apr 2026  </p>
+<blockquote>
+<p>This Pre-Audit Review provides structured guidance on how to interpret and act on the CRC Executive Pack and supporting module reports prior to a formal audit, regulatory review, or external assurance activity.</p>
+<p>It highlights potential payroll risk indicators identified through automated, data-driven checks. This document does not replace an audit, provide assurance, or constitute legal, accounting, or industrial relations advice.</p>
+</blockquote>
+<hr>
+<h2>1. Purpose of this Review</h2>
+<p>This Pre-Audit Payroll Compliance Review is designed to help the organisation identify and prioritise potential payroll compliance risks <strong>before</strong> the commencement of a formal audit, regulatory review, or external assurance activity.</p>
+<p>The review applies automated, data-driven checks across key payroll risk areas to surface indicators that may warrant further investigation, validation, or remediation.</p>
+<p>This review reflects the status of payroll compliance based on module outputs generated as at the report date. Each underlying module may analyse different data periods depending on the nature of the check performed.</p>
+<p>This review:</p>
+<ul>
+<li>supports internal preparation and risk reduction</li>
+<li>highlights areas likely to attract audit attention</li>
+<li>assists with prioritisation of follow-up work</li>
+</ul>
+<p>It does <strong>not</strong> replace a formal audit, provide legal or accounting advice, or constitute any form of assurance regarding compliance or audit outcomes.</p>
+<hr>
+<h2>2. Relationship to Detailed Reviews</h2>
+<p>This Pre-Audit Review provides a consolidated, high-level view of potential payroll risk indicators derived from the following CRC modules:</p>
+<ul>
+<li><strong>Leave &amp; Entitlement Leakage Review</strong></li>
+<li><strong>Long Service Leave (LSL) Exposure Review</strong></li>
+<li><strong>Termination Exposure Review</strong></li>
+<li><strong>Record-Keeping &amp; Evidence Gaps (RKEG) Review</strong></li>
+</ul>
+<p>These detailed reports contain the underlying evidence, rule logic, employee-level findings, and recommended remediation actions.</p>
+<p>This overview does not independently reassess payroll calculations or confirm compliance outcomes.</p>
+<p>Where commissioned separately, a <strong>Public Holiday Compliance Review</strong> may also be considered as part of broader payroll risk assessment. That review is delivered under a standalone tool and is not included in this engagement unless expressly commissioned.</p>
+<p>This document does not independently analyse payroll data; it interprets the outputs generated by the CRC Executive Pack and detailed module reports.</p>
+<hr>
+<h2>3. How to Use This Review</h2>
+<p>This Pre-Audit Review should be read as a <strong>preparatory tool</strong>, not a definitive assessment.</p>
+<p>Recommended approach:</p>
+<ol>
+<li>Refer to the <strong>CRC Executive Pack</strong> for severity distributions, thematic patterns and prioritisation guidance.</li>
+<li>Prioritise <strong>High severity</strong> findings for validation and remediation.</li>
+<li>Use the detailed module reports to:</li>
+<li>understand the nature of each finding</li>
+<li>review supporting evidence</li>
+<li>identify potential root causes</li>
+<li>Where issues are confirmed, address them before audit commencement where practicable.</li>
+<li>Re-run relevant modules after remediation to confirm risk reduction.</li>
+</ol>
+<hr>
+<h2>4. Key Risk Snapshot</h2>
+<p>This review draws together exposure signals identified across the following CRC modules:</p>
+<ul>
+<li>
+<p><strong>Leave &amp; Entitlement Leakage Review</strong><br>
+  (operational payroll accuracy and entitlement consistency)</p>
+</li>
+<li>
+<p><strong>Long Service Leave (LSL) Exposure Review</strong><br>
+  (long-horizon entitlement and provision risk)</p>
+</li>
+<li>
+<p><strong>Termination Exposure Review</strong><br>
+  (final pay process integrity and evidential defensibility)</p>
+</li>
+<li>
+<p><strong>Record-Keeping &amp; Evidence Gaps (RKEG) Review</strong><br>
+  (traceability, completeness, and audit-readiness of payroll records)</p>
+</li>
+</ul>
+<h2>Refer to the <strong>CRC Executive Pack</strong> for severity distributions, thematic patterns and prioritisation guidance.</h2>
+<h2>5. Areas Likely to Attract Audit Attention</h2>
+<p>Based on common payroll audit and regulatory review patterns, findings in the following categories are more likely to attract scrutiny:</p>
+<ul>
+<li><strong>Negative leave balances</strong> or unexplained balance movements  </li>
+<li><strong>Leave accruals for ineligible employee types</strong> (for example, casual employees accruing leave)</li>
+<li><strong>Inconsistencies between ledger movements and balance snapshots</strong></li>
+<li><strong>Long-serving employees with low or zero Long Service Leave balances</strong></li>
+<li><strong>Termination events with incomplete or weak evidential support</strong></li>
+<li><strong>Gaps in employee master data or traceability fields required to evidence payroll decisions</strong></li>
+</ul>
+<p>The presence of findings in these areas does not by itself imply non-compliance, but they are typically considered higher-risk and should be prioritised for validation.</p>
+<hr>
+<h2>6. Recommended Pre-Audit Actions (Before Audit Commencement)</h2>
+<p>The following actions are recommended to reduce payroll risk prior to audit activity.</p>
+<h3>A. Triage and Validation</h3>
+<ol>
+<li>Prioritise validation of <strong>High severity</strong> findings across all modules.</li>
+<li>Confirm whether identified issues reflect:</li>
+<li>data quality problems</li>
+<li>configuration or system issues</li>
+<li>policy interpretation differences</li>
+</ol>
+<h3>B. Remediation (Where Issues Are Confirmed)</h3>
+<ul>
+<li>Correct underlying configuration or process issues.</li>
+<li>Assess whether remediation is required.</li>
+<li>Document actions taken and the rationale where findings are deemed acceptable.</li>
+</ul>
+<h3>C. Re-assessment</h3>
+<ul>
+<li>Re-run the relevant modules after changes.</li>
+<li>Confirm that key risk indicators have reduced prior to audit commencement.</li>
+</ul>
+<hr>
+<h2>7. Supporting Detailed Reports</h2>
+<p>This Pre-Audit Review is supported by the following detailed CRC module reports, which contain full findings, evidence, and recommended actions:</p>
+<ul>
+<li>
+<p><strong>Leave &amp; Entitlement Leakage Review</strong><br>
+<code>outputs/leave_report.html</code></p>
+</li>
+<li>
+<p><strong>Long Service Leave (LSL) Exposure Review</strong><br>
+<code>outputs/lsl_report.html</code></p>
+</li>
+<li>
+<p><strong>Termination Exposure Review</strong><br>
+<code>outputs/term_report.html</code></p>
+</li>
+<li>
+<p><strong>Record-Keeping &amp; Evidence Gaps (RKEG) Review</strong><br>
+<code>outputs/rkeg_report.html</code></p>
+</li>
+</ul>
+<p>Where commissioned separately, a Public Holiday Compliance Review will be provided as a standalone artefact outside this CRC report pack.</p>
+<p>These reports should be retained as supporting documentation for internal review and audit preparation.</p>
+<p>This Pre-Audit Review should be read together with the <strong>CRC Executive Pack</strong>. The Executive Pack contains the structured findings and severity analysis; this document provides governance-focused guidance on how to use those outputs in preparation for audit activity.</p>
+<hr>
+<h2>8. Scope, Assumptions &amp; Limitations</h2>
+<p>This Pre-Audit Review is subject to the following limitations:</p>
+<ul>
+<li>The review relies on the accuracy and completeness of the data provided.</li>
+<li>Automated checks are rule-based and may not capture all payroll risks.</li>
+<li>Award, enterprise agreement, and contract interpretation is not performed by this tool.</li>
+<li>This review does not provide legal, accounting, or industrial relations advice.</li>
+</ul>
+<p>The review is intended to support informed preparation and prioritisation and should be used alongside professional advice where appropriate.</p>
+<hr>
+  </div>
+</body>
+</html>

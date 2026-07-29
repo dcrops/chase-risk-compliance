@@ -32,7 +32,6 @@ def test_term_003():
     state = prepare_term_state(
         terminations=terminations,
         pay_events=pay_events,
-        employees=pd.DataFrame(),
     )
 
     datasets = {

@@ -4,11 +4,16 @@ import argparse
 from pathlib import Path
 import sys
 
-# Add project root to path
+# Add project root to path for `src.*` imports, and src/ for the unprefixed
+# intra-package imports used inside the modules.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
+sys.path.append(str(PROJECT_ROOT / "src"))
 
+from src.common.console import configure_console
 from src.leave_leakage.run import main as run_leave
+
+configure_console()
 
 
 def parse_args():

@@ -2,11 +2,16 @@ import argparse
 from pathlib import Path
 import sys
 
-# Ensure project root is on path
+# Ensure project root is on path for `src.*` imports, and src/ for the
+# unprefixed intra-package imports used inside the modules.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
+sys.path.append(str(PROJECT_ROOT / "src"))
 
+from src.common.console import configure_console
 from src.ingestion.ingest import main as run_ingestion
+
+configure_console()
 
 
 def parse_args():

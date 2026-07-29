@@ -3,27 +3,64 @@ import argparse
 import pandas as pd
 import yaml
 
+from common.date_parsing import parse_date_series, resolve_date_formats
+from common.mapping_contract import validate_mapping
+from common.run_manifest import (
+    add_outputs,
+    build_manifest,
+    manifest_filename,
+    write_manifest,
+)
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = PROJECT_ROOT / "data" / "clients"
 
 
-def load_mapping(pilot_root: Path):
+def resolve_mapping_path(pilot_root: Path) -> Path:
     config_candidate = pilot_root / "config" / "column_mapping.yaml"
     root_candidate = pilot_root / "column_mapping.yaml"
 
     if config_candidate.exists():
-        mapping_path = config_candidate
-    elif root_candidate.exists():
-        mapping_path = root_candidate
-    else:
-        raise FileNotFoundError(
-            f"Could not find column_mapping.yaml in either "
-            f"{config_candidate} or {root_candidate}"
-        )
+        return config_candidate
+    if root_candidate.exists():
+        return root_candidate
+
+    raise FileNotFoundError(
+        f"Could not find column_mapping.yaml in either "
+        f"{config_candidate} or {root_candidate}"
+    )
+
+
+def load_mapping(
+    pilot_root: Path,
+    raw_dir: Path | None = None,
+    *,
+    check_source_files: bool = True,
+):
+    """Load and validate the pilot's column mapping.
+
+    Validation runs before any dataset is read so that a malformed mapping
+    fails immediately rather than part way through ingestion. Normal ingestion
+    checks every referenced source file. Administrative/template callers may
+    explicitly pass ``check_source_files=False`` to validate schema only.
+    """
+    mapping_path = resolve_mapping_path(pilot_root)
 
     with open(mapping_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        mapping = yaml.safe_load(f)
+
+    validation_raw_dir = (
+        raw_dir if raw_dir is not None else pilot_root / "raw"
+    ) if check_source_files else None
+
+    validate_mapping(
+        mapping,
+        raw_dir=validation_raw_dir,
+        mapping_path=mapping_path,
+    )
+
+    return mapping
 
 def _log_header(title: str):
     print(f"\n{'=' * 12} {title} {'=' * 12}")
@@ -145,41 +182,28 @@ def _parse_dates(
     series: pd.Series,
     dataset_name: str,
     column_name: str,
-    fail_if_all_non_null_unparsed: bool = False,
+    mapping: dict | None = None,
+    required: bool = False,
 ) -> pd.Series:
-    original = _normalise_blank_strings(series)
+    """Parse a canonical date column against the formats declared in the mapping.
 
-    # First pass (no dayfirst assumption)
-    parsed = pd.to_datetime(
-        original,
-        errors="coerce",
+    Formats are never inferred. See common.date_parsing for the contract and
+    for the failure behaviour when a non-null value does not match.
+    """
+    formats = resolve_date_formats(mapping, dataset_name, column_name)
+
+    print(
+        f"INFO - {dataset_name}.{column_name}: parsing dates using declared "
+        f"format(s) {formats}"
     )
 
-    # Second pass (for remaining unparsed values, try dayfirst)
-    mask_unparsed = original.notna() & parsed.isna()
-    if mask_unparsed.any():
-        parsed_dayfirst = pd.to_datetime(
-            original[mask_unparsed],
-            errors="coerce",
-            dayfirst=True,
-        )
-        parsed.loc[mask_unparsed] = parsed_dayfirst
-
-    original_non_null_count = original.notna().sum()
-    parsed_non_null_count = parsed.notna().sum()
-
-    if fail_if_all_non_null_unparsed and original_non_null_count > 0 and parsed_non_null_count == 0:
-        raise ValueError(
-            f"{dataset_name}: all non-null values in '{column_name}' failed date parsing"
-        )
-
-    if original_non_null_count > 0 and parsed_non_null_count < original_non_null_count:
-        failed_count = original_non_null_count - parsed_non_null_count
-        print(
-            f"WARNING - {dataset_name}: {failed_count} value(s) in '{column_name}' failed date parsing"
-        )
-
-    return parsed.dt.strftime("%Y-%m-%d")
+    return parse_date_series(
+        series,
+        dataset_name=dataset_name,
+        column_name=column_name,
+        formats=formats,
+        required=required,
+    )
 
 
 def _read_and_rename(raw_dir: Path, dataset_name: str, cfg: dict) -> pd.DataFrame:
@@ -231,7 +255,8 @@ def create_employees(raw_dir: Path, mapping: dict) -> pd.DataFrame:
         df["start_date"],
         dataset_name="employees",
         column_name="start_date",
-        fail_if_all_non_null_unparsed=False,
+        mapping=mapping,
+        required=False,
     )
 
     for col in ["standard_hours", "fte", "base_rate"]:
@@ -333,7 +358,8 @@ def create_terminations(raw_dir: Path, mapping: dict) -> pd.DataFrame:
         df["termination_date"],
         dataset_name="terminations",
         column_name="termination_date",
-        fail_if_all_non_null_unparsed=True,
+        mapping=mapping,
+        required=True,
     )
 
     _validate_critical_fields(
@@ -402,7 +428,8 @@ def create_pay_events(raw_dir: Path, mapping: dict) -> pd.DataFrame:
         df["pay_date"],
         dataset_name="pay_events",
         column_name="pay_date",
-        fail_if_all_non_null_unparsed=True,
+        mapping=mapping,
+        required=True,
     )
 
     for col in ["gross_amount", "ote_amount", "super_amount"]:
@@ -454,7 +481,8 @@ def create_leave_ledger(raw_dir: Path, mapping: dict) -> pd.DataFrame:
         df["event_date"],
         dataset_name="leave_ledger",
         column_name="event_date",
-        fail_if_all_non_null_unparsed=True,
+        mapping=mapping,
+        required=True,
     )
 
     df["leave_type"] = _normalise_leave_type(
@@ -523,7 +551,8 @@ def create_leave_snapshot(
         df["as_of_date"],
         dataset_name="leave_snapshot",
         column_name="as_of_date",
-        fail_if_all_non_null_unparsed=False,
+        mapping=mapping,
+        required=False,
     )
 
     df["leave_type"] = _normalise_leave_type(
@@ -566,6 +595,17 @@ def create_leave_snapshot(
     return snapshot
 
 
+def _manifest_input_paths(raw_dir: Path, mapping: dict) -> list[Path]:
+    paths = []
+    for dataset_name, cfg in mapping.items():
+        if not isinstance(cfg, dict):
+            continue
+        source_file = cfg.get("source_file")
+        if source_file:
+            paths.append(raw_dir / source_file)
+    return paths
+
+
 def main(client: str, pilot: str):
     pilot_root = DATA_ROOT / client / pilot
     raw_dir = pilot_root / "raw"
@@ -577,7 +617,7 @@ def main(client: str, pilot: str):
     logs_dir.mkdir(parents=True, exist_ok=True)
     outputs_dir.mkdir(parents=True, exist_ok=True)
 
-    mapping = load_mapping(pilot_root)
+    mapping = load_mapping(pilot_root, raw_dir=raw_dir)
 
     # Employees
     employees = create_employees(raw_dir, mapping)
@@ -607,35 +647,75 @@ def main(client: str, pilot: str):
         snapshot_date_fallback=snapshot_date_fallback,
     )
 
-    # Write outputs
-    employees.to_csv(processed_dir / "employees.csv", index=False)
-    terminations.to_csv(processed_dir / "terminations.csv", index=False)
-    pay_events.to_csv(processed_dir / "pay_events.csv", index=False)
+    # Write outputs and retain the exact paths produced by this execution.
+    employees_path = processed_dir / "employees.csv"
+    terminations_path = processed_dir / "terminations.csv"
+    pay_events_path = processed_dir / "pay_events.csv"
+    payroll_transactions_path = processed_dir / "payroll_transactions.csv"
+    leave_ledger_path = processed_dir / "leave_ledger.csv"
+    generated_outputs = [
+        employees_path,
+        terminations_path,
+        pay_events_path,
+        payroll_transactions_path,
+        leave_ledger_path,
+    ]
+
+    employees.to_csv(employees_path, index=False)
+    terminations.to_csv(terminations_path, index=False)
+    pay_events.to_csv(pay_events_path, index=False)
 
     # Optional alias to preserve older downstream expectations
-    pay_events.to_csv(processed_dir / "payroll_transactions.csv", index=False)
+    pay_events.to_csv(payroll_transactions_path, index=False)
 
-    leave_ledger.to_csv(processed_dir / "leave_ledger.csv", index=False)
+    leave_ledger.to_csv(leave_ledger_path, index=False)
     if not leave_snapshot.empty:
-        leave_snapshot.to_csv(processed_dir / "balances_snapshot.csv", index=False)
+        balances_snapshot_path = processed_dir / "balances_snapshot.csv"
+        leave_snapshot.to_csv(balances_snapshot_path, index=False)
+        generated_outputs.append(balances_snapshot_path)
     else:
         print("INFO - No leave snapshot data available; balances_snapshot.csv not written")
 
-    print("✅ employees.csv created")
+    # ASCII only: a run must not abort while reporting success because the
+    # console codepage cannot encode a decorative character.
+    print("OK - employees.csv created")
     print(employees.head())
 
-    print("✅ terminations.csv created")
+    print("OK - terminations.csv created")
     print(terminations.head())
 
-    print("✅ pay_events.csv created")
-    print("✅ payroll_transactions.csv created")
+    print("OK - pay_events.csv created")
+    print("OK - payroll_transactions.csv created")
     print(pay_events.head())
 
-    print("✅ leave_ledger.csv created")
+    print("OK - leave_ledger.csv created")
     print(leave_ledger.head())
 
-    print("✅ balances_snapshot.csv created")
+    print("OK - balances_snapshot.csv created")
     print(leave_snapshot.head())
+
+    manifest = build_manifest(
+        client=client,
+        pilot=pilot,
+        execution_mode="ingestion",
+        module="INGESTION",
+        input_paths=_manifest_input_paths(raw_dir, mapping),
+        config_paths=[resolve_mapping_path(pilot_root)],
+        relative_to=pilot_root,
+        repo_root=PROJECT_ROOT,
+    )
+    add_outputs(
+        manifest,
+        generated_outputs,
+        relative_to=pilot_root,
+    )
+    manifest_path = write_manifest(
+        manifest,
+        outputs_dir,
+        filename=manifest_filename("INGESTION"),
+    )
+
+    print(f"OK - run manifest written: {manifest_path}")
 
 
 if __name__ == "__main__":

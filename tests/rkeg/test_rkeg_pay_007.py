@@ -1,18 +1,13 @@
-# tests/test_pay_007.py
-from pathlib import Path
+"""RKEG-PAY-007: negative gross amounts outside recognised adjustment patterns.
 
-from rkeg.datasets import load_all_datasets
-from rkeg.engine import run_rkeg_engine
-
-
-def _load_sample():
-    repo_root = Path(__file__).resolve().parents[2]
-    data_dir = repo_root / "data" / "sample"
-    return load_all_datasets(data_dir)
+Rewritten from the retired ``rkeg.engine`` harness onto the current rule
+configuration and detector registry.
+"""
 
 
-def test_pay_007_negative_gross_outside_patterns():
-    datasets = _load_sample()
-    findings = list(run_rkeg_engine(datasets, enabled_tiers={1, 2}))
-    pay_007 = [f for f in findings if f.rule_code == "RKEG-PAY-007"]
-    assert len(pay_007) > 0
+def test_pay_007_negative_gross_outside_patterns(run_sample_rule):
+    findings = run_sample_rule("RKEG-PAY-007")
+
+    assert findings, "Expected RKEG-PAY-007 to produce findings for sample data"
+    assert all(f.rule_code == "RKEG-PAY-007" for f in findings)
+    assert all(f.finding_id for f in findings)

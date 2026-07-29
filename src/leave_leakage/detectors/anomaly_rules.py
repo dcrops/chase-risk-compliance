@@ -56,29 +56,52 @@ def _run_leave_002_event_sign_anomaly(rule: dict, ledger: pd.DataFrame) -> list[
 
     return findings
 
+DUPLICATE_KEY_COLUMNS = ["employee_id", "leave_type", "event_date", "units", "event_type"]
+
+
 def _run_leave_008_duplicate_entries(rule: dict, ledger: pd.DataFrame) -> list[Finding]:
     findings: list[Finding] = []
 
-    dup = ledger[ledger.duplicated(
-        subset=["employee_id", "leave_type", "event_date", "units", "event_type"],
-        keep=False
-    )]
+    dup = ledger[ledger.duplicated(subset=DUPLICATE_KEY_COLUMNS, keep=False)]
+    if dup.empty:
+        return findings
 
-    for _, row in dup.iterrows():
+    # The finding describes a duplicated group, not an individual row, so emit
+    # one finding per group and carry the occurrence count. Emitting one per
+    # member produced several identical findings that shared a single ID.
+    for keys, group in dup.groupby(DUPLICATE_KEY_COLUMNS, dropna=False, sort=True):
+        employee_id, leave_type, event_date, units, event_type = keys
+        event_date_str = (
+            str(pd.Timestamp(event_date).date()) if pd.notna(event_date) else None
+        )
+        transaction_ids = (
+            sorted(
+                str(v).strip()
+                for v in group.get("transaction_id", pd.Series(dtype=object)).dropna()
+                if str(v).strip()
+            )
+            if "transaction_id" in group.columns
+            else []
+        )
 
         evidence_str = json.dumps(
             {
                 "sources": ["leave_ledger.csv"],
                 "primary_keys": {
-                    "employee_id": str(row["employee_id"]),
-                    "leave_type": str(row["leave_type"]),
-                    "event_date": str(row["event_date"].date()),
+                    "employee_id": str(employee_id),
+                    "leave_type": str(leave_type),
+                    "event_date": event_date_str,
                 },
                 "values": {
-                    "units": float(row["units"]),
-                    "event_type": str(row["event_type"]),
+                    "units": float(units),
+                    "event_type": str(event_type),
+                    "occurrence_count": int(len(group)),
+                    "transaction_ids": ", ".join(transaction_ids),
                 },
-                "explanation": "Duplicate ledger event detected.",
+                "explanation": (
+                    f"Duplicate ledger event detected: {len(group)} identical "
+                    f"movements were recorded."
+                ),
             },
             ensure_ascii=False,
         )
@@ -86,9 +109,9 @@ def _run_leave_008_duplicate_entries(rule: dict, ledger: pd.DataFrame) -> list[F
         findings.append(
             _build_finding(
                 rule,
-                str(row["employee_id"]),
-                str(row["leave_type"]),
-                str(row["event_date"].date()),
+                str(employee_id),
+                str(leave_type),
+                event_date_str,
                 rule["text"]["finding"],
                 evidence_str,
             )

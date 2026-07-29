@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Optional
-import json
-import hashlib
+
+from common.finding_identity import compute_finding_id_from_evidence
 
 
 @dataclass
@@ -20,22 +20,20 @@ class Finding:
     finding_id: Optional[str] = None
     next_action: Optional[str] = None
 
+    # Optional promoted fields
+    termination_date: Optional[str] = None
+    final_pay_date: Optional[str] = None
+    record_type: Optional[str] = None
+
 
 def compute_finding_id(rule_code: str, evidence_json: Optional[str]) -> str:
-    primary_keys = {}
-    if evidence_json:
-        try:
-            payload = json.loads(evidence_json)
-            primary_keys = payload.get("primary_keys") or {}
-        except Exception:
-            primary_keys = {}
+    """
+    Deterministic ID based on rule_code + evidence.primary_keys.
 
-    parts = [rule_code]
-    for k in sorted(primary_keys.keys()):
-        parts.append(f"{k}={primary_keys.get(k)}")
-
-    canonical = "|".join(parts)
-    return hashlib.sha1(canonical.encode("utf-8")).hexdigest()[:12]
+    Raises FindingIdentityError when the evidence carries no usable primary
+    keys, rather than collapsing every finding for the rule onto one ID.
+    """
+    return compute_finding_id_from_evidence(rule_code, evidence_json)
 
 
 def _build_finding(
@@ -45,6 +43,9 @@ def _build_finding(
     as_of_date: str | None,
     evidence_str: str,
     diff_units: float | None = None,
+    termination_date: str | None = None,
+    final_pay_date: str | None = None,
+    record_type: str | None = None,
 ) -> Finding:
     return Finding(
         employee_id=employee_id,
@@ -58,4 +59,7 @@ def _build_finding(
         evidence=evidence_str,
         finding_id=compute_finding_id(rule["id"], evidence_str),
         next_action=rule["text"]["remediation"],
+        termination_date=termination_date,
+        final_pay_date=final_pay_date,
+        record_type=record_type,
     )

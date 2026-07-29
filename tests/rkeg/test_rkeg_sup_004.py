@@ -1,35 +1,21 @@
-# tests/test_sup_004.py
-from pathlib import Path
+"""RKEG-SUP-004: employees without a recorded default superannuation fund.
 
-from rkeg.datasets import load_all_datasets
-from rkeg.engine import run_rkeg_engine
-
-
-def _load_sample_datasets():
-    """
-    Helper to load the sample CSVs using the same loader as rkeg.run.
-    """
-    repo_root = Path(__file__).resolve().parents[2]
-    data_dir = repo_root / "data" / "sample"
-    return load_all_datasets(data_dir)
+Rewritten from the retired ``rkeg.engine`` harness onto the current rule
+configuration and detector registry. SUP-004 is a tier 2 rule, so this also
+covers the fact that ``rkeg.run.main`` executes tier 2.
+"""
 
 
-def test_sup_004_missing_default_fund_produces_findings():
-    """
-    RKEG-SUP-004:
-    Employees without a recorded default superannuation fund.
+def test_sup_004_missing_default_fund_produces_findings(run_sample_rule):
+    findings = run_sample_rule("RKEG-SUP-004")
 
-    This test just asserts that, given our sample data, the rule
-    actually fires and produces at least one finding.
-    """
-    datasets = _load_sample_datasets()
+    assert findings, "Expected RKEG-SUP-004 to produce at least one sample finding"
+    assert all(f.rule_code == "RKEG-SUP-004" for f in findings)
+    assert all(f.finding_id for f in findings)
 
-    # Enable both tiers so Tier 2 SUP rules run.
-    findings = list(run_rkeg_engine(datasets, enabled_tiers={1, 2}))
 
-    sup_004_findings = [f for f in findings if f.rule_code == "RKEG-SUP-004"]
+def test_sup_004_findings_are_stable_across_reruns(run_sample_rule):
+    first = run_sample_rule("RKEG-SUP-004")
+    second = run_sample_rule("RKEG-SUP-004")
 
-    # We don't care about the exact count here – just that the rule is live.
-    assert (
-        len(sup_004_findings) > 0
-    ), "Expected RKEG-SUP-004 to produce at least one finding in sample data"
+    assert [f.finding_id for f in first] == [f.finding_id for f in second]

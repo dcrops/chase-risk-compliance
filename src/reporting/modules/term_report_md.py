@@ -4,27 +4,30 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
+from html import escape
 
 from reporting.core.structure import ReportStructure
 from reporting.executive.exec_pack_md import (
     MODULE_TERM,
-    TERM_FINDINGS_CSV,
+    MODULE_LABELS,
+    MODULE_ORDER,
     OUTPUTS_DIR,
     sort_findings,
-    build_header,
     build_data_sources_section,
+    load_term_severity_counts,
+)
+
+from reporting.sections.exec_pack_sections import (
     build_scope_and_methodology,
     build_limitations,
     build_next_steps,
     build_appendices,
     build_term_severity_summary,
+    build_finding_meta
 )
 
-# Where this Termination Exposure module report will be written
-TERM_REPORT_MD_PATH = OUTPUTS_DIR / "term_report.md"
+from reporting.core.cover_page import build_cover_page
 
-
-# ---------- Data model ----------
 
 @dataclass
 class TerminationFinding:
@@ -33,52 +36,49 @@ class TerminationFinding:
     employee_id: str
     termination_date: str
     final_pay_date: str
-    message: str
+    as_of_date: str
+    classification: str | None = None
+    message: str = ""
     evidence: str | None = None
+    finding_id: str | None = None
+    next_action: str | None = None
     days_gap: str | None = None
 
     @classmethod
     def from_row(cls, row: Dict[str, str]) -> "TerminationFinding":
-        """
-        Map a TERM findings CSV row into a TerminationFinding.
-
-        Column names are taken from the current TERM module output
-        (see appendices in exec_pack_md). This is defensive against
-        small header variations.
-        """
         return cls(
             rule_code=row.get("rule_code") or row.get("rule_id") or "",
             severity=(row.get("severity", "") or "").upper(),
             employee_id=row.get("employee_id", "") or row.get("employee", "") or "",
-            termination_date=row.get("termination_date", "") or row.get("term_date", "") or "",
+            termination_date=row.get("termination_date", "") or "",
             final_pay_date=row.get("final_pay_date", "") or row.get("pay_date", "") or "",
+            as_of_date=row.get("as_of_date", "") or "",
+            classification=(row.get("classification") or "").upper() or None,
             message=row.get("message") or row.get("description") or "",
-            evidence=row.get("evidence") or row.get("evidence_ref") or row.get("artefact") or None,
+            evidence=row.get("evidence") or row.get("evidence_ref") or None,
+            finding_id=row.get("finding_id") or None,
+            next_action=row.get("next_action") or None,
             days_gap=row.get("days_gap") or row.get("gap_days") or None,
         )
 
 
-# ---------- CSV helpers ----------
-
 def _load_csv(path: Path) -> List[Dict[str, str]]:
     if not path.exists():
         return []
-    import csv  # local import to avoid unnecessary top-level dependency
+
+    import csv
 
     with path.open("r", newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         return list(reader)
 
 
-def load_term_findings() -> List[TerminationFinding]:
-    rows = _load_csv(TERM_FINDINGS_CSV)
+def load_term_findings(base_output_dir: Path) -> List[TerminationFinding]:
+    rows = _load_csv(base_output_dir / "term_findings.csv")
     return [TerminationFinding.from_row(r) for r in rows]
 
 
-# ---------- Review period helpers ----------
-
 def _parse_iso_date(s: str | None) -> Optional[date]:
-    """Parse a simple YYYY-MM-DD string into a date, or return None."""
     if not s:
         return None
     s = s.strip()
@@ -91,11 +91,6 @@ def _parse_iso_date(s: str | None) -> Optional[date]:
 
 
 def _derive_review_period(findings: List[TerminationFinding]) -> str:
-    """
-    Derive a human-readable review period from termination-related dates.
-
-    Prefers termination_date; falls back to final_pay_date where necessary.
-    """
     dates: List[date] = []
 
     for f in findings:
@@ -115,15 +110,112 @@ def _derive_review_period(findings: List[TerminationFinding]) -> str:
     return f"{start.strftime('%d %b %Y')} to {end.strftime('%d %b %Y')}"
 
 
-# ---------- Section builders specific to the TERM module report ----------
+def _term_severity_class(severity: str) -> str:
+    sev = (severity or "").strip().lower()
+    if sev in {"high", "medium", "low", "info"}:
+        return sev
+    return "info"
+
+
+def _safe(value: str | None, fallback: str = "Not specified") -> str:
+    text = (value or "").strip()
+    return escape(text) if text else fallback
+
+
+def _render_labeled_section(label: str, body: str, extra_class: str = "") -> str:
+    class_attr = f"finding-text {extra_class}".strip()
+    return f"""
+<div class="finding-section">
+  <div class="finding-label">{escape(label)}</div>
+  <div class="{class_attr}">{body}</div>
+</div>
+""".strip()
+
+
+def render_term_finding_card(finding: TerminationFinding) -> str:
+    severity = (finding.severity or "").upper() or "INFO"
+    severity_class = _term_severity_class(severity)
+
+    rule_code = _safe(finding.rule_code, "TERM finding")
+    message = _safe(finding.message, "No finding description provided.")
+    days_gap_raw = (finding.days_gap or "").strip()
+    evidence = _safe(finding.evidence, "")
+    recommendation_text = finding.next_action or (
+        "Review the underlying termination workflow, confirm the relevant records and timing, "
+        "and validate whether additional supporting evidence or remediation is required."
+    )
+
+    date_part = None
+
+    if finding.termination_date and finding.final_pay_date:
+        date_part = f"Dates: {finding.termination_date} → {finding.final_pay_date}"
+    elif finding.termination_date:
+        date_part = f"Termination: {finding.termination_date}"
+    elif finding.final_pay_date:
+        date_part = f"Final pay: {finding.final_pay_date}"
+
+    extra_parts = [date_part] if date_part else None
+
+    meta_text = build_finding_meta(
+        employee_id=finding.employee_id or None,
+        date_label=None,
+        date_value=None,
+        classification=finding.classification or None,
+        extra_parts=extra_parts,
+    )
+
+    impact = (
+        "This may weaken the organisation's ability to clearly evidence termination processing "
+        "and final pay handling if reviewed."
+    )
+
+    sections: list[str] = [
+        _render_labeled_section("Finding", message, "finding-main"),
+        _render_labeled_section("Impact", escape(impact), "finding-impact"),
+        _render_labeled_section("Recommendation", escape(recommendation_text), "finding-action"),
+    ]
+
+    if days_gap_raw:
+        sections.append(
+            _render_labeled_section(
+                "Timing Detail",
+                f"Days between termination and final pay: {escape(days_gap_raw)}",
+            )
+        )
+
+    if evidence:
+        sections.append(
+            """
+<div class="finding-section">
+  <div class="finding-label">Evidence Reference</div>
+  <pre class="finding-evidence">"""
+            + evidence
+            + """</pre>
+</div>
+""".strip()
+        )
+
+    section_html = "\n  ".join(sections)
+
+    return f"""
+<div class="finding {severity_class}">
+  <div class="finding-header">
+    <div class="finding-title-wrap">
+      <div class="finding-title">{rule_code}</div>
+    </div>
+    <div class="finding-badge-wrap">
+      <span class="badge-{severity_class}">{severity}</span>
+    </div>
+  </div>
+
+  <div class="finding-meta">{meta_text}</div>
+
+  {section_html}
+</div>
+""".strip()
+
 
 def build_term_module_summary(findings: List[TerminationFinding]) -> str:
-    """
-    Top-level Executive Summary for the Termination Exposure module report.
-
-    Provides narrative plus a concise severity snapshot. The full severity
-    table is presented in the Findings Overview section.
-    """
     parts: List[str] = []
 
     parts.append(
@@ -135,19 +227,16 @@ def build_term_module_summary(findings: List[TerminationFinding]) -> str:
     )
     parts.append("")
 
-    # Headline severity counts (table lives in Findings Overview)
     high = sum(1 for f in findings if f.severity == "HIGH")
     med = sum(1 for f in findings if f.severity == "MEDIUM")
     low = sum(1 for f in findings if f.severity == "LOW")
 
     parts.append("Across the dataset provided, the automated checks identified:")
     parts.append("")
-
     parts.append(f"- **High:** {high}")
     parts.append(f"- **Medium:** {med}")
     parts.append(f"- **Low:** {low}")
     parts.append("")
-
     parts.append(
         "A detailed breakdown by severity is provided in the "
         "**Findings Overview** section."
@@ -158,138 +247,70 @@ def build_term_module_summary(findings: List[TerminationFinding]) -> str:
 
 def build_detailed_findings(findings: List[TerminationFinding]) -> str:
     if not findings:
-        return """No termination-related findings were identified for the supplied data.
+        return """
+<div class="no-findings">
+No termination-related findings were identified for the supplied data.
+</div>
+""".strip()
 
----
+    intro = """
+This section sets out detailed findings for **Termination Exposure** only. Findings highlight where termination records may be incomplete, inconsistent or difficult to substantiate if reviewed by auditors, regulators or in the context of a dispute. They do **not** confirm incorrect pay outcomes.
+""".strip()
 
-"""
-
-    lines: List[str] = []
-
-    lines.append(
-        "This section sets out detailed findings for **Termination Exposure** only. "
-        "Findings highlight where termination records may be incomplete, inconsistent or "
-        "difficult to substantiate if reviewed by auditors, regulators or in the context "
-        "of a dispute. They do **not** confirm incorrect pay outcomes."
-    )
-    lines.append("")
-    lines.append(
-        "Each finding below follows a consistent **Finding → Evidence → Impact → "
-        "Recommended Action** pattern."
-    )
-    lines.append("")
-
-    for idx, f in enumerate(findings, start=1):
-        lines.append(f"### Finding {idx}: {f.rule_code or 'UNSPECIFIED RULE'}")
-        lines.append(f"**Severity:** {f.severity or 'UNSPECIFIED'}")
-        lines.append("")
-
-        # Finding
-        lines.append("**Finding**")
-        lines.append(f"{f.message or 'No description provided.'}")
-        lines.append("")
-
-        # Evidence
-        lines.append("**Evidence**")
-        lines.append("")
-
-        evidence_bits: List[str] = []
-        if f.employee_id:
-            evidence_bits.append(f"Employee ID: `{f.employee_id}`")
-        if f.termination_date:
-            evidence_bits.append(f"Termination date: `{f.termination_date}`")
-        if f.final_pay_date:
-            evidence_bits.append(f"Final pay date: `{f.final_pay_date}`")
-        if f.days_gap:
-            evidence_bits.append(f"Days between termination and final pay: `{f.days_gap}`")
-        if f.evidence:
-            evidence_bits.append(f"Evidence reference: `{f.evidence}`")
-
-        if evidence_bits:
-            lines.append("- " + "\n- ".join(evidence_bits))
-        else:
-            lines.append("- Not specified in the source data.")
-        lines.append("")
-
-        # Impact / Risk
-        lines.append("**Impact / Risk**")
-        lines.append(
-            "Increased evidential and audit risk in relation to termination processing. "
-            "Weak or inconsistent records can increase the effort required to explain "
-            "termination decisions and may reduce the organisation’s ability to respond "
-            "confidently if challenged."
-        )
-        lines.append("")
-
-        # Recommended Action
-        lines.append("**Recommended Action**")
-        lines.append("")
-        lines.append("- Validate this finding against underlying payroll and HR records.")
-        lines.append("- Confirm that termination dates and final pay dates are correctly recorded.")
-        lines.append(
-            "- Strengthen documentation and evidence capture for termination decisions, "
-            "including approval records and artefact references."
-        )
-        lines.append("- Where process weaknesses are confirmed, update procedures and training.")
-        lines.append("")
-
-    lines.append("---")
-    lines.append("")
-    return "\n".join(lines)
+    cards = [render_term_finding_card(f) for f in findings]
+    return intro + "\n\n" + "\n\n".join(cards)
 
 
-def build_term_appendices() -> str:
-    """
-    Thin wrapper so the TERM module report can reuse the shared appendices logic,
-    scoped to TERM only.
-    """
-    return build_appendices({MODULE_TERM})
+def build_term_appendices(base_output_dir: Path) -> str:
+    return build_appendices({MODULE_TERM}, base_output_dir)
 
-
-# ---------- Main generator ----------
 
 def generate_term_report(
     organisation_name: str = "Organisation not specified",
     review_period: str | None = None,
+    output_dir: Path | None = None,
 ) -> Path:
-    """
-    Generate outputs/term_report.md – a Termination Exposure-only detailed module report.
-    """
-    included = {MODULE_TERM}  # this is a TERM-only report
+    target_dir = output_dir or OUTPUTS_DIR
+    report_path = target_dir / "term_report.md"
 
-    findings = load_term_findings()
+    findings = load_term_findings(target_dir)
     sorted_findings = sort_findings(findings) if findings else []
+    term_counts = load_term_severity_counts(target_dir)
 
     if review_period is None:
         review_period = _derive_review_period(sorted_findings) if sorted_findings else "Period not specified"
 
+    logo_path = (
+        Path(__file__).resolve().parents[1] / "assets" / "crc_logo_full.png"
+    ).as_uri()
+
     parts: List[str] = []
     parts.append(
-        build_header(
-            "Termination Exposure – Detailed Report",
-            organisation_name,
-            review_period,
+        build_cover_page(
+            report_title="Termination Exposure – Detailed Report",
+            organisation_name=organisation_name,
+            review_period=review_period,
+            logo_path=logo_path,
         )
     )
 
     structure = ReportStructure()
-    structure.add("Executive Summary", 1, lambda: build_term_module_summary(sorted_findings))
-    structure.add("Data Sources", 1, lambda: build_data_sources_section({MODULE_TERM}))
-    structure.add("Scope & Methodology", 1, lambda: build_scope_and_methodology({MODULE_TERM}))
-    structure.add("Findings Overview", 1, lambda: build_term_severity_summary())
-    structure.add("Detailed Findings", 1, lambda: build_detailed_findings(sorted_findings))
-    structure.add("Limitations & Assumptions", 1, lambda: build_limitations())
-    structure.add("Recommended Next Steps", 1, lambda: build_next_steps())
-    structure.add("Appendices", 1, lambda: build_term_appendices())
+    structure.add("Executive Summary", 1, build_term_module_summary(sorted_findings))
+    structure.add("Data Sources", 1, build_data_sources_section({MODULE_TERM}, target_dir))
+    structure.add(
+        "Scope & Methodology",
+        1,
+        build_scope_and_methodology({MODULE_TERM}, MODULE_LABELS, MODULE_ORDER),
+    )
+    structure.add("Findings Overview", 1, build_term_severity_summary(term_counts))
+    structure.add("Detailed Findings", 1, build_detailed_findings(sorted_findings))
+    structure.add("Limitations & Assumptions", 1, build_limitations())
+    structure.add("Recommended Next Steps", 1, build_next_steps(target_dir))
+    structure.add("Appendices", 1, build_term_appendices(target_dir))
 
     parts.append(structure.render_markdown())
     final_md = "\n".join(parts)
 
-    TERM_REPORT_MD_PATH.parent.mkdir(parents=True, exist_ok=True)
-    TERM_REPORT_MD_PATH.write_text(final_md, encoding="utf-8")
-    return TERM_REPORT_MD_PATH
-
-
-if __name__ == "__main__":
-    path = generate_term_report()
-    print(f"Generated TERM detailed report at: {path}")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(final_md, encoding="utf-8")
+    return report_path

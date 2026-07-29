@@ -1,0 +1,5 @@
+Transaction Number,Associate ID,Transaction Date,Time Off Policy,Transaction Category,Hours
+T0001,A001,2024-02-15,Annual Leave,ACCRUAL,12.67
+T0002,A001,2024-03-04,Annual Leave,TAKEN,-7.60
+T0003,A002,2024-02-15,Annual Leave,ACCRUAL,6.33
+T0004,A003,2024-05-31,Long Service Leave,ACCRUAL,3.20

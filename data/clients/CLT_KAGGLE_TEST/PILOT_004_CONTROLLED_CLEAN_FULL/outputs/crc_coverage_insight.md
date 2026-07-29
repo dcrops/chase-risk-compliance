@@ -4,9 +4,9 @@
 
 - Payroll-only findings: **21**
 - Full analysis findings: **28**
-- Additional findings unlocked: **7 (33%)**
+- Additional findings identified with broader data coverage: **7 (33%)**
 
-**TERM** shows the largest uplift, with **6 additional findings** (150% increase).
+In this comparison, **TERM** had the largest increase in findings when broader datasets were included, with **6 additional findings** (150% increase).
 
 ## Module Breakdown
 
@@ -14,43 +14,45 @@
 
 - Payroll-only: 2 findings (core=2, supporting=0, extended=0)
 - Full: 2 findings (core=2, supporting=0, extended=0)
-- No additional findings were identified with full data. This module is largely assessable using payroll-only data.
-
-### TERM
-
-- Payroll-only: 4 findings (core=4, supporting=0, extended=0)
-- Full: 10 findings (core=4, supporting=0, extended=6)
-- Additional findings: 6 (150% increase)
-
-Termination-related risks show the strongest dependency on additional datasets. These issues are often not fully visible in payroll-only analysis and represent the primary source of hidden exposure.
+- No additional findings were identified with broader datasets. Based on this comparison run, this module did not show expanded finding coverage when broader data was included.
 
 ### LSL
 
 - Payroll-only: 0 findings (core=0, supporting=0, extended=0)
 - Full: 0 findings (core=0, supporting=0, extended=0)
-- No additional findings were identified with full data. This module is largely assessable using payroll-only data.
+- No additional findings were identified with broader datasets. Based on this comparison run, this module did not show expanded finding coverage when broader data was included.
+
+### TERM
+
+- Payroll-only: 4 findings (core=4, supporting=0, extended=0)
+- Full: 10 findings (core=4, supporting=0, extended=6)
+- Additional findings identified: 6 (150% increase)
+- In this comparison, broader datasets identified additional termination-related findings that were not triggered in the payroll-only run.
 
 ### RKEG
 
 - Payroll-only: 3 findings (core=0, supporting=3, extended=0)
 - Full: 4 findings (core=0, supporting=3, extended=1)
-- Additional findings: 1 (33% increase)
-
-Governance and evidence-related risks are partially visible in payroll data, but additional datasets improve coverage and confidence.
+- Additional findings identified: 1 (33% increase)
+- In this comparison, broader datasets identified additional record-keeping and evidence-related findings that were not triggered in the payroll-only run.
 
 ### CROSS_MODULE
 
 - Payroll-only: 12 findings (core=1, supporting=11, extended=0)
 - Full: 12 findings (core=1, supporting=11, extended=0)
-- No additional findings were identified with full data. This module is fully assessable using payroll-only data and provides strong visibility into cross-dataset inconsistencies.
+- No additional findings were identified with broader datasets. Based on this comparison run, this module was assessable from payroll-only data.
 
 ## Interpretation
 
-Payroll-only analysis provides strong visibility into balance integrity, lifecycle sequencing, and cross-dataset consistency.
+This comparison shows how findings counts changed between the payroll-only run and the broader-data run.
 
-However, certain risk categories—particularly termination handling and governance controls—are not fully observable without broader system context. These areas represent the primary source of hidden exposure.
+Where additional findings appear in the broader-data run, this indicates that those findings were only triggered when additional datasets were available in that comparison.
+
+Where no additional findings appear, this indicates that the broader-data run did not increase triggered findings for that module in this comparison.
+
+These results should be interpreted as a comparison of triggered finding coverage between two analysis modes, not as a conclusion about overall payroll risk.
 
 This supports a tiered diagnostic approach:
 
-- Payroll-only → fast, low-friction, high-confidence baseline
-- Full analysis → deeper risk discovery, particularly for termination and governance-related risks
+- Payroll-only → baseline review using core payroll datasets
+- Full analysis → broader review using additional available datasets

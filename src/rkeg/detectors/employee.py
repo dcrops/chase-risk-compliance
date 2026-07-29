@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from uuid import uuid4
 from typing import Dict, Iterable, List
 import pandas as pd
 
-from rkeg.models import Finding
+from rkeg.models import Finding, build_finding
 from common.nulls import is_missing
 
 
@@ -94,16 +93,12 @@ def _emp_001_missing_employee_master(
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": emp_id},
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
-                severity=rule["severity"],
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -158,16 +153,12 @@ def _emp_002_missing_start_date(
         evidence_str = str(evidence_obj).replace("'", '"')
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": emp_id},
                 employee_id=emp_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
-                severity=rule["severity"],
                 message=finding_msg,
-                diff_units=None,
                 evidence=evidence_str,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )
@@ -239,17 +230,11 @@ def _emp_003_missing_or_invalid_status(
             evidence_str = str(evidence_obj).replace("'", '"')
 
             findings.append(
-                Finding(
+                build_finding(
+                    rule,
+                    primary_keys={"employee_id": emp_id},
                     employee_id=emp_id,
-                    leave_type=None,
-                    as_of_date=None,
-                    rule_code=rule["id"],
-                    severity=rule["severity"],
-                    message=rule["text"]["finding"],
-                    diff_units=None,
                     evidence=evidence_str,
-                    finding_id=uuid4().hex[:12],
-                    next_action=rule["text"]["remediation"],
                 )
             )
 
@@ -316,17 +301,11 @@ def _emp_004_terminated_but_active(
             evidence_str = str(evidence_obj).replace("'", '"')
 
             findings.append(
-                Finding(
+                build_finding(
+                    rule,
+                    primary_keys={"employee_id": emp_id},
                     employee_id=emp_id,
-                    leave_type=None,
-                    as_of_date=None,
-                    rule_code=rule["id"],
-                    severity=rule["severity"],
-                    message=rule["text"]["finding"],
-                    diff_units=None,
                     evidence=evidence_str,
-                    finding_id=uuid4().hex[:12],
-                    next_action=rule["text"]["remediation"],
                 )
             )
 
@@ -398,16 +377,13 @@ def _run_emp_005(rule: dict, datasets: Dict[str, pd.DataFrame]) -> List[Finding]
         evidence = f"employee_id={employee_id}, rate_history_records=0"
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys={"employee_id": employee_id},
                 employee_id=employee_id,
-                leave_type=None,
-                as_of_date=None,
-                rule_code=rule["id"],
                 severity=severity,
                 message=message,
-                diff_units=None,
                 evidence=evidence,
-                finding_id=uuid4().hex[:12],
                 next_action=remediation_text,
             )
         )

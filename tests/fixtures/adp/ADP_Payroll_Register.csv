@@ -1,0 +1,4 @@
+Associate ID,Check Date,Payroll Run Number,Gross Pay,Ordinary Time Earnings,Employer Superannuation,Final Pay Indicator,Earnings Code
+A001,15/02/2024,PR-2024-04,3458.00,3458.00,380.38,0,REGULAR
+A002,15/02/2024,PR-2024-04,1558.00,1558.00,171.38,0,REGULAR
+A003,14/06/2024,PR-2024-12,4180.00,4180.00,50.00,1,FINAL

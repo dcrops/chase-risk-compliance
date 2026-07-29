@@ -36,14 +36,35 @@ data/clients/{CLIENT}/{PILOT}/config/column_mapping.yaml
 
 This file controls how raw datasets are transformed into standard CRC datasets.
 
+The schema, mapping direction, required datasets, date-format declarations and
+validation behaviour are specified in
+[`docs/contracts/ingestion_mapping_contract.md`](../contracts/ingestion_mapping_contract.md).
+Start from `templates/column_mapping_template.yaml`, or
+`templates/examples/adp_column_mapping_example.yaml` for a worked example with
+non-canonical vendor headers.
+
+Two points that catch people out:
+
+- The rename direction is **source column on the left, canonical column on the
+  right**.
+- Dates are parsed only against declared formats. If an extract is not ISO
+  (`%Y-%m-%d`), declare `date_format` — otherwise the run fails rather than
+  guessing.
+
 ---
 
 ## 4. Ingestion
 
 The ingestion process:
 
+- Validates `config/column_mapping.yaml` **before reading any dataset**, reporting
+  every problem in one pass
 - Reads raw input files from `raw/`
 - Applies column mappings from `config/column_mapping.yaml`
+- Parses dates against the declared formats, failing on any non-null value that
+  does not match
+- Writes a run manifest to `outputs/run_manifest_ingestion.json`
+  (see [`docs/operations/run_provenance.md`](run_provenance.md))
 - Outputs standardised datasets to:
 
 
@@ -76,6 +97,8 @@ Outputs from modules are written to:
 
 outputs/
 
+Each module also writes `run_manifest_{module}.json`; its execution metadata
+records that exact filename.
 
 ---
 
@@ -102,6 +125,10 @@ Final outputs are:
 - Ingestion is **fully repeatable** from:
   - `raw/`
   - `config/column_mapping.yaml`
+- Every run records what it consumed in its own
+  `outputs/run_manifest_{module}.json`
+- Findings carry deterministic IDs, so an unchanged rerun reproduces them exactly
+  (see [`docs/contracts/finding_identity_contract.md`](../contracts/finding_identity_contract.md))
 - Each pilot is **isolated**
 - Google Drive is used for:
   - storage

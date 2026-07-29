@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from typing import Dict, List
-from uuid import uuid4
 import json
 
 import pandas as pd
 
-from rkeg.models import Finding
+from rkeg.models import Finding, build_finding
 
 
 DEFAULT_FINAL_PAY_DAYS_THRESHOLD = 7
@@ -115,12 +114,14 @@ def _term_001_final_pay_outside_threshold(
         final_pay_date = row["_final_pay_date"]
         days_diff = int(row["_days_diff"])
 
+        primary_keys = {
+            "employee_id": emp_id,
+            "termination_date": str(term_date.date()) if pd.notna(term_date) else None,
+        }
+
         evidence_obj = {
             "sources": ["terminations.csv", "pay_events.csv"],
-            "primary_keys": {
-                "employee_id": emp_id,
-                "termination_date": str(term_date.date()) if pd.notna(term_date) else None,
-            },
+            "primary_keys": primary_keys,
             "values": {
                 "termination_date": str(term_date.date()) if pd.notna(term_date) else None,
                 "derived_final_pay_date": str(final_pay_date.date()) if pd.notna(final_pay_date) else None,
@@ -133,17 +134,15 @@ def _term_001_final_pay_outside_threshold(
         }
 
         findings.append(
-            Finding(
+            build_finding(
+                rule,
+                primary_keys=primary_keys,
                 employee_id=emp_id,
-                leave_type=None,
                 as_of_date=str(term_date.date()) if pd.notna(term_date) else None,
-                rule_code=rule["id"],
                 severity=severity,
-                classification=rule.get("classification", "UNCLASSIFIED"),
                 message=base_msg,
                 diff_units=float(days_diff),
                 evidence=json.dumps(evidence_obj, ensure_ascii=False),
-                finding_id=uuid4().hex[:12],
                 next_action=remediation,
             )
         )

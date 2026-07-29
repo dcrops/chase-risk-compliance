@@ -8,7 +8,7 @@ import yaml
 from src.common.data_window import write_data_window
 from src.common.paths import get_processed_dir, get_outputs_dir
 from src.common.rule_filter import should_run_rule
-from src.common.execution_metadata import write_execution_metadata
+from src.common.execution_metadata import finalize_module_run
 from src.common.rule_metadata import load_rule_metadata_map
 
 from src.leave_leakage.models import Finding
@@ -145,6 +145,7 @@ def main(
         print("INFO - balances_snapshot.csv not found or empty; continuing without snapshot data")
         snapshot = pd.DataFrame(columns=["employee_id", "leave_type", "as_of_date", "balance_units"])
 
+    window_path = None
     dates = _extract_dates_from_leave_ledger_df(ledger)
     if dates:
         window_path = output_dir / "leave_data_window.csv"
@@ -215,14 +216,6 @@ def main(
     print(f"[input] Unparseable leave request end rows: {bad_request_end_dates}")
     print(f"[input] Unparseable leave request approval rows: {bad_request_approval_dates}")
     print(f"[input] Unparseable timesheet work_date rows: {bad_timesheet_dates}")
-
-    metadata_path = write_execution_metadata(
-        output_dir=output_dir,
-        module_name="LEAVE",
-        mode=mode,
-        include_supporting=include_supporting,
-    )
-    print(f"Wrote: {metadata_path}")
 
     rules = _load_rules(rules_path)
     findings: list[Finding] = []
@@ -424,4 +417,33 @@ def main(
     ).to_csv(out_path, index=False)
 
     print(f"Wrote: {out_path}")
+    metadata_path, manifest_path = finalize_module_run(
+        output_dir=output_dir,
+        module_name="LEAVE",
+        mode=mode,
+        include_supporting=include_supporting,
+        client=client,
+        pilot=pilot,
+        input_paths=[
+            processed_dir / "employees.csv",
+            processed_dir / "leave_ledger.csv",
+            *([leave_requests_path] if not leave_requests.empty else []),
+            *([timesheets_path] if not timesheets.empty else []),
+            *([snapshot_path] if not snapshot.empty else []),
+        ],
+        config_paths=[rules_path],
+        output_paths=[
+            findings_path,
+            summary_path,
+            severity_summary_path,
+            classification_summary_path,
+            classification_x_severity_path,
+            viability_summary_path,
+            out_path,
+            *([window_path] if window_path is not None else []),
+        ],
+        repo_root=Path(__file__).resolve().parents[2],
+    )
+    print(f"Wrote: {metadata_path}")
+    print(f"Wrote: {manifest_path}")
     return 0

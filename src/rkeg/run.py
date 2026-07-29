@@ -10,12 +10,12 @@ import yaml
 from src.common.paths import get_processed_dir, get_outputs_dir
 from src.common.data_window import write_data_window
 from src.common.rule_filter import should_run_rule
-from src.common.execution_metadata import write_execution_metadata
+from src.common.execution_metadata import finalize_module_run
 from src.common.rule_metadata import load_rule_metadata_map
 
 from src.rkeg.models import Finding, write_findings_csv
 from src.rkeg.detectors.registry import run_rule
-from src.rkeg.datasets import load_all_datasets
+from src.rkeg.datasets import DATASET_FILE_MAP, load_all_datasets
 
 from src.common.validation import (
     ValidationResult,
@@ -41,6 +41,9 @@ EVIDENCE_LAYER_MAP = {
     "governance_monitoring_exposure": "Governance & Controls",
 }
 
+#: Tiers executed by a production RKEG run.
+PRODUCTION_TIERS: frozenset[int] = frozenset({1, 2})
+
 REQUIRED_EMP = {"employee_id"}
 REQUIRED_PAY = {"employee_id"}
 REQUIRED_LEDGER = {"employee_id"}
@@ -58,6 +61,15 @@ def _load_rules(rules_path: Path) -> list[dict]:
     with rules_path.open("r", encoding="utf-8") as f:
         payload = yaml.safe_load(f)
     return payload.get("rules", [])
+
+
+def select_rules_by_tier(
+    rules: Iterable[dict],
+    tiers: Iterable[int] = PRODUCTION_TIERS,
+) -> list[dict]:
+    """Return the rules whose tier is enabled. Rules default to tier 1."""
+    enabled = {int(t) for t in tiers}
+    return [r for r in rules if int(r.get("tier", 1)) in enabled]
 
 
 def _collect_dates_from_df(df: pd.DataFrame, candidate_cols: Iterable[str]) -> list[date]:
@@ -415,14 +427,6 @@ def main(
         print("RKEG module blocked due to validation errors.")
         return 1
 
-    metadata_path = write_execution_metadata(
-        output_dir=output_dir,
-        module_name="RKEG",
-        mode=mode,
-        include_supporting=include_supporting,
-    )
-    print(f"Wrote: {metadata_path}")
-
     rkeg_dates: list[date] = []
     rkeg_dates += _collect_dates_from_df(pay_events, ["pay_date", "period_start", "period_end"])
     rkeg_dates += _collect_dates_from_df(leave_ledger, ["as_of_date", "event_date"])
@@ -442,7 +446,7 @@ def main(
         print("[RKEG] No usable dates found for data window - rkeg_data_window.csv not written")
 
     all_rules = _load_rules(rules_yaml_path)
-    rules = [r for r in all_rules if int(r.get("tier", 1)) in {1, 2}]
+    rules = select_rules_by_tier(all_rules)
 
     context: dict = {}
 
@@ -744,5 +748,39 @@ The dominant exposure is **{top_dimension}**, indicating gaps in the organisatio
     print(f"Wrote: {heatmap_path}")
     print(f"Wrote: {layer_summary_path}")
     print(f"Wrote: {exec_md_path}")
+
+    metadata_path, manifest_path = finalize_module_run(
+        output_dir=output_dir,
+        module_name="RKEG",
+        mode=mode,
+        include_supporting=include_supporting,
+        client=client,
+        pilot=pilot,
+        input_paths=[
+            processed_dir / filename
+            for filename in DATASET_FILE_MAP.values()
+            if (processed_dir / filename).is_file()
+        ],
+        config_paths=[rules_yaml_path],
+        output_paths=[
+            output_dir / "rkeg_validation_summary.csv",
+            output_dir / "rkeg_validation_issues.csv",
+            findings_path,
+            summary_path,
+            severity_summary_path,
+            classification_summary_path,
+            classification_x_severity_path,
+            viability_summary_path,
+            risk_dim_summary_path,
+            risk_x_sev_path,
+            heatmap_path,
+            exec_md_path,
+            layer_summary_path,
+            *([rkeg_window_path] if rkeg_dates else []),
+        ],
+        repo_root=Path(__file__).resolve().parents[2],
+    )
+    print(f"Wrote: {metadata_path}")
+    print(f"Wrote: {manifest_path}")
 
     return 0

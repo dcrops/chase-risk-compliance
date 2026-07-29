@@ -6,13 +6,15 @@ import pandas as pd
 from cross_module_integrity.models import Finding, _build_finding
 from common.nulls import is_missing
 
+
 def _get_evidence_series(df: pd.DataFrame) -> pd.Series:
     if "evidence_reference" in df.columns:
         return df["evidence_reference"]
     if "evidence_ref" in df.columns:
         return df["evidence_ref"]
     return pd.Series(index=df.index, dtype="object")
-    
+
+
 def detect_terminated_employee_retains_material_leave_balance(
     rule: dict,
     datasets: dict[str, pd.DataFrame],
@@ -95,6 +97,8 @@ def detect_terminated_employee_retains_material_leave_balance(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()),
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                event_date=str(row["as_of_date"].date()) if pd.notna(row["as_of_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -167,6 +171,8 @@ def detect_post_termination_leave_movement_recorded(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["event_date"].date()),
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                event_date=str(row["event_date"].date()) if pd.notna(row["event_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -281,11 +287,14 @@ def detect_open_leave_balance_after_termination_with_no_final_pay(
                 employee_id=employee_id,
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()),
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                event_date=str(row["as_of_date"].date()) if pd.notna(row["as_of_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_employee_has_both_post_termination_payroll_and_leave_activity(
     rule: dict,
@@ -399,6 +408,8 @@ def detect_employee_has_both_post_termination_payroll_and_leave_activity(
             employee_id=employee_id,
             leave_type=None,
             as_of_date=str(latest_leave_event.date()) if pd.notna(latest_leave_event) else str(termination_date.date()),
+            termination_date=str(termination_date.date()) if pd.notna(termination_date) else None,
+            event_date=str(latest_leave_event.date()) if pd.notna(latest_leave_event) else None,
             evidence_str=evidence_str,
         )
         finding.severity = calibrated_severity
@@ -510,6 +521,8 @@ def detect_terminated_employee_remains_active_in_employee_master_with_open_leave
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()),
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                event_date=str(row["as_of_date"].date()) if pd.notna(row["as_of_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -656,11 +669,14 @@ def detect_terminated_employee_retains_balance_with_no_final_pay_and_no_closure_
                 employee_id=employee_id,
                 leave_type=leave_type,
                 as_of_date=str(snapshot_date.date()),
+                termination_date=str(termination_date.date()) if pd.notna(termination_date) else None,
+                event_date=str(snapshot_date.date()) if pd.notna(snapshot_date) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_leave_payout_without_termination(
     rule: dict,
@@ -727,6 +743,7 @@ def detect_leave_payout_without_termination(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["event_date"].date()) if pd.notna(row["event_date"]) else None,
+                event_date=str(row["event_date"].date()) if pd.notna(row["event_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -844,6 +861,8 @@ def detect_termination_without_leave_payout(
                 employee_id=employee_id,
                 leave_type=leave_type,
                 as_of_date=str(row["as_of_date"].date()) if pd.notna(row["as_of_date"]) else str(termination_date.date()),
+                termination_date=str(termination_date.date()) if pd.notna(termination_date) else None,
+                event_date=str(row["as_of_date"].date()) if pd.notna(row["as_of_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -901,6 +920,7 @@ def detect_multiple_termination_records(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["latest_termination_date"].date()) if pd.notna(row["latest_termination_date"]) else None,
+                termination_date=str(row["latest_termination_date"].date()) if pd.notna(row["latest_termination_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -980,11 +1000,14 @@ def detect_leave_activity_after_termination(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["event_date"].date()) if pd.notna(row["event_date"]) else None,
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                event_date=str(row["event_date"].date()) if pd.notna(row["event_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_final_pay_flagged_but_balance_remains(
     rule: dict,
@@ -1104,6 +1127,8 @@ def detect_final_pay_flagged_but_balance_remains(
                 employee_id=employee_id,
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()),
+                termination_date=str(termination_date.date()) if pd.notna(termination_date) else None,
+                event_date=str(latest_final_pay_date.date()) if pd.notna(latest_final_pay_date) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -1216,6 +1241,8 @@ def detect_leave_payout_recorded_but_balance_does_not_reduce(
                 employee_id=str(row["employee_id"]),
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()) if pd.notna(row["as_of_date"]) else None,
+                termination_date=str(row["termination_date"].date()) if "termination_date" in row and pd.notna(row["termination_date"]) else None,
+                event_date=str(row["event_date"].date()) if pd.notna(row["event_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
@@ -1340,11 +1367,14 @@ def detect_terminated_employee_continues_receiving_non_final_pay_with_open_balan
                 employee_id=employee_id,
                 leave_type=str(row["leave_type"]),
                 as_of_date=str(row["as_of_date"].date()),
+                termination_date=str(termination_date.date()) if pd.notna(termination_date) else None,
+                event_date=str(latest_non_final_pay_date.date()) if pd.notna(latest_non_final_pay_date) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_termination_without_supporting_leave_snapshot(
     rule: dict,
@@ -1404,11 +1434,13 @@ def detect_termination_without_supporting_leave_snapshot(
                 employee_id=str(row["employee_id"]),
                 leave_type=None,
                 as_of_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
+                termination_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_final_pay_without_termination_evidence(
     rule: dict,
@@ -1459,16 +1491,35 @@ def detect_final_pay_without_termination_evidence(
     bad = merged[merged["evidence_reference_norm"].apply(is_missing)]
 
     for _, row in bad.iterrows():
+        employee_id = str(row["employee_id"])
+        pay_date = str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None
+        run_id = "" if is_missing(row.get("run_id")) else str(row.get("run_id")).strip()
+        primary_keys = {
+            "employee_id": employee_id,
+            "pay_date": pay_date,
+        }
+        if run_id:
+            primary_keys["run_id"] = run_id
+
         findings.append(
             _build_finding(
                 rule=rule,
-                employee_id=str(row["employee_id"]),
+                employee_id=employee_id,
                 leave_type=None,
-                as_of_date=str(row["pay_date"].date()) if pd.notna(row["pay_date"]) else None,
+                as_of_date=pay_date,
+                event_date=pay_date,
                 evidence_str=json.dumps(
                     {
-                        "issue": "final pay without evidence",
-                        "evidence_reference": None,
+                        "sources": ["pay_events.csv", "terminations.csv"],
+                        "primary_keys": primary_keys,
+                        "values": {
+                            "is_final_pay": True,
+                            "evidence_reference": None,
+                        },
+                        "explanation": (
+                            "A final pay was processed but the termination record "
+                            "carries no evidence reference."
+                        ),
                     },
                     ensure_ascii=False,
                 )
@@ -1476,6 +1527,7 @@ def detect_final_pay_without_termination_evidence(
         )
 
     return findings
+
 
 def detect_terminated_employee_retains_both_annual_and_lsl_balances(
     rule: dict,
@@ -1591,11 +1643,14 @@ def detect_terminated_employee_retains_both_annual_and_lsl_balances(
                 employee_id=employee_id,
                 leave_type="MULTI_LEAVE",
                 as_of_date=str(latest_snapshot_date.date()) if pd.notna(latest_snapshot_date) else None,
+                termination_date=str(termination_date.date()) if pd.notna(termination_date) else None,
+                event_date=str(latest_snapshot_date.date()) if pd.notna(latest_snapshot_date) else None,
                 evidence_str=evidence_str,
             )
         )
 
     return findings
+
 
 def detect_silent_termination(
     rule: dict,
@@ -1624,17 +1679,38 @@ def detect_silent_termination(
         if emp in pay_ids or emp in ledger_ids:
             continue
 
+        termination_date = (
+            str(row["termination_date"].date())
+            if pd.notna(row["termination_date"])
+            else None
+        )
+
         findings.append(
             _build_finding(
                 rule=rule,
                 employee_id=emp,
                 leave_type=None,
-                as_of_date=str(row["termination_date"].date()) if pd.notna(row["termination_date"]) else None,
-                evidence_str=json.dumps({"issue": "no lifecycle activity"}, ensure_ascii=False)
+                as_of_date=termination_date,
+                termination_date=termination_date,
+                evidence_str=json.dumps(
+                    {
+                        "sources": ["terminations.csv", "pay_events.csv", "leave_ledger.csv"],
+                        "primary_keys": {
+                            "employee_id": emp,
+                            "termination_date": termination_date,
+                        },
+                        "explanation": (
+                            "A termination was recorded with no corresponding payroll "
+                            "or leave ledger activity."
+                        ),
+                    },
+                    ensure_ascii=False,
+                )
             )
         )
 
     return findings
+
 
 def detect_multi_failure_cluster(
     rule: dict,
@@ -1678,10 +1754,16 @@ def detect_multi_failure_cluster(
         else:
             continue
 
+        employee_id = str(row["employee_id"]).strip()
+
         evidence_str = json.dumps(
             {
-                "total_findings": total_findings,
-                "high_findings": high_findings,
+                "sources": ["cross_module_findings.csv"],
+                "primary_keys": {"employee_id": employee_id},
+                "values": {
+                    "total_findings": total_findings,
+                    "high_findings": high_findings,
+                },
                 "thresholds": {
                     "min_findings": min_findings,
                     "min_high_severity": min_high,
@@ -1693,7 +1775,7 @@ def detect_multi_failure_cluster(
 
         finding = _build_finding(
             rule=rule,
-            employee_id=row["employee_id"],
+            employee_id=employee_id,
             leave_type=None,
             as_of_date=None,
             evidence_str=evidence_str,

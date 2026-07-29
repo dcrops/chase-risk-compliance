@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+
 import pandas as pd
 
 
@@ -16,6 +17,58 @@ def _pct_change(base: int, new: int) -> str:
     return f"{int(round(change))}%"
 
 
+def _module_dependency_statement(module: str, payroll_total: int, full_total: int, delta: int) -> str:
+    if delta == 0:
+        if module == "CROSS_MODULE":
+            return (
+                "- No additional findings were identified with broader datasets. "
+                "Based on this comparison run, this module was assessable from payroll-only data."
+            )
+        return (
+            "- No additional findings were identified with broader datasets. "
+            "Based on this comparison run, this module did not show expanded finding coverage when broader data was included."
+        )
+
+    pct = _pct_change(payroll_total, full_total)
+
+    if module == "TERM":
+        return (
+            f"- Additional findings identified: {delta} ({pct} increase)\n"
+            "- In this comparison, broader datasets identified additional termination-related findings "
+            "that were not triggered in the payroll-only run."
+        )
+
+    if module == "RKEG":
+        return (
+            f"- Additional findings identified: {delta} ({pct} increase)\n"
+            "- In this comparison, broader datasets identified additional record-keeping and evidence-related findings "
+            "that were not triggered in the payroll-only run."
+        )
+
+    if module == "LSL":
+        return (
+            f"- Additional findings identified: {delta} ({pct} increase)\n"
+            "- In this comparison, broader datasets identified additional long service leave-related findings "
+            "that were not triggered in the payroll-only run."
+        )
+
+    if module == "LEAVE":
+        return (
+            f"- Additional findings identified: {delta} ({pct} increase)\n"
+            "- In this comparison, broader datasets identified additional leave-related findings "
+            "that were not triggered in the payroll-only run."
+        )
+
+    if module == "CROSS_MODULE":
+        return (
+            f"- Additional findings identified: {delta} ({pct} increase)\n"
+            "- In this comparison, broader datasets identified additional cross-module findings "
+            "that were not triggered in the payroll-only run."
+        )
+
+    return f"- Additional findings identified: {delta} ({pct} increase)"
+
+
 def build_insight(client: str, full_pilot: str) -> None:
     outputs_dir = DATA_ROOT / client / full_pilot / "outputs"
     comparison_path = outputs_dir / "crc_coverage_comparison.csv"
@@ -24,6 +77,21 @@ def build_insight(client: str, full_pilot: str) -> None:
         raise FileNotFoundError(f"Missing comparison file: {comparison_path}")
 
     df = pd.read_csv(comparison_path)
+
+    module_order = ["LEAVE", "LSL", "TERM", "RKEG", "CROSS_MODULE"]
+
+    df["module"] = df["module"].astype(str).str.strip().str.upper()
+
+    ordered_rows = []
+    for module in module_order:
+        match = df[df["module"] == module]
+        if not match.empty:
+            ordered_rows.append(match)
+
+    if ordered_rows:
+        df = pd.concat(ordered_rows, ignore_index=True)
+
+    print("DEBUG module order:", df["module"].tolist())
 
     lines: list[str] = []
     lines.append("# CRC Coverage Insight")
@@ -38,18 +106,21 @@ def build_insight(client: str, full_pilot: str) -> None:
     lines.append("")
     lines.append(f"- Payroll-only findings: **{total_payroll}**")
     lines.append(f"- Full analysis findings: **{total_full}**")
-    lines.append(f"- Additional findings identified with broader data coverage: **{total_delta} ({total_delta_pct})**")
+    lines.append(
+        f"- Additional findings identified with broader data coverage: **{total_delta} ({total_delta_pct})**"
+    )
     lines.append("")
 
-    max_row = df.sort_values("delta_total", ascending=False).iloc[0]
-    if int(max_row["delta_total"]) > 0:
-        module = str(max_row["module"])
-        uplift = _pct_change(int(max_row["payroll_total"]), int(max_row["full_total"]))
-        lines.append(
-            f"**{module}** shows the largest increase in findings when additional datasets are available, "
-            f"with **{int(max_row['delta_total'])} additional findings** ({uplift} increase)."
-        )
-        lines.append("")
+    if not df.empty:
+        max_row = df.sort_values("delta_total", ascending=False).iloc[0]
+        if int(max_row["delta_total"]) > 0:
+            module = str(max_row["module"])
+            uplift = _pct_change(int(max_row["payroll_total"]), int(max_row["full_total"]))
+            lines.append(
+                f"In this comparison, **{module}** had the largest increase in findings when broader datasets were included, "
+                f"with **{int(max_row['delta_total'])} additional findings** ({uplift} increase)."
+            )
+            lines.append("")
 
     lines.append("## Module Breakdown")
     lines.append("")
@@ -79,59 +150,31 @@ def build_insight(client: str, full_pilot: str) -> None:
             f"- Full: {full_total} findings "
             f"(core={full_core}, supporting={full_supporting}, extended={full_extended})"
         )
-
-        if delta == 0:
-            if module == "CROSS_MODULE":
-                lines.append(
-                    "- No additional findings were identified with broader datasets. "
-                    "This module is fully assessable using payroll-only data and provides strong visibility into "
-                    "cross-dataset inconsistencies."
-                )
-            else:
-                lines.append(
-                    "- No additional findings were identified with broader datasets. "
-                    "This module is largely assessable using payroll-only data."
-                )
-        else:
-            pct = _pct_change(payroll_total, full_total)
-            lines.append(f"- Additional findings identified: {delta} ({pct} increase)")
-
-            if module == "TERM":
-                lines.append("")
-                lines.append(
-                    "Termination-related risks show the strongest dependency on additional datasets. "
-                    "These areas are not fully assessable using payroll-only data and may only be identified when "
-                    "broader system context is available."
-                )
-            elif module == "RKEG":
-                lines.append("")
-                lines.append(
-                    "Governance and evidence-related risks are partially observable in payroll data, "
-                    "with additional datasets improving both coverage and confidence of assessment."
-                )
-
+        lines.append(_module_dependency_statement(module, payroll_total, full_total, delta))
         lines.append("")
 
     lines.append("## Interpretation")
     lines.append("")
     lines.append(
-        "Payroll-only analysis provides strong visibility into balance integrity, lifecycle sequencing, "
-        "and cross-dataset consistency."
+        "This comparison shows how findings counts changed between the payroll-only run and the broader-data run."
     )
     lines.append("")
     lines.append(
-        "However, certain risk categories—particularly termination handling and governance controls—are not fully "
-        "assessable without broader system context."
+        "Where additional findings appear in the broader-data run, this indicates that those findings were only triggered when additional datasets were available in that comparison."
     )
     lines.append("")
     lines.append(
-        "This reflects a coverage-based diagnostic model, where different datasets enable different levels of risk visibility."
+        "Where no additional findings appear, this indicates that the broader-data run did not increase triggered findings for that module in this comparison."
+    )
+    lines.append("")
+    lines.append(
+        "These results should be interpreted as a comparison of triggered finding coverage between two analysis modes, not as a conclusion about overall payroll risk."
     )
     lines.append("")
     lines.append("This supports a tiered diagnostic approach:")
     lines.append("")
-    lines.append("- Payroll-only → fast, low-friction, high-confidence baseline")
-    lines.append("- Full analysis → expanded coverage and deeper risk visibility")
+    lines.append("- Payroll-only → baseline review using core payroll datasets")
+    lines.append("- Full analysis → broader review using additional available datasets")
     lines.append("")
 
     out_path = outputs_dir / "crc_coverage_insight.md"

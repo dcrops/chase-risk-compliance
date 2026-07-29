@@ -8,7 +8,7 @@ import yaml
 from src.common.paths import get_processed_dir, get_outputs_dir
 from src.common.data_window import write_data_window
 from src.common.rule_filter import should_run_rule
-from src.common.execution_metadata import write_execution_metadata
+from src.common.execution_metadata import finalize_module_run
 from src.common.rule_metadata import load_rule_metadata_map
 
 from src.lsl_exposure.models import Finding
@@ -313,14 +313,6 @@ def main(
         print("LSL module blocked due to validation errors.")
         return 1
 
-    metadata_path = write_execution_metadata(
-        output_dir=output_dir,
-        module_name="LSL",
-        mode=mode,
-        include_supporting=include_supporting,
-    )
-    print(f"Wrote: {metadata_path}")
-
     window_dates: list[date] = []
 
     emp_dates = employees["start_date"].dropna()
@@ -510,5 +502,36 @@ def main(
     print(f"Wrote: {classification_x_severity_path}")
     print(f"Wrote: {viability_summary_path}")
     print(f"Wrote: {exposure_path}")
+
+    metadata_path, manifest_path = finalize_module_run(
+        output_dir=output_dir,
+        module_name="LSL",
+        mode=mode,
+        include_supporting=include_supporting,
+        client=client,
+        pilot=pilot,
+        input_paths=[
+            processed_dir / "employees.csv",
+            processed_dir / "leave_ledger.csv",
+            *([snapshot_path] if not snapshot.empty else []),
+            *([pay_rates_path] if pay_rates is not None else []),
+        ],
+        config_paths=[rules_path],
+        output_paths=[
+            output_dir / "lsl_validation_summary.csv",
+            output_dir / "lsl_validation_issues.csv",
+            output_dir / "lsl_data_window.csv",
+            findings_path,
+            summary_path,
+            severity_summary_path,
+            classification_summary_path,
+            classification_x_severity_path,
+            viability_summary_path,
+            exposure_path,
+        ],
+        repo_root=Path(__file__).resolve().parents[2],
+    )
+    print(f"Wrote: {metadata_path}")
+    print(f"Wrote: {manifest_path}")
 
     return 0
