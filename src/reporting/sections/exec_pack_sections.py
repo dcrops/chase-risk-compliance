@@ -568,9 +568,10 @@ def build_limitations() -> str:
 def build_next_steps(base_output_dir: Path | None = None) -> str:
     return """1. Validate the highest-severity findings first.
 2. Review the most affected modules and confirm whether findings reflect genuine control issues or data limitations.
-3. Address structural data gaps that weaken evidentiary confidence.
-4. Confirm root causes before remediation.
-5. Re-run the review after corrective action to confirm that risk indicators have reduced.
+3. Where findings concentrate on a small number of employees, review those employees end to end rather than treating each finding separately, as several findings often share one underlying cause.
+4. Address structural data gaps that weaken evidentiary confidence.
+5. Confirm root causes before remediation.
+6. Re-run the review after corrective action to confirm that risk indicators have reduced.
 
 ---
 """.strip()

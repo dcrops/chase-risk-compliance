@@ -29,7 +29,10 @@ characters such as `|` or `=`. Values are normalised before hashing: booleans
 become `true`/`false`, whole floats lose their trailing `.0`, and strings are
 stripped. A supplied key is required to have a usable value: `None`, NaN,
 infinity and blank strings raise `FindingIdentityError`. Optional keys must be
-omitted rather than supplied with an empty value.
+omitted rather than supplied with an empty value. Detectors that report on a
+missing or unparseable value (for example LSL-023 when `event_date` is invalid)
+should call `drop_unusable_keys` so the absent value narrows the key set instead
+of aborting the module on exactly the data the rule exists to surface.
 
 Identity is **never** derived from run timestamps, random values, or — except as
 the documented last resort in section 4 — row positions.

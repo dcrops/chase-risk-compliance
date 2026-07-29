@@ -10,6 +10,30 @@ Although demonstrated using payroll datasets, the underlying architecture was in
 
 ---
 
+# Project Status
+
+Version 1 engineering is complete. The engine has completed Architecture,
+Verification, Enterprise Hardening, Acceptance, Rule Quality and Pilot Safety
+reviews. Its deterministic architecture and public contracts are considered
+stable for an owner-supervised pilot.
+
+The current phase is **Pilot Validation & Rule Calibration**. Controlled client
+pilots will be used to measure false positives, possible false negatives,
+investigation effort, report clarity and payroll specialist usefulness.
+
+Future rule changes will be evidence-driven:
+
+> Validate with real payroll data first. Calibrate second.
+
+Architectural change is not a current objective. Engineering defects will still
+be corrected when reproduced, but threshold, severity, scope and wording
+changes require pilot evidence and follow the documented calibration process.
+
+See the [roadmap](docs/ROADMAP.md) and
+[pilot validation strategy](docs/operations/pilot_validation_strategy.md).
+
+---
+
 # Platform Highlights
 
 * 5 diagnostic domains
@@ -86,13 +110,28 @@ parses dates only against declared formats, and writes a run manifest to
 
 | Document | Covers |
 |---|---|
+| [Roadmap](docs/ROADMAP.md) | Completed engineering phases and current pilot validation phase |
+| [Version 1 engineering status](docs/engineering_status.md) | Stable contracts and change posture during pilot validation |
 | [Ingestion mapping & date contract](docs/contracts/ingestion_mapping_contract.md) | Mapping schema and direction, required datasets, date formats, validation, migration |
 | [Finding identity contract](docs/contracts/finding_identity_contract.md) | Deterministic finding IDs, required evidence, rerun stability |
+| [Termination / final pay contract](docs/contracts/termination_final_pay_contract.md) | Final-pay identification, evidence fields, lifecycle interpretation for pilots |
+| [Pilot validation strategy](docs/operations/pilot_validation_strategy.md) | Pilot safeguards, evidence collection, measures and success criteria |
+| [Rule calibration process](docs/rules/calibration_process.md) | Evidence requirements and approval gates for future rule changes |
+| [Technical debt register](docs/operations/technical_debt_register.md) | Classified deferred work and pilot mitigations |
 | [Run provenance](docs/operations/run_provenance.md) | Run manifest contents and limitations |
 | [Testing](docs/operations/testing.md) | Default offline suite, network tests, markers |
 | [Client intake process](docs/operations/client_intake_process.md) | End-to-end pilot workflow |
 | [Pilot readiness checklist](docs/operations/pilot_readiness_checklist.md) | Gating items and accepted limitations |
 | [Changelog](CHANGELOG.md) | Notable changes |
+
+Map termination evidence to the canonical `evidence_reference` field. Legacy
+aliases are still accepted by evidence-dependent rules, but only as intentional
+fallbacks. LSL service years use `termination_date` (with `end_date` as a legacy
+alias) so terminated employees do not keep accruing to the snapshot date.
+
+Finding counts are counts of triggered checks. The executive pack includes a
+lifecycle concentration section so that overlapping TERM / LEAVE / RKEG /
+Cross-Module findings for the same employee are read in context.
 
 ---
 

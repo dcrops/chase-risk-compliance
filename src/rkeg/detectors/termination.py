@@ -10,6 +10,11 @@ from rkeg.models import Finding, build_finding
 
 DEFAULT_FINAL_PAY_DAYS_THRESHOLD = 7
 
+TRUTHY_FLAG_VALUES = {"y", "yes", "true", "t", "1"}
+
+BASIS_FLAGGED = "flagged_final_pay"
+BASIS_LATEST_PAY = "latest_post_termination_pay"
+
 
 def _pick_first_existing_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
     cols = {c.lower(): c for c in df.columns}
@@ -17,6 +22,10 @@ def _pick_first_existing_column(df: pd.DataFrame, candidates: list[str]) -> str 
         if candidate.lower() in cols:
             return cols[candidate.lower()]
     return None
+
+
+def _truthy_flag_series(series: pd.Series) -> pd.Series:
+    return series.astype(str).str.strip().str.lower().isin(TRUTHY_FLAG_VALUES)
 
 
 def _term_001_final_pay_outside_threshold(
@@ -59,8 +68,18 @@ def _term_001_final_pay_outside_threshold(
     if term.empty or pay.empty:
         return []
 
+    final_pay_flag_col = _pick_first_existing_column(
+        pay_events,
+        ["is_final_pay", "final_pay", "final_pay_flag"],
+    )
+
+    if final_pay_flag_col is not None:
+        pay["_is_final_pay"] = _truthy_flag_series(pay[final_pay_flag_col])
+    else:
+        pay["_is_final_pay"] = False
+
     merged = term.merge(
-        pay[["employee_id", "_pay_date"]],
+        pay[["employee_id", "_pay_date", "_is_final_pay"]],
         on="employee_id",
         how="left",
     )
@@ -70,15 +89,52 @@ def _term_001_final_pay_outside_threshold(
     if candidates.empty:
         return []
 
-    final_pay = (
-        candidates.groupby(["employee_id", "_termination_date"], as_index=False)["_pay_date"]
-        .max()
-        .rename(columns={"_pay_date": "_final_pay_date"})
+    group_keys = ["employee_id", "_termination_date"]
+
+    # A pay event explicitly flagged as final is the defensible basis for final
+    # pay timing. Where the extract carries no such flag on or after
+    # termination, the latest post-termination pay is used as a lower-certainty
+    # proxy and the basis is recorded in the evidence so a reviewer can see
+    # which was used.
+    flagged_pays = candidates[candidates["_is_final_pay"]].copy()
+
+    proxy_basis = candidates.groupby(group_keys, as_index=False).agg(
+        _final_pay_date=("_pay_date", "max"),
+        _post_termination_pay_count=("_pay_date", "count"),
     )
+    proxy_basis["_final_pay_basis"] = BASIS_LATEST_PAY
+    proxy_basis["_flagged_final_pay_count"] = 0
+
+    if flagged_pays.empty:
+        final_pay = proxy_basis
+    else:
+        flagged_basis = flagged_pays.groupby(group_keys, as_index=False).agg(
+            _final_pay_date=("_pay_date", "min"),
+            _flagged_final_pay_count=("_pay_date", "count"),
+        )
+        flagged_basis["_final_pay_basis"] = BASIS_FLAGGED
+
+        flagged_basis = flagged_basis.merge(
+            proxy_basis[group_keys + ["_post_termination_pay_count"]],
+            on=group_keys,
+            how="left",
+        )
+
+        remaining_proxy = proxy_basis.merge(
+            flagged_basis[group_keys],
+            on=group_keys,
+            how="left",
+            indicator=True,
+        )
+        remaining_proxy = remaining_proxy[remaining_proxy["_merge"] == "left_only"].drop(
+            columns=["_merge"]
+        )
+
+        final_pay = pd.concat([flagged_basis, remaining_proxy], ignore_index=True)
 
     review = term.merge(
         final_pay,
-        on=["employee_id", "_termination_date"],
+        on=group_keys,
         how="left",
     )
 
@@ -91,33 +147,49 @@ def _term_001_final_pay_outside_threshold(
     cfg = rule.get("config", {}) or {}
     threshold = int(cfg.get("max_days_after_termination", DEFAULT_FINAL_PAY_DAYS_THRESHOLD))
 
-    flagged = review[review["_days_diff"] > threshold].copy()
-    if flagged.empty:
+    review_flagged = review[review["_days_diff"] > threshold].copy()
+    if review_flagged.empty:
         return []
 
     text = rule.get("text", {})
     base_msg = text.get(
         "finding",
-        "One or more terminated employees appear to have received final pay outside the configured statutory timeframe.",
+        "Final pay for one or more terminated employees was recorded later than the configured timing threshold.",
     )
     remediation = text.get(
         "remediation",
-        "Review termination processing workflows and ensure final pay is calculated and processed within the required statutory timeframe.",
+        "Confirm the final pay date for the affected employees and review termination processing timeliness. Where a delay was expected, record the reason so the timing can be explained if reviewed.",
     )
     severity = rule.get("severity", "HIGH")
 
     findings: List[Finding] = []
 
-    for _, row in flagged.iterrows():
+    for _, row in review_flagged.iterrows():
         emp_id = str(row["employee_id"]).strip()
         term_date = row["_termination_date"]
         final_pay_date = row["_final_pay_date"]
         days_diff = int(row["_days_diff"])
+        basis = str(row["_final_pay_basis"])
 
         primary_keys = {
             "employee_id": emp_id,
             "termination_date": str(term_date.date()) if pd.notna(term_date) else None,
         }
+
+        if basis == BASIS_FLAGGED:
+            explanation = (
+                "The pay event flagged as final was recorded more than the configured "
+                "number of days after the termination date. This is a payroll timing "
+                "anomaly for review, not a determination that any obligation was breached."
+            )
+        else:
+            explanation = (
+                "No pay event on or after termination was flagged as final, so the latest "
+                "post-termination pay event was used as a proxy for final pay. The gap "
+                "exceeds the configured threshold. Because the final pay event is not "
+                "identifiable from the data supplied, confirm the actual final pay date "
+                "before drawing any conclusion about timing."
+            )
 
         evidence_obj = {
             "sources": ["terminations.csv", "pay_events.csv"],
@@ -126,11 +198,19 @@ def _term_001_final_pay_outside_threshold(
                 "termination_date": str(term_date.date()) if pd.notna(term_date) else None,
                 "derived_final_pay_date": str(final_pay_date.date()) if pd.notna(final_pay_date) else None,
                 "days_after_termination": days_diff,
+                "final_pay_basis": basis,
+                "final_pay_flag_available": final_pay_flag_col is not None,
+                "post_termination_pay_count": int(row["_post_termination_pay_count"])
+                if pd.notna(row.get("_post_termination_pay_count"))
+                else None,
+                "flagged_final_pay_count": int(row["_flagged_final_pay_count"])
+                if pd.notna(row.get("_flagged_final_pay_count"))
+                else None,
             },
             "thresholds": {
                 "max_days_after_termination": threshold,
             },
-            "explanation": "Latest pay event on or after termination date exceeds the configured final pay timing threshold.",
+            "explanation": explanation,
         }
 
         findings.append(

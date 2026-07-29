@@ -60,11 +60,12 @@ python -m pytest -k "identity" -q                    # by name
 
 | Directory | Covers |
 |---|---|
-| `tests/common` | Shared contracts: date parsing, mapping validation, finding identity, run manifest |
+| `tests/common` | Shared contracts: date parsing, mapping validation, evidence fields, finding identity, run manifest |
 | `tests/ingestion` | Ingestion end to end, including a non-canonical vendor mapping |
 | `tests/rkeg` | RKEG detectors, rule tier selection, finding construction |
 | `tests/leave`, `tests/lsl`, `tests/term` | Module detectors |
-| `tests/cross_module` | Cross-module rules and finding identity |
+| `tests/cross_module` | Cross-module rules, latest-snapshot selection and finding identity |
+| `tests/reporting` | Executive pack presentation helpers, including lifecycle concentration |
 | `tests/founder_copilot` | Rule retrieval |
 | `tests/fixtures` | Sample source files, e.g. `tests/fixtures/adp` |
 

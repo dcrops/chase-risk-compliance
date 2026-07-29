@@ -512,7 +512,7 @@ rules:
   tier: 1
   domain: TERM
   severity: HIGH
-  title: Final pay processed outside termination timing threshold
+  title: Final pay recorded later than the configured termination timing threshold
   datasets:
     primary: terminations
     references:
@@ -521,12 +521,17 @@ rules:
   config:
     max_days_after_termination: 7
   text:
-    finding: 'One or more terminated employees appear to have received final pay outside
-      the configured statutory timeframe.'
-    why_it_matters: 'Late final payments may breach Fair Work timing obligations and
-      increase regulatory and dispute exposure.'
-    remediation: 'Review termination processing workflows and ensure final pay is
-      calculated and processed within the required statutory timeframe.'
+    finding: 'Final pay for one or more terminated employees was recorded later than
+      the configured timing threshold.'
+    why_it_matters: 'Delays between termination and final pay may indicate off-boarding
+      process or payroll timing weaknesses, and reduce the organisation''s ability to
+      evidence when employment was finalised. The threshold is a configured review
+      trigger, not a statutory test, and this finding does not determine whether any
+      obligation was met.'
+    remediation: 'Confirm the actual final pay date for the affected employees and
+      review termination processing timeliness. Where a delay was expected, record the
+      reason so the timing can be explained if reviewed. Where final pay timing
+      obligations are in question, seek qualified payroll or industrial relations advice.'
   risk_dimension:
     - timing_integrity
     - governance_exposure

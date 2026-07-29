@@ -1,7 +1,8 @@
 # Pilot Readiness Checklist
 
-Status of the items that gate a client pilot. Updated by the Enterprise Pilot
-Hardening change set; see `CHANGELOG.md`.
+Status of the items that gate a client pilot. Version 1 engineering and the
+Pilot Safety Corrective Pass are complete. The project is in Pilot Validation &
+Rule Calibration; see `CHANGELOG.md` and `docs/ROADMAP.md`.
 
 Scope: an 800-employee, file-based pilot with a small number of payroll cycles.
 Items marked *Deferred* are known, documented and accepted for that scope.
@@ -38,42 +39,56 @@ Items marked *Deferred* are known, documented and accepted for that scope.
 | Multiple legitimate findings per employee and rule stay distinguishable | Done | `tests/leave/test_leave_finding_identity.py`, `tests/rkeg/test_rkeg_leave_001.py` |
 | Missing or malformed identity evidence fails loudly | Done | `tests/common/test_finding_identity.py` |
 | CM-017 and CM-020 no longer collide | Done | `tests/cross_module/test_cross_module_finding_identity.py`; a rerun of the collision case producing 12 distinct IDs from 12 findings |
+| Optional unusable identity keys are omitted rather than aborting the module | Done | `drop_unusable_keys`; `tests/lsl/test_lsl_023.py` |
+
+## Pilot safety corrections (Rule Quality Review)
+
+| Item | Status | Evidence |
+|---|---|---|
+| TERM-005 reads canonical `evidence_reference` | Done | `src/common/evidence_fields.py`; `tests/term/test_term_005_evidence_reference.py` |
+| RKEG-TERM-001 prefers flagged final pay and uses diagnostic wording | Done | `tests/rkeg/test_rkeg_term_001.py`; `docs/contracts/termination_final_pay_contract.md` |
+| LSL service years honour `termination_date` | Done | `tests/lsl/test_lsl_service_years.py` |
+| LSL-023 no longer crashes on missing event dates | Done | `tests/lsl/test_lsl_023.py` |
+| Latest snapshot selected before materiality (TERM / Cross-Module) | Done | `tests/term/test_term_latest_snapshot_selection.py`; `tests/cross_module/test_latest_snapshot_selection.py` |
+| CM-019 assesses post-termination activity | Done | `tests/cross_module/test_cm_019.py` |
+| Executive pack communicates lifecycle concentration | Done | `src/reporting/executive/lifecycle_clusters.py`; `tests/reporting/test_lifecycle_clusters.py` |
 
 ## Test baseline
 
 | Item | Status | Evidence |
 |---|---|---|
-| `python -m pytest` collects and runs the supported suite | Done | 240 passed, 1 deselected |
+| `python -m pytest` collects and runs the supported suite | Done | Default offline suite; see `CHANGELOG.md` for current count |
 | No stale collection errors | Done | Ten modules rewritten against current interfaces |
 | Network-dependent tests explicitly separated | Done | `network` marker, `docs/operations/testing.md` |
 | No broad skips or blanket xfail masking failures | Done | One marker on one genuinely external test |
 
 ## Provenance and operability
 
-| Item | Status | Evidence |
-|---|---|---|
-| Ingestion and every diagnostic module write separate manifests | Done | `outputs/run_manifest_{ingestion,leave,lsl,term,rkeg,cross_module}.json`; `tests/common/test_module_manifest_wiring.py` |
-| Module execution metadata links to the exact module manifest | Done | `src/common/execution_metadata.py`; production orchestration test |
-| Input hashes and row counts recorded | Done | `tests/common/test_run_manifest.py` |
-| Configuration hashes and a combined digest recorded | Done | `tests/common/test_run_manifest.py` |
-| Git SHA recorded, with a safe fallback | Done | `CRC_GIT_SHA`, then `git rev-parse`, then `unavailable` |
-| Python and key dependency versions recorded | Done | `tests/common/test_run_manifest.py` |
-| No payroll records or personal data in the manifest | Done | `tests/common/test_run_manifest.py` |
-| Documented module CLI commands run on a clean checkout | Done | `scripts/run_*.py` add `src/` to the path |
-| Runs survive a non-UTF-8 console | Done | `src/common/console.py` |
-| Later HTML/PDF report-package hashing | **Deferred** | Core orchestration outputs are hashed; separate reporting-stage outputs are not yet attached. Section 4 of `docs/operations/run_provenance.md` |
-| Historical manifests for repeated runs of the same module | **Deferred** | Module filenames are distinct, but a rerun replaces that module's current manifest |
-| Manifest signing or tamper evidence | **Deferred** | Out of scope for a file-based pilot |
+| Item | Status | Backlog classification | Evidence |
+|---|---|---|---|
+| Ingestion and every diagnostic module write separate manifests | Done | — | `outputs/run_manifest_{ingestion,leave,lsl,term,rkeg,cross_module}.json`; `tests/common/test_module_manifest_wiring.py` |
+| Module execution metadata links to the exact module manifest | Done | — | `src/common/execution_metadata.py`; production orchestration test |
+| Input hashes and row counts recorded | Done | — | `tests/common/test_run_manifest.py` |
+| Configuration hashes and a combined digest recorded | Done | — | `tests/common/test_run_manifest.py` |
+| Git SHA recorded, with a safe fallback | Done | — | `CRC_GIT_SHA`, then `git rev-parse`, then `unavailable` |
+| Python and key dependency versions recorded | Done | — | `tests/common/test_run_manifest.py` |
+| No payroll records or personal data in the manifest | Done | — | `tests/common/test_run_manifest.py` |
+| Documented module CLI commands run on a clean checkout | Done | — | `scripts/run_*.py` add `src/` to the path |
+| Runs survive a non-UTF-8 console | Done | — | `src/common/console.py` |
+| Later HTML/PDF report-package hashing | **Deferred** | High priority after pilot | Core orchestration outputs are hashed; separate reporting-stage outputs are not yet attached. Section 4 of `docs/operations/run_provenance.md` |
+| Historical manifests for repeated runs of the same module | **Deferred** | Normal backlog | Module filenames are distinct, but a rerun replaces that module's current manifest |
+| Manifest signing or tamper evidence | **Deferred** | Future enhancement | Out of scope for a file-based pilot |
 
 ## Known limitations accepted for this pilot
 
-| Limitation | Impact | Mitigation |
-|---|---|---|
-| Row-ordinal identity fallback for extracts with no record identifier | IDs shift if source rows are reordered | Ask the client to supply `transaction_id`; documented in section 4 of the identity contract |
-| Unpinned dependencies in `requirements.txt` and `pyproject.toml` | A fresh install may resolve different versions | The manifest records the versions actually used |
-| `rkeg.models` and `src.rkeg.models` load as separate modules | Two distinct `Finding` classes exist at runtime | Harmless today because nothing does `isinstance` checks; worth resolving before adding type-based dispatch |
-| One current manifest per module | Re-running the same module replaces its prior manifest | Archive delivery manifests externally when run history is required |
-| `PILOT_001_2026_03_26` mapping predates the canonical model | That pilot is not re-runnable | Retained as a historical artifact only |
+| Limitation | Classification | Impact | Mitigation |
+|---|---|---|---|
+| Row-ordinal identity fallback for extracts with no record identifier | Normal backlog | IDs shift if source rows are reordered | Ask the client to supply `transaction_id`; documented in section 4 of the identity contract |
+| Semantic overlap across TERM / LEAVE / RKEG / Cross-Module lifecycle rules | Future enhancement if suppression is proposed | Finding counts can look larger than the number of distinct payroll events | Executive pack lifecycle concentration section; review concentrated employees end to end |
+| Unpinned dependencies in `requirements.txt` and `pyproject.toml` | High priority after pilot | A fresh install may resolve different versions | The manifest records the versions actually used |
+| `rkeg.models` and `src.rkeg.models` load as separate modules | High priority after pilot | Two distinct `Finding` classes exist at runtime | Harmless today because nothing does `isinstance` checks; resolve before adding type-based dispatch |
+| One current manifest per module | Normal backlog | Re-running the same module replaces its prior manifest | Archive delivery manifests externally when run history is required |
+| `PILOT_001_2026_03_26` mapping predates the canonical model | Normal backlog / historical only | That pilot is not re-runnable | Retained as a historical artifact only |
 
 ---
 
@@ -90,6 +105,10 @@ Items marked *Deferred* are known, documented and accepted for that scope.
    the same manifest.
 7. Confirm `finding_id` is unique within each findings CSV. A duplicate is a
    defect; see the identity contract.
+8. Confirm all HIGH findings have an assigned owner review before client
+   delivery.
+9. Create the pilot evidence register described in the pilot validation
+   strategy and record optional-data coverage.
 
 ## Related
 
@@ -98,3 +117,6 @@ Items marked *Deferred* are known, documented and accepted for that scope.
 - `docs/operations/run_provenance.md`
 - `docs/operations/testing.md`
 - `docs/operations/client_intake_process.md`
+- `docs/operations/pilot_validation_strategy.md`
+- `docs/rules/calibration_process.md`
+- `docs/operations/technical_debt_register.md`

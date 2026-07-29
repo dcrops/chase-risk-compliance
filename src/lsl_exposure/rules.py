@@ -8,6 +8,10 @@ import json
 import hashlib
 
 
+# Canonical employment end field first, legacy alias second.
+EMPLOYMENT_END_DATE_FIELDS: Tuple[str, ...] = ("termination_date", "end_date")
+
+
 def _heuristic_gap_hours(
     service_years: float,
     eligibility_years: float,
@@ -45,22 +49,41 @@ def prepare_lsl_state(
     """
     Returns per-employee rows with:
     - service_years
+    - employment_end_date (canonical termination date where present)
     - latest LSL balance_units (if any)
     - lsl_as_of_date
     - hourly_rate (optional)
+
+    Service accrues from ``start_date`` to the earlier of the employment end
+    date and the snapshot date. The canonical employment end field is
+    ``termination_date`` (see docs/contracts/ingestion_mapping_contract.md);
+    ``end_date`` is accepted as a legacy alias. Reading only ``end_date`` meant
+    terminated employees kept accruing service to the snapshot date, which
+    over-stated service for every eligibility-gated LSL rule.
     """
     emp = employees.copy()
     emp["employee_id"] = emp["employee_id"].astype(str).str.strip()
 
     emp["start_date"] = pd.to_datetime(emp["start_date"], errors="coerce")
 
-    if "end_date" in emp.columns:
-        emp["end_date"] = pd.to_datetime(emp["end_date"], errors="coerce")
-    else:
-        emp["end_date"] = pd.NaT
+    employment_end = pd.Series(pd.NaT, index=emp.index, dtype="datetime64[ns]")
+    for column in EMPLOYMENT_END_DATE_FIELDS:
+        if column not in emp.columns:
+            continue
+        parsed = pd.to_datetime(emp[column], errors="coerce")
+        employment_end = employment_end.where(employment_end.notna(), parsed)
 
-    effective_end = emp["end_date"].where(emp["end_date"].notna(), snapshot_date)
-    effective_end = effective_end.clip(upper=snapshot_date)
+    emp["employment_end_date"] = employment_end
+
+    reference_date = pd.to_datetime(snapshot_date, errors="coerce")
+
+    if pd.isna(reference_date):
+        # Without a snapshot there is no reference date and no LSL balance to
+        # assess, so service years stay unknown for everyone, as before.
+        effective_end = pd.Series(pd.NaT, index=emp.index, dtype="datetime64[ns]")
+    else:
+        effective_end = employment_end.where(employment_end.notna(), reference_date)
+        effective_end = effective_end.clip(upper=reference_date)
 
     service_days = (effective_end - emp["start_date"]).dt.days
     emp["service_years"] = service_days.clip(lower=0).astype(float) / 365.25

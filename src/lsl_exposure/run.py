@@ -86,7 +86,7 @@ def validate_lsl_inputs(datasets: dict[str, pd.DataFrame]) -> ValidationResult:
             level="ERROR",
         )
 
-        for col in ["start_date", "years_at_company", "fte"]:
+        for col in ["start_date", "termination_date", "years_at_company", "fte"]:
             if col not in employee_master.columns:
                 add_issue(
                     issues,

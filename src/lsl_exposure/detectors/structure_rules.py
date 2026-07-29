@@ -4,6 +4,7 @@ import json
 import pandas as pd
 
 from lsl_exposure.models import Finding, _build_finding
+from common.finding_identity import drop_unusable_keys
 from common.nulls import is_missing
 
 
@@ -938,6 +939,10 @@ def detect_invalid_or_future_dated_lsl_ledger_event(
 
     bad = lsl_rows[invalid_mask | future_mask].copy()
 
+    transaction_ids = (
+        led["transaction_id"] if "transaction_id" in led.columns else None
+    )
+
     for idx, row in bad.iterrows():
         parsed_event_date = row["event_date"]
         raw_event_date = original_event_date.loc[idx]
@@ -947,14 +952,30 @@ def detect_invalid_or_future_dated_lsl_ledger_event(
         else:
             explanation = "LSL ledger event date falls after the reporting cut-off."
 
+        # The event date cannot key a finding it is reporting as missing. Fall
+        # back to the transaction identifier, then to the documented source-row
+        # ordinal, so an unusable date narrows the key set instead of aborting
+        # the module on exactly the data this rule exists to surface.
+        identity_keys: dict[str, object] = {
+            "employee_id": str(row["employee_id"]),
+            "leave_type": str(row["leave_type"]),
+        }
+
+        if pd.notna(parsed_event_date):
+            identity_keys["event_date"] = str(parsed_event_date.date())
+        else:
+            transaction_id = (
+                transaction_ids.loc[idx] if transaction_ids is not None else None
+            )
+            if not is_missing(transaction_id):
+                identity_keys["transaction_id"] = str(transaction_id).strip()
+            else:
+                identity_keys["source_row"] = int(idx)
+
         evidence_str = json.dumps(
             {
                 "sources": ["leave_ledger.csv", "balances_snapshot.csv"],
-                "primary_keys": {
-                    "employee_id": str(row["employee_id"]),
-                    "leave_type": str(row["leave_type"]),
-                    "event_date": str(parsed_event_date.date()) if pd.notna(parsed_event_date) else None,
-                },
+                "primary_keys": drop_unusable_keys(identity_keys),
                 "values": {
                     "raw_event_date": str(raw_event_date) if pd.notna(raw_event_date) else None,
                     "parsed_event_date": str(parsed_event_date.date()) if pd.notna(parsed_event_date) else None,

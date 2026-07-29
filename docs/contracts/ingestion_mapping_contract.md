@@ -69,10 +69,17 @@ a typo in a dataset name fails rather than silently disabling a dataset.
 | Dataset | Canonical date column | Required |
 |---|---|---|
 | `employees` | `start_date` | no |
+| `employees` | `termination_date` | no — used by LSL service-year calculation; `end_date` is accepted as a legacy alias |
 | `terminations` | `termination_date` | yes |
 | `pay_events` | `pay_date` | yes |
 | `leave_ledger` | `event_date` | yes |
 | `leave_snapshot` | `as_of_date` | no — derived from the latest `pay_date` when the source supplies none |
+
+### Evidence fields
+
+| Dataset | Canonical field | Notes |
+|---|---|---|
+| `terminations` | `evidence_reference` | Preferred by TERM-005 and Cross-Module evidence checks. Legacy aliases `evidence_ref`, `termination_evidence` and `document_id` remain intentional fallbacks via `src/common/evidence_fields.py`. |
 
 ---
 

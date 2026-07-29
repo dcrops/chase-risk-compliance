@@ -4,14 +4,11 @@ import json
 import pandas as pd
 
 from cross_module_integrity.models import Finding, _build_finding
+from common.evidence_fields import evidence_reference_series
 
 
 def _get_evidence_series(df: pd.DataFrame) -> pd.Series:
-    if "evidence_reference" in df.columns:
-        return df["evidence_reference"]
-    if "evidence_ref" in df.columns:
-        return df["evidence_ref"]
-    return pd.Series(index=df.index, dtype="object")
+    return evidence_reference_series(df)
 
 
 def detect_termination_without_evidence_and_payroll_continues(

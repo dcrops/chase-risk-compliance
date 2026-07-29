@@ -2,6 +2,105 @@
 
 Notable changes to CRC. Newest first.
 
+## [Unreleased] — Transition to Pilot Validation
+
+### Project status
+
+- Version 1 engineering is complete following Architecture, Verification,
+  Enterprise Hardening, Acceptance, Rule Quality and Pilot Safety reviews.
+- The deterministic architecture and public contracts are considered stable
+  for an owner-supervised pilot.
+- The project has moved to **Pilot Validation & Rule Calibration** under the
+  principle: **Validate with real payroll data first. Calibrate second.**
+- Future threshold, severity, scope and wording changes require evidence from
+  controlled pilots. Engineering defects remain separately classified and may
+  be corrected when reproduced.
+
+### Documentation
+
+- Added `docs/ROADMAP.md`, marking engineering hardening and the Pilot Safety
+  Corrective Pass complete and defining the current validation phase.
+- Added `docs/engineering_status.md`, recording stable Version 1 contracts and
+  the expectation that future work minimises architectural change.
+- Added `docs/operations/pilot_validation_strategy.md`, covering safeguards,
+  evidence collection, false-positive and false-negative review, investigation
+  effort, payroll specialist feedback and phase-exit criteria.
+- Added `docs/rules/calibration_process.md`, defining evidence and approval
+  gates for future rule calibration.
+- Added `docs/operations/technical_debt_register.md`, classifying remaining
+  deferred work. No known deferred item is a pilot blocker.
+- Updated the README, pilot checklist, client intake process and engineering
+  status documentation to reflect the stable architecture and current
+  evidence-driven focus.
+
+## [2026-07-29] — Pilot Safety Corrective Pass
+
+Addresses the material findings from the Payroll Rule Quality & False-Positive
+Risk Review. This pass is complete. It introduced no architectural redesign and
+no unrelated rule recalibration.
+
+### Fixed
+
+- **TERM-005 ignored the canonical evidence field.** The detector read only
+  `evidence_ref`, `termination_evidence` and `document_id`, so a correctly mapped
+  extract with populated `evidence_reference` still raised a finding for every
+  termination. Evidence resolution now goes through
+  `src/common/evidence_fields.py`, which prefers the canonical field and keeps
+  the legacy aliases as intentional fallbacks.
+- **RKEG-TERM-001 treated the latest post-termination pay as final pay and used
+  statutory wording.** The detector now prefers a pay event flagged as final
+  (`is_final_pay`). Where no such flag exists on or after termination, the
+  latest post-termination pay remains a lower-certainty proxy and that basis is
+  recorded in the evidence. Rule text and explanations describe a payroll timing
+  anomaly against a configured threshold, not a Fair Work or statutory breach.
+- **LSL service years ignored `termination_date`.** `prepare_lsl_state` accrued
+  service to the snapshot date unless a legacy `end_date` was present, so
+  terminated employees kept accruing. Service now ends at the earlier of the
+  canonical `termination_date` (or legacy `end_date`) and the snapshot date.
+- **LSL-023 crashed the module on missing event dates.** The rule keyed findings
+  on `event_date` even when reporting that date as missing or invalid, which
+  raised `FindingIdentityError`. Unavailable dates are omitted from primary
+  keys; identity falls back to `transaction_id`, then the documented source-row
+  ordinal.
+- **TERM-007, TERM-009 and related Cross-Module lifecycle rules filtered on
+  materiality before selecting the latest snapshot.** A historical material
+  balance could raise a current finding after a later snapshot had cleared it.
+  The latest snapshot is now selected first, then materiality is evaluated.
+- **CM-019 treated any recorded pay or leave activity as finalisation.**
+  Pre-termination ordinary pay cleared the finding for every employee who had
+  ever been paid. The rule now looks for payroll or configured closure activity
+  on or after the termination date. Where event dates or types are unavailable
+  on a non-empty extract, it degrades to any recorded activity and records that
+  basis in the evidence.
+
+### Changed
+
+- Executive pack adds a **Lifecycle Concentration & Finding Overlap** section
+  that groups consolidated findings by employee and lifecycle theme. Presentation
+  only: findings are not suppressed, merged or re-identified.
+- Recommended next steps ask reviewers to inspect concentrated employees end to
+  end where several findings share one underlying cause.
+
+### Added
+
+- `src/common/evidence_fields.py` — shared canonical evidence-field resolution.
+- `drop_unusable_keys` in `src/common/finding_identity.py` — omit optional
+  identity keys whose values are unusable rather than aborting on them.
+- `src/reporting/executive/lifecycle_clusters.py` — concentration metrics for
+  the executive pack.
+- Pilot-critical regression tests for TERM-005, RKEG-TERM-001, LSL service
+  years, LSL-023, latest-snapshot selection, CM-019 and lifecycle concentration
+  reporting.
+
+### Outcome
+
+- Material findings from the Rule Quality Review were resolved.
+- Canonical evidence handling, LSL service calculation, latest-snapshot
+  selection and lifecycle reporting were strengthened.
+- Validation completed with deterministic findings, no duplicate identities
+  and no module crashes in representative runs.
+- Status: **Suitable for an owner-supervised pilot**.
+
 ## [Unreleased] — Enterprise Pilot Hardening
 
 Addresses the confirmed pre-pilot blockers from the architecture verification

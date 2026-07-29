@@ -8,6 +8,11 @@ Implemented by `src/common/run_manifest.py`.
 This is a deliberately bounded first version, not a provenance subsystem. Read
 section 4 before relying on it for audit evidence.
 
+The Version 1 provenance contract is stable for owner-supervised, file-based
+pilots. Its limitations are accepted pilot constraints, not evidence that a
+major architecture rewrite is required. Deferred provenance work is classified
+in `docs/operations/technical_debt_register.md`.
+
 ---
 
 ## 1. Location
@@ -155,3 +160,5 @@ coverage — investigate rather than assume.
 - `docs/contracts/ingestion_mapping_contract.md`
 - `docs/contracts/finding_identity_contract.md`
 - `docs/operations/pilot_readiness_checklist.md`
+- `docs/operations/pilot_validation_strategy.md`
+- `docs/operations/technical_debt_register.md`

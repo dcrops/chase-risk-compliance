@@ -4,6 +4,8 @@ import json
 import pandas as pd
 
 from termination_exposure.models import Finding, _build_finding
+from common.evidence_fields import EVIDENCE_FIELDS, resolve_evidence_reference
+from common.finding_identity import drop_unusable_keys
 from common.nulls import is_missing
 
 
@@ -118,19 +120,7 @@ def detect_missing_supporting_termination_evidence_reference(
         if not emp_id:
             continue
 
-        raw_evidence_ref = row.get("evidence_ref")
-        raw_termination_evidence = row.get("termination_evidence")
-        raw_document_id = row.get("document_id")
-
-        evidence_ref = None
-        if not is_missing(raw_evidence_ref):
-            evidence_ref = str(raw_evidence_ref).strip()
-        elif not is_missing(raw_termination_evidence):
-            evidence_ref = str(raw_termination_evidence).strip()
-        elif not is_missing(raw_document_id):
-            evidence_ref = str(raw_document_id).strip()
-
-        if evidence_ref:
+        if resolve_evidence_reference(row):
             continue
 
         term_date = row["termination_date"]
@@ -138,14 +128,20 @@ def detect_missing_supporting_termination_evidence_reference(
         evidence_str = json.dumps(
             {
                 "sources": ["terminations.csv"],
-                "primary_keys": {
-                    "employee_id": emp_id,
-                    "termination_date": str(term_date.date()) if pd.notna(term_date) else None,
-                },
+                "primary_keys": drop_unusable_keys(
+                    {
+                        "employee_id": emp_id,
+                        "termination_date": str(term_date.date()) if pd.notna(term_date) else None,
+                    }
+                ),
                 "values": {
-                    "evidence_ref": None,
+                    "evidence_reference": None,
+                    "evidence_fields_checked": list(EVIDENCE_FIELDS),
                 },
-                "explanation": "Termination record has no supporting evidence reference.",
+                "explanation": (
+                    "Termination record carries no supporting evidence reference in the "
+                    "canonical evidence_reference field or any supported legacy alias."
+                ),
             },
             ensure_ascii=False,
         )
@@ -192,17 +188,27 @@ def detect_terminated_employee_retains_material_lsl_balance(
     snap_lsl = snap[
         snap["leave_type"].str.upper().str.contains("LSL", na=False)
         & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
     ].copy()
 
     if snap_lsl.empty:
         return []
 
+    # Select the employee's latest snapshot row first, then test materiality.
+    # Filtering on materiality first allowed a historical material balance to
+    # raise a current finding even where a later snapshot showed the balance
+    # had been cleared.
     latest_snap = (
         snap_lsl.sort_values(["employee_id", "as_of_date"])
         .groupby("employee_id", as_index=False)
         .tail(1)
     )
+
+    latest_snap = latest_snap[
+        latest_snap["balance_units"] >= material_balance_units
+    ].copy()
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -358,17 +364,27 @@ def detect_terminated_employee_with_lsl_balance_and_no_closure_trail(
     snap_lsl = snap[
         snap["leave_type"].str.upper().str.contains("LSL", na=False)
         & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
     ].copy()
 
     if snap_lsl.empty:
         return []
 
+    # Select the employee's latest snapshot row first, then test materiality.
+    # Filtering on materiality first allowed a historical material balance to
+    # raise a current finding even where a later snapshot showed the balance
+    # had been cleared.
     latest_snap = (
         snap_lsl.sort_values(["employee_id", "as_of_date"])
         .groupby("employee_id", as_index=False)
         .tail(1)
     )
+
+    latest_snap = latest_snap[
+        latest_snap["balance_units"] >= material_balance_units
+    ].copy()
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],

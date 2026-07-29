@@ -4,15 +4,44 @@ import json
 import pandas as pd
 
 from cross_module_integrity.models import Finding, _build_finding
+from common.evidence_fields import evidence_reference_series
 from common.nulls import is_missing
 
 
 def _get_evidence_series(df: pd.DataFrame) -> pd.Series:
-    if "evidence_reference" in df.columns:
-        return df["evidence_reference"]
-    if "evidence_ref" in df.columns:
-        return df["evidence_ref"]
-    return pd.Series(index=df.index, dtype="object")
+    return evidence_reference_series(df)
+
+
+def _latest_material_snapshot_rows(
+    snapshot: pd.DataFrame,
+    material_balance_units: float,
+    leave_types: set[str] | None = None,
+) -> pd.DataFrame:
+    """Latest snapshot row per employee and leave type, kept where material.
+
+    The latest row with a known balance is selected first and materiality is
+    tested afterwards. Testing materiality first allowed a historical material
+    balance to raise a current finding even where a later snapshot showed the
+    balance had since been cleared.
+
+    Expects a snapshot frame whose ``employee_id``, ``leave_type``,
+    ``as_of_date`` and ``balance_units`` columns have already been normalised.
+    """
+    rows = snapshot[snapshot["balance_units"].notna()]
+
+    if leave_types is not None:
+        rows = rows[rows["leave_type"].isin(leave_types)]
+
+    if rows.empty:
+        return rows.copy()
+
+    latest = (
+        rows.sort_values(["employee_id", "leave_type", "as_of_date"])
+        .groupby(["employee_id", "leave_type"], as_index=False)
+        .tail(1)
+    )
+
+    return latest[latest["balance_units"] >= material_balance_units].copy()
 
 
 def detect_terminated_employee_retains_material_leave_balance(
@@ -41,20 +70,14 @@ def detect_terminated_employee_retains_material_leave_balance(
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["leave_type"].isin(leave_types)
-        & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
+        leave_types=leave_types,
     )
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -207,20 +230,14 @@ def detect_open_leave_balance_after_termination_with_no_final_pay(
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["leave_type"].isin(leave_types)
-        & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
+        leave_types=leave_types,
     )
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -459,20 +476,14 @@ def detect_terminated_employee_remains_active_in_employee_master_with_open_leave
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["leave_type"].isin(leave_types)
-        & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
+        leave_types=leave_types,
     )
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -565,20 +576,14 @@ def detect_terminated_employee_retains_balance_with_no_final_pay_and_no_closure_
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["leave_type"].isin(leave_types)
-        & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
+        leave_types=leave_types,
     )
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -780,19 +785,13 @@ def detect_termination_without_leave_payout(
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
     )
+
+    if latest_snap.empty:
+        return []
 
     if leave_ledger.empty:
         led = pd.DataFrame(columns=["employee_id", "leave_type", "event_type", "event_date"])
@@ -1052,20 +1051,14 @@ def detect_final_pay_flagged_but_balance_remains(
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["leave_type"].isin(leave_types)
-        & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
+        leave_types=leave_types,
     )
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -1172,19 +1165,13 @@ def detect_leave_payout_recorded_but_balance_does_not_reduce(
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
     )
+
+    if latest_snap.empty:
+        return []
 
     if terminations.empty:
         term = pd.DataFrame(columns=["employee_id", "termination_date"])
@@ -1290,20 +1277,14 @@ def detect_terminated_employee_continues_receiving_non_final_pay_with_open_balan
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["leave_type"].isin(leave_types)
-        & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
+        leave_types=leave_types,
     )
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -1558,20 +1539,14 @@ def detect_terminated_employee_retains_both_annual_and_lsl_balances(
     snap["as_of_date"] = pd.to_datetime(snap["as_of_date"], errors="coerce")
     snap["balance_units"] = pd.to_numeric(snap["balance_units"], errors="coerce")
 
-    snap = snap[
-        snap["leave_type"].isin(required_leave_types)
-        & snap["balance_units"].notna()
-        & (snap["balance_units"] >= material_balance_units)
-    ].copy()
-
-    if snap.empty:
-        return []
-
-    latest_snap = (
-        snap.sort_values(["employee_id", "leave_type", "as_of_date"])
-        .groupby(["employee_id", "leave_type"], as_index=False)
-        .tail(1)
+    latest_snap = _latest_material_snapshot_rows(
+        snap,
+        material_balance_units=material_balance_units,
+        leave_types=set(required_leave_types),
     )
+
+    if latest_snap.empty:
+        return []
 
     merged = latest_snap.merge(
         term[["employee_id", "termination_date"]],
@@ -1665,43 +1640,140 @@ def detect_silent_termination(
         return []
 
     findings: list[Finding] = []
+    config = rule.get("config", {}) or {}
+    closure_event_types = {
+        str(x).strip().upper()
+        for x in config.get("closure_event_types", ["PAYOUT", "ADJUSTMENT", "TAKEN"])
+    }
+    leave_types = {
+        str(x).strip().upper() for x in config.get("leave_types", ["ANNUAL", "LSL"])
+    }
 
     term = terminations.copy()
     term["employee_id"] = term["employee_id"].astype(str).str.strip()
     term["termination_date"] = pd.to_datetime(term["termination_date"], errors="coerce")
 
-    pay_ids = set(pay_events["employee_id"].astype(str).str.strip()) if not pay_events.empty else set()
-    ledger_ids = set(leave_ledger["employee_id"].astype(str).str.strip()) if not leave_ledger.empty else set()
+    # The configured meaning is an absence of finalisation activity *following*
+    # termination, so a termination without a usable date cannot be assessed.
+    term = term[term["termination_date"].notna()].copy()
+    if term.empty:
+        return []
+
+    pay = pd.DataFrame(columns=["employee_id", "pay_date"])
+    pay_ids: set[str] = set()
+    # An empty extract is assessed as "no activity". Undated assessment only
+    # applies when records exist without a usable date.
+    pay_can_date = True
+    if not pay_events.empty:
+        pay = pay_events.copy()
+        pay["employee_id"] = pay["employee_id"].astype(str).str.strip()
+        pay_ids = set(pay["employee_id"])
+        if "pay_date" in pay.columns:
+            pay["pay_date"] = pd.to_datetime(pay["pay_date"], errors="coerce")
+            pay_can_date = True
+        else:
+            pay_can_date = False
+
+    led = pd.DataFrame(columns=["employee_id", "event_date", "event_type", "leave_type"])
+    ledger_ids: set[str] = set()
+    ledger_can_date = True
+    if not leave_ledger.empty:
+        led = leave_ledger.copy()
+        led["employee_id"] = led["employee_id"].astype(str).str.strip()
+        ledger_ids = set(led["employee_id"])
+        if "event_date" in led.columns and "event_type" in led.columns:
+            led["event_date"] = pd.to_datetime(led["event_date"], errors="coerce")
+            led["event_type"] = led["event_type"].astype(str).str.strip().str.upper()
+            if "leave_type" in led.columns:
+                led["leave_type"] = led["leave_type"].astype(str).str.strip().str.upper()
+                led = led[led["leave_type"].isin(leave_types)]
+            led = led[led["event_type"].isin(closure_event_types)]
+            ledger_can_date = True
+        else:
+            ledger_can_date = False
 
     for _, row in term.iterrows():
         emp = str(row["employee_id"])
+        termination_date = row["termination_date"]
 
-        if emp in pay_ids or emp in ledger_ids:
+        if pay_can_date:
+            if pay.empty:
+                post_term_pay_count = 0
+            else:
+                post_term_pay_count = int(
+                    (
+                        (pay["employee_id"] == emp)
+                        & pay["pay_date"].notna()
+                        & (pay["pay_date"] >= termination_date)
+                    ).sum()
+                )
+            pay_activity = post_term_pay_count > 0
+        else:
+            # Undated pay records: presence alone clears the silence finding
+            # because post-termination timing cannot be proven from the extract.
+            post_term_pay_count = None
+            pay_activity = emp in pay_ids
+
+        if ledger_can_date:
+            if led.empty:
+                closure_event_count = 0
+            else:
+                closure_event_count = int(
+                    (
+                        (led["employee_id"] == emp)
+                        & led["event_date"].notna()
+                        & (led["event_date"] >= termination_date)
+                    ).sum()
+                )
+            closure_activity = closure_event_count > 0
+        else:
+            closure_event_count = None
+            closure_activity = emp in ledger_ids
+
+        if pay_activity or closure_activity:
             continue
 
-        termination_date = (
-            str(row["termination_date"].date())
-            if pd.notna(row["termination_date"])
-            else None
+        dated_assessment = pay_can_date and ledger_can_date
+        assessment_basis = (
+            "post_termination_activity" if dated_assessment else "any_recorded_activity"
         )
+
+        termination_date_str = str(termination_date.date())
 
         findings.append(
             _build_finding(
                 rule=rule,
                 employee_id=emp,
                 leave_type=None,
-                as_of_date=termination_date,
-                termination_date=termination_date,
+                as_of_date=termination_date_str,
+                termination_date=termination_date_str,
                 evidence_str=json.dumps(
                     {
                         "sources": ["terminations.csv", "pay_events.csv", "leave_ledger.csv"],
                         "primary_keys": {
                             "employee_id": emp,
-                            "termination_date": termination_date,
+                            "termination_date": termination_date_str,
+                        },
+                        "values": {
+                            "post_termination_pay_count": post_term_pay_count,
+                            "closure_event_count": closure_event_count,
+                            "assessment_basis": assessment_basis,
+                        },
+                        "thresholds": {
+                            "closure_event_types": sorted(closure_event_types),
+                            "leave_types": sorted(leave_types),
                         },
                         "explanation": (
-                            "A termination was recorded with no corresponding payroll "
-                            "or leave ledger activity."
+                            "No payroll activity and no leave payout or closure ledger "
+                            "activity was identified on or after the recorded "
+                            "termination date."
+                        )
+                        if dated_assessment
+                        else (
+                            "No payroll or leave ledger records were identified for this "
+                            "employee at all. Event dates or event types were unavailable "
+                            "on at least one extract, so post-termination activity could "
+                            "not be assessed fully from the data supplied."
                         ),
                     },
                     ensure_ascii=False,

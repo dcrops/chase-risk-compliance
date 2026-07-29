@@ -54,6 +54,32 @@ def _normalise_value(value: Any, label: str) -> str:
     return normalised
 
 
+def is_usable_key_value(value: Any) -> bool:
+    """Whether a value can be hashed as a primary key without raising."""
+    try:
+        _normalise_value(value, "probe")
+    except FindingIdentityError:
+        return False
+    return True
+
+
+def drop_unusable_keys(primary_keys: Mapping[str, Any]) -> dict[str, Any]:
+    """Return primary keys with unusable values removed.
+
+    The contract requires optional keys to be omitted rather than supplied with
+    an empty value. Detectors that report on records with a missing or
+    unparseable date use this so that the absent value narrows the key set
+    instead of raising ``FindingIdentityError`` on exactly the malformed data
+    the rule exists to surface. An empty result still fails in
+    ``compute_finding_id``, so a wholly unidentifiable finding remains loud.
+    """
+    return {
+        key: value
+        for key, value in primary_keys.items()
+        if is_usable_key_value(value)
+    }
+
+
 def canonical_identity(
     rule_code: str,
     primary_keys: Mapping[str, Any],

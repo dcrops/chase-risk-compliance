@@ -84,13 +84,15 @@ processed/
 
 ---
 
-## 5. Module Execution (Next Phase)
+## 5. Module Execution
 
 Processed datasets are used by CRC modules:
 
 - LEAVE (Leave & Entitlement Leakage)
-- TERM (Termination Integrity)
+- LSL (Long Service Leave Exposure)
+- TERM (Termination Exposure)
 - RKEG (Record Keeping & Evidence Gaps)
+- CROSS_MODULE (Cross-Module Integrity)
 
 Outputs from modules are written to:
 
@@ -115,6 +117,19 @@ Final outputs are:
 
 
 03_OUTPUT_REPORTS/{CLIENT}/{PILOT}
+
+Before client delivery:
+
+- the pilot owner reviews every HIGH finding;
+- optional datasets and coverage limitations are stated clearly;
+- lifecycle concentrations are reviewed by employee rather than treating every
+  finding as a separate event;
+- diagnostic wording is checked to ensure it does not imply a legal
+  determination;
+- investigation outcomes and payroll specialist feedback are recorded in the
+  pilot evidence register.
+
+See [`pilot_validation_strategy.md`](pilot_validation_strategy.md).
 
 
 ---
@@ -174,7 +189,10 @@ data/clients/{CLIENT}/{PILOT}/
 5. Review outputs in `processed/`
 6. Run CRC modules
 7. Generate reports in `outputs/`
-8. Upload final reports to Google Drive (`03_OUTPUT_REPORTS`)
+8. Complete owner review and update the pilot evidence register
+9. Upload reviewed final reports to Google Drive (`03_OUTPUT_REPORTS`)
+10. Close out false-positive, possible false-negative, investigation-effort and
+    report-clarity observations
 
 ---
 
@@ -186,3 +204,5 @@ data/clients/{CLIENT}/{PILOT}/
   - repeatable
 - No system integrations are required (file-based only)
 - Suitable for pilot phase and early-stage operations
+- Pilot observations do not directly change rule thresholds. Calibration
+  candidates follow [`../rules/calibration_process.md`](../rules/calibration_process.md).

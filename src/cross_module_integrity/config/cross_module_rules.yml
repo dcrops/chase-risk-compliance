@@ -632,8 +632,8 @@ rules:
         - ADJUSTMENT
         - TAKEN
     text:
-      finding: "A termination was recorded but no payroll activity, leave payout, or closure ledger activity was identified."
-      why_it_matters: "Where no finalisation activity exists following termination, payroll records may be incomplete or missing key lifecycle steps."
+      finding: "A termination was recorded but no payroll activity, leave payout, or closure ledger activity was identified on or after the termination date."
+      why_it_matters: "Where no finalisation activity exists following termination, payroll records may be incomplete or missing key lifecycle steps. Where event dates or event types are unavailable in the extract, the check degrades to the absence of any payroll or leave record for the employee and records that basis in the evidence."
       remediation: "Review termination processing, payroll records and leave ledger activity to confirm whether the employee was correctly finalised."
     risk_dimension:
       - evidence_traceability

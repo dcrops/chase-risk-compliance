@@ -38,6 +38,7 @@ from reporting.sections.exec_pack_sections import (
 )
 
 from reporting.core.cover_page import build_cover_page
+from reporting.executive.lifecycle_clusters import build_lifecycle_concentration
 
 from reporting.core.narrative_guard import (
     NarrativeMetrics,
@@ -1015,6 +1016,11 @@ def generate_exec_pack(
     structure.add("Executive Summary", 1, build_executive_summary(target_dir))
     structure.add("Highlight Insights", 1, build_highlight_insights(target_dir))
     structure.add("Risk Profile Overview", 1, build_risk_profile_overview(target_dir))
+    structure.add(
+        "Lifecycle Concentration & Finding Overlap",
+        1,
+        build_lifecycle_concentration(target_dir),
+    )
     structure.add(
         "Coverage & Data Dependency Insight",
         1,
